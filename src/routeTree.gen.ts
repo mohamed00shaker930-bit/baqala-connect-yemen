@@ -11,13 +11,19 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as OrdersRouteImport } from './routes/orders'
+import { Route as MerchantRouteImport } from './routes/merchant'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as CreditRouteImport } from './routes/credit'
 import { Route as ChooseRoleRouteImport } from './routes/choose-role'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MerchantIndexRouteImport } from './routes/merchant.index'
 import { Route as StoreStoreIdRouteImport } from './routes/store.$storeId'
+import { Route as MerchantSettingsRouteImport } from './routes/merchant.settings'
+import { Route as MerchantProductsRouteImport } from './routes/merchant.products'
+import { Route as MerchantOrdersRouteImport } from './routes/merchant.orders'
+import { Route as MerchantCreditRouteImport } from './routes/merchant.credit'
 
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
@@ -27,6 +33,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const OrdersRoute = OrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MerchantRoute = MerchantRouteImport.update({
+  id: '/merchant',
+  path: '/merchant',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HomeRoute = HomeRouteImport.update({
@@ -59,10 +70,35 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MerchantIndexRoute = MerchantIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MerchantRoute,
+} as any)
 const StoreStoreIdRoute = StoreStoreIdRouteImport.update({
   id: '/store/$storeId',
   path: '/store/$storeId',
   getParentRoute: () => rootRouteImport,
+} as any)
+const MerchantSettingsRoute = MerchantSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => MerchantRoute,
+} as any)
+const MerchantProductsRoute = MerchantProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => MerchantRoute,
+} as any)
+const MerchantOrdersRoute = MerchantOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => MerchantRoute,
+} as any)
+const MerchantCreditRoute = MerchantCreditRouteImport.update({
+  id: '/credit',
+  path: '/credit',
+  getParentRoute: () => MerchantRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -72,9 +108,15 @@ export interface FileRoutesByFullPath {
   '/choose-role': typeof ChooseRoleRoute
   '/credit': typeof CreditRoute
   '/home': typeof HomeRoute
+  '/merchant': typeof MerchantRouteWithChildren
   '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
+  '/merchant/credit': typeof MerchantCreditRoute
+  '/merchant/orders': typeof MerchantOrdersRoute
+  '/merchant/products': typeof MerchantProductsRoute
+  '/merchant/settings': typeof MerchantSettingsRoute
   '/store/$storeId': typeof StoreStoreIdRoute
+  '/merchant/': typeof MerchantIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -85,7 +127,12 @@ export interface FileRoutesByTo {
   '/home': typeof HomeRoute
   '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
+  '/merchant/credit': typeof MerchantCreditRoute
+  '/merchant/orders': typeof MerchantOrdersRoute
+  '/merchant/products': typeof MerchantProductsRoute
+  '/merchant/settings': typeof MerchantSettingsRoute
   '/store/$storeId': typeof StoreStoreIdRoute
+  '/merchant': typeof MerchantIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -95,9 +142,15 @@ export interface FileRoutesById {
   '/choose-role': typeof ChooseRoleRoute
   '/credit': typeof CreditRoute
   '/home': typeof HomeRoute
+  '/merchant': typeof MerchantRouteWithChildren
   '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
+  '/merchant/credit': typeof MerchantCreditRoute
+  '/merchant/orders': typeof MerchantOrdersRoute
+  '/merchant/products': typeof MerchantProductsRoute
+  '/merchant/settings': typeof MerchantSettingsRoute
   '/store/$storeId': typeof StoreStoreIdRoute
+  '/merchant/': typeof MerchantIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -108,9 +161,15 @@ export interface FileRouteTypes {
     | '/choose-role'
     | '/credit'
     | '/home'
+    | '/merchant'
     | '/orders'
     | '/profile'
+    | '/merchant/credit'
+    | '/merchant/orders'
+    | '/merchant/products'
+    | '/merchant/settings'
     | '/store/$storeId'
+    | '/merchant/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -121,7 +180,12 @@ export interface FileRouteTypes {
     | '/home'
     | '/orders'
     | '/profile'
+    | '/merchant/credit'
+    | '/merchant/orders'
+    | '/merchant/products'
+    | '/merchant/settings'
     | '/store/$storeId'
+    | '/merchant'
   id:
     | '__root__'
     | '/'
@@ -130,9 +194,15 @@ export interface FileRouteTypes {
     | '/choose-role'
     | '/credit'
     | '/home'
+    | '/merchant'
     | '/orders'
     | '/profile'
+    | '/merchant/credit'
+    | '/merchant/orders'
+    | '/merchant/products'
+    | '/merchant/settings'
     | '/store/$storeId'
+    | '/merchant/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -142,6 +212,7 @@ export interface RootRouteChildren {
   ChooseRoleRoute: typeof ChooseRoleRoute
   CreditRoute: typeof CreditRoute
   HomeRoute: typeof HomeRoute
+  MerchantRoute: typeof MerchantRouteWithChildren
   OrdersRoute: typeof OrdersRoute
   ProfileRoute: typeof ProfileRoute
   StoreStoreIdRoute: typeof StoreStoreIdRoute
@@ -161,6 +232,13 @@ declare module '@tanstack/react-router' {
       path: '/orders'
       fullPath: '/orders'
       preLoaderRoute: typeof OrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/merchant': {
+      id: '/merchant'
+      path: '/merchant'
+      fullPath: '/merchant'
+      preLoaderRoute: typeof MerchantRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/home': {
@@ -205,6 +283,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/merchant/': {
+      id: '/merchant/'
+      path: '/'
+      fullPath: '/merchant/'
+      preLoaderRoute: typeof MerchantIndexRouteImport
+      parentRoute: typeof MerchantRoute
+    }
     '/store/$storeId': {
       id: '/store/$storeId'
       path: '/store/$storeId'
@@ -212,8 +297,56 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoreStoreIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/merchant/settings': {
+      id: '/merchant/settings'
+      path: '/settings'
+      fullPath: '/merchant/settings'
+      preLoaderRoute: typeof MerchantSettingsRouteImport
+      parentRoute: typeof MerchantRoute
+    }
+    '/merchant/products': {
+      id: '/merchant/products'
+      path: '/products'
+      fullPath: '/merchant/products'
+      preLoaderRoute: typeof MerchantProductsRouteImport
+      parentRoute: typeof MerchantRoute
+    }
+    '/merchant/orders': {
+      id: '/merchant/orders'
+      path: '/orders'
+      fullPath: '/merchant/orders'
+      preLoaderRoute: typeof MerchantOrdersRouteImport
+      parentRoute: typeof MerchantRoute
+    }
+    '/merchant/credit': {
+      id: '/merchant/credit'
+      path: '/credit'
+      fullPath: '/merchant/credit'
+      preLoaderRoute: typeof MerchantCreditRouteImport
+      parentRoute: typeof MerchantRoute
+    }
   }
 }
+
+interface MerchantRouteChildren {
+  MerchantCreditRoute: typeof MerchantCreditRoute
+  MerchantOrdersRoute: typeof MerchantOrdersRoute
+  MerchantProductsRoute: typeof MerchantProductsRoute
+  MerchantSettingsRoute: typeof MerchantSettingsRoute
+  MerchantIndexRoute: typeof MerchantIndexRoute
+}
+
+const MerchantRouteChildren: MerchantRouteChildren = {
+  MerchantCreditRoute: MerchantCreditRoute,
+  MerchantOrdersRoute: MerchantOrdersRoute,
+  MerchantProductsRoute: MerchantProductsRoute,
+  MerchantSettingsRoute: MerchantSettingsRoute,
+  MerchantIndexRoute: MerchantIndexRoute,
+}
+
+const MerchantRouteWithChildren = MerchantRoute._addFileChildren(
+  MerchantRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -222,6 +355,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChooseRoleRoute: ChooseRoleRoute,
   CreditRoute: CreditRoute,
   HomeRoute: HomeRoute,
+  MerchantRoute: MerchantRouteWithChildren,
   OrdersRoute: OrdersRoute,
   ProfileRoute: ProfileRoute,
   StoreStoreIdRoute: StoreStoreIdRoute,

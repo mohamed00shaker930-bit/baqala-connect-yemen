@@ -21,7 +21,7 @@ function MerchantCredit() {
     queryKey: ["store-credit"],
     queryFn: async () => {
       const { data } = await supabase.from("credit_accounts")
-        .select("*, profiles!credit_accounts_customer_id_fkey(name,phone), credit_transactions(*)")
+        .select("*, credit_transactions(*)")
         .order("balance", { ascending: false });
       return data ?? [];
     },
@@ -56,8 +56,7 @@ function MerchantCredit() {
           <Card key={a.id} className="p-4">
             <div className="flex justify-between items-center mb-2">
               <div>
-                <p className="font-bold">{a.profiles?.name || "عميل"}</p>
-                <p className="text-xs text-muted-foreground" dir="ltr">{a.profiles?.phone}</p>
+                <p className="font-bold">عميل #{String(a.customer_id).slice(0,6)}</p>
               </div>
               <span className="font-bold text-primary">{fmtRial(a.balance)}</span>
             </div>

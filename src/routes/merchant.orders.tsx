@@ -22,7 +22,7 @@ function MerchantOrders() {
   const { data: orders } = useQuery({
     queryKey: ["store-orders"],
     queryFn: async () => {
-      const { data } = await supabase.from("orders").select("*, order_items(*), profiles!orders_customer_id_fkey(name,phone)").order("created_at", { ascending: false });
+      const { data } = await supabase.from("orders").select("*, order_items(*)").order("created_at", { ascending: false });
       return data ?? [];
     },
     refetchInterval: 10000,
@@ -57,8 +57,8 @@ function MerchantOrders() {
             <Card key={o.id} className="p-4 space-y-3">
               <div className="flex justify-between">
                 <div>
-                  <p className="font-bold">{o.profiles?.name || "عميل"}</p>
-                  <p className="text-xs text-muted-foreground" dir="ltr">{o.profiles?.phone}</p>
+                  <p className="font-bold">طلب #{o.id.slice(0, 6)}</p>
+                  <p className="text-xs text-muted-foreground" dir="ltr">{o.location_phone || "—"}</p>
                   <p className="text-xs text-muted-foreground">{fmtDate(o.created_at)}</p>
                 </div>
                 <Badge variant={o.status === "delivered" ? "default" : o.status === "declined" ? "destructive" : "secondary"}>
