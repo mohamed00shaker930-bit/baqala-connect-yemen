@@ -1,0 +1,60 @@
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { LayoutDashboard, Package, ShoppingBag, Wallet, Settings, LogOut, Store } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import type { ReactNode } from "react";
+
+const tabs = [
+  { to: "/merchant", label: "اللوحة", icon: LayoutDashboard, exact: true },
+  { to: "/merchant/orders", label: "الطلبات", icon: ShoppingBag },
+  { to: "/merchant/products", label: "المنتجات", icon: Package },
+  { to: "/merchant/credit", label: "الأجل", icon: Wallet },
+  { to: "/merchant/settings", label: "المتجر", icon: Settings },
+];
+
+export function MerchantShell({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) {
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("تم تسجيل الخروج");
+    navigate({ to: "/auth" });
+  };
+
+  return (
+    <div className="min-h-screen pb-20 bg-gradient-to-b from-accent/20 to-background">
+      <header className="sticky top-0 z-30 bg-foreground text-background shadow">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
+          <Store className="w-6 h-6" />
+          <div className="flex-1">
+            <p className="text-[11px] opacity-70">لوحة التاجر</p>
+            <h1 className="text-base font-bold leading-tight">{title}</h1>
+          </div>
+          {action}
+          <Button size="sm" variant="ghost" onClick={signOut} className="text-background hover:bg-background/10">
+            <LogOut className="w-5 h-5" />
+          </Button>
+        </div>
+      </header>
+
+      <main className="max-w-3xl mx-auto px-4 py-4">{children}</main>
+
+      <nav className="fixed bottom-0 inset-x-0 z-30 bg-card border-t shadow-lg">
+        <div className="max-w-3xl mx-auto grid grid-cols-5">
+          {tabs.map((t) => {
+            const Icon = t.icon;
+            const active = t.exact ? path === t.to : path.startsWith(t.to);
+            return (
+              <Link key={t.to} to={t.to} className={`flex flex-col items-center gap-1 py-2 text-xs ${active ? "text-primary" : "text-muted-foreground"}`}>
+                <Icon className="w-5 h-5" />
+                <span>{t.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    </div>
+  );
+}

@@ -1,16 +1,15 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, Outlet } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { getUserRole } from "@/lib/auth-helpers";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/merchant")({
+  ssr: false,
   beforeLoad: async () => {
-    if (typeof window === "undefined") return;
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/auth" });
     const role = await getUserRole(data.session.user.id);
     if (!role) throw redirect({ to: "/choose-role" });
-    if (role === "merchant") throw redirect({ to: "/merchant" });
-    throw redirect({ to: "/home" });
+    if (role !== "merchant") throw redirect({ to: "/home" });
   },
-  component: () => null,
+  component: () => <Outlet />,
 });
