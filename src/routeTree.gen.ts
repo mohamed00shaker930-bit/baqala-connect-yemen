@@ -9,13 +9,44 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as OrdersRouteImport } from './routes/orders'
+import { Route as HomeRouteImport } from './routes/home'
+import { Route as CreditRouteImport } from './routes/credit'
 import { Route as ChooseRoleRouteImport } from './routes/choose-role'
+import { Route as CartRouteImport } from './routes/cart'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as StoreStoreIdRouteImport } from './routes/store.$storeId'
 
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrdersRoute = OrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HomeRoute = HomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreditRoute = CreditRouteImport.update({
+  id: '/credit',
+  path: '/credit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChooseRoleRoute = ChooseRoleRouteImport.update({
   id: '/choose-role',
   path: '/choose-role',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CartRoute = CartRouteImport.update({
+  id: '/cart',
+  path: '/cart',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -28,44 +59,136 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StoreStoreIdRoute = StoreStoreIdRouteImport.update({
+  id: '/store/$storeId',
+  path: '/store/$storeId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/cart': typeof CartRoute
   '/choose-role': typeof ChooseRoleRoute
+  '/credit': typeof CreditRoute
+  '/home': typeof HomeRoute
+  '/orders': typeof OrdersRoute
+  '/profile': typeof ProfileRoute
+  '/store/$storeId': typeof StoreStoreIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/cart': typeof CartRoute
   '/choose-role': typeof ChooseRoleRoute
+  '/credit': typeof CreditRoute
+  '/home': typeof HomeRoute
+  '/orders': typeof OrdersRoute
+  '/profile': typeof ProfileRoute
+  '/store/$storeId': typeof StoreStoreIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/cart': typeof CartRoute
   '/choose-role': typeof ChooseRoleRoute
+  '/credit': typeof CreditRoute
+  '/home': typeof HomeRoute
+  '/orders': typeof OrdersRoute
+  '/profile': typeof ProfileRoute
+  '/store/$storeId': typeof StoreStoreIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/choose-role'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/cart'
+    | '/choose-role'
+    | '/credit'
+    | '/home'
+    | '/orders'
+    | '/profile'
+    | '/store/$storeId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/choose-role'
-  id: '__root__' | '/' | '/auth' | '/choose-role'
+  to:
+    | '/'
+    | '/auth'
+    | '/cart'
+    | '/choose-role'
+    | '/credit'
+    | '/home'
+    | '/orders'
+    | '/profile'
+    | '/store/$storeId'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/cart'
+    | '/choose-role'
+    | '/credit'
+    | '/home'
+    | '/orders'
+    | '/profile'
+    | '/store/$storeId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  CartRoute: typeof CartRoute
   ChooseRoleRoute: typeof ChooseRoleRoute
+  CreditRoute: typeof CreditRoute
+  HomeRoute: typeof HomeRoute
+  OrdersRoute: typeof OrdersRoute
+  ProfileRoute: typeof ProfileRoute
+  StoreStoreIdRoute: typeof StoreStoreIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/orders': {
+      id: '/orders'
+      path: '/orders'
+      fullPath: '/orders'
+      preLoaderRoute: typeof OrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/credit': {
+      id: '/credit'
+      path: '/credit'
+      fullPath: '/credit'
+      preLoaderRoute: typeof CreditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/choose-role': {
       id: '/choose-role'
       path: '/choose-role'
       fullPath: '/choose-role'
       preLoaderRoute: typeof ChooseRoleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cart': {
+      id: '/cart'
+      path: '/cart'
+      fullPath: '/cart'
+      preLoaderRoute: typeof CartRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -82,13 +205,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/store/$storeId': {
+      id: '/store/$storeId'
+      path: '/store/$storeId'
+      fullPath: '/store/$storeId'
+      preLoaderRoute: typeof StoreStoreIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  CartRoute: CartRoute,
   ChooseRoleRoute: ChooseRoleRoute,
+  CreditRoute: CreditRoute,
+  HomeRoute: HomeRoute,
+  OrdersRoute: OrdersRoute,
+  ProfileRoute: ProfileRoute,
+  StoreStoreIdRoute: StoreStoreIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
