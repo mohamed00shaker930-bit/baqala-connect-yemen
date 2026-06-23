@@ -10,8 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { fmtRial } from "@/lib/format";
-import { Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Plus, Trash2, Camera, Link2, X } from "lucide-react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/merchant/products")({
@@ -38,6 +38,32 @@ function MerchantProducts() {
   const [catName, setCatName] = useState("");
   const [openProd, setOpenProd] = useState(false);
   const [p, setP] = useState({ name: "", price: "", image_url: "", category_id: "" });
+  const [imgMode, setImgMode] = useState<"url" | "camera">("url");
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = (file: File) => {
+    if (file.size > 2 * 1024 * 1024) { toast.error("الصورة كبيرة جداً (الحد 2 ميجا)"); return; }
+    // Downscale via canvas to keep payload small
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = () => {
+      img.onload = () => {
+        const max = 600;
+        const scale = Math.min(1, max / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.78);
+        setP((prev) => ({ ...prev, image_url: dataUrl }));
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
 
   const addCat = async () => {
     if (!catName.trim() || !store) return;
@@ -73,7 +99,37 @@ function MerchantProducts() {
           <div className="space-y-3">
             <div><Label>الاسم</Label><Input value={p.name} onChange={(e) => setP({...p, name: e.target.value})} /></div>
             <div><Label>السعر (ر.ي)</Label><Input dir="ltr" value={p.price} onChange={(e) => setP({...p, price: e.target.value})} inputMode="numeric" /></div>
-            <div><Label>رابط الصورة (اختياري)</Label><Input dir="ltr" value={p.image_url} onChange={(e) => setP({...p, image_url: e.target.value})} /></div>
+            <div className="space-y-2">
+              <Label>صورة المنتج</Label>
+              {p.image_url ? (
+                <div className="relative w-28 h-28 rounded-lg overflow-hidden border">
+                  <img src={p.image_url} className="w-full h-full object-cover" />
+                  <button type="button" onClick={() => setP({...p, image_url: ""})}
+                    className="absolute top-1 left-1 bg-destructive text-destructive-foreground rounded-full p-1">
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Button type="button" size="sm" variant="outline" className="flex-1" onClick={() => cameraRef.current?.click()}>
+                    <Camera className="w-4 h-4 ml-1" /> التقط صورة
+                  </Button>
+                  <Button type="button" size="sm" variant="outline" className="flex-1" onClick={() => galleryRef.current?.click()}>
+                    من المعرض
+                  </Button>
+                  <Button type="button" size="sm" variant={imgMode==="url"?"default":"outline"} onClick={() => setImgMode("url")}>
+                    <Link2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+              <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden"
+                onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
+              <input ref={galleryRef} type="file" accept="image/*" className="hidden"
+                onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
+              {!p.image_url && imgMode === "url" && (
+                <Input dir="ltr" placeholder="https://..." value={p.image_url} onChange={(e) => setP({...p, image_url: e.target.value})} />
+              )}
+            </div>
             <div>
               <Label>الفئة</Label>
               <Select value={p.category_id} onValueChange={(v) => setP({...p, category_id: v})}>
