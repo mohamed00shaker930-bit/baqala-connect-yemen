@@ -155,7 +155,6 @@ function MerchantProducts() {
             <Button onClick={addProd} className="w-full">حفظ</Button>
           </div>
           <BarcodeScanner open={scanOpen} onClose={() => setScanOpen(false)} onDetected={(code) => { setP((prev) => ({...prev, barcode: code})); setScanOpen(false); }} title="مسح باركود المنتج" />
-          </div>
         </DialogContent>
       </Dialog>
     }>
