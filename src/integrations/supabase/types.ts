@@ -203,6 +203,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          channel: Database["public"]["Enums"]["order_channel"]
           created_at: string
           credit_status: Database["public"]["Enums"]["credit_status"] | null
           customer_id: string
@@ -220,6 +221,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          channel?: Database["public"]["Enums"]["order_channel"]
           created_at?: string
           credit_status?: Database["public"]["Enums"]["credit_status"] | null
           customer_id: string
@@ -237,6 +239,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          channel?: Database["public"]["Enums"]["order_channel"]
           created_at?: string
           credit_status?: Database["public"]["Enums"]["credit_status"] | null
           customer_id?: string
@@ -265,6 +268,7 @@ export type Database = {
       }
       products: {
         Row: {
+          barcode: string | null
           category_id: string | null
           created_at: string
           id: string
@@ -275,6 +279,7 @@ export type Database = {
           store_id: string
         }
         Insert: {
+          barcode?: string | null
           category_id?: string | null
           created_at?: string
           id?: string
@@ -285,6 +290,7 @@ export type Database = {
           store_id: string
         }
         Update: {
+          barcode?: string | null
           category_id?: string | null
           created_at?: string
           id?: string
@@ -463,6 +469,7 @@ export type Database = {
       app_role: "customer" | "merchant"
       credit_status: "pending" | "approved" | "declined"
       credit_tx_type: "charge" | "payment"
+      order_channel: "online" | "in_store"
       order_status:
         | "sent"
         | "accepted"
@@ -608,6 +615,7 @@ export const Constants = {
       app_role: ["customer", "merchant"],
       credit_status: ["pending", "approved", "declined"],
       credit_tx_type: ["charge", "payment"],
+      order_channel: ["online", "in_store"],
       order_status: [
         "sent",
         "accepted",
