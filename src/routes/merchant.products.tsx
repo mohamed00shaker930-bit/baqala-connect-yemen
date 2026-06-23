@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { fmtRial } from "@/lib/format";
-import { Plus, Trash2, Camera, Link2, X } from "lucide-react";
+import { Plus, Trash2, Camera, Link2, X, ScanBarcode } from "lucide-react";
+import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 

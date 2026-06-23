@@ -49,8 +49,8 @@ export function MerchantShell({ title, children, action }: { title: string; chil
             const Icon = t.icon;
             const active = t.exact ? path === t.to : path.startsWith(t.to);
             return (
-              <Link key={t.to} to={t.to} className={`flex flex-col items-center gap-1 py-2 text-xs ${active ? "text-primary" : "text-muted-foreground"}`}>
-                <Icon className="w-5 h-5" />
+              <Link key={t.to} to={t.to} className={`flex flex-col items-center gap-0.5 py-2 text-[10px] ${active ? "text-primary" : "text-muted-foreground"}`}>
+                <Icon className="w-4 h-4" />
                 <span>{t.label}</span>
               </Link>
             );
