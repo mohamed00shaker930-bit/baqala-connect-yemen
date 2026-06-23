@@ -43,6 +43,53 @@ function MerchantProducts() {
   const [p, setP] = useState({ name: "", price: "", image_url: "", category_id: "", barcode: "" });
   const [imgMode, setImgMode] = useState<"url" | "camera">("url");
   const [scanOpen, setScanOpen] = useState(false);
+  const [catalogOpen, setCatalogOpen] = useState(false);
+
+  const importFromCatalog = async ({ items, categories }: { items: any[]; categories: any[] }) => {
+    if (!store) { toast.error("لا يوجد متجر"); return; }
+    let createdCats = 0, createdItems = 0;
+    const existingCatNames = new Set((cats ?? []).map((c) => c.name.toLowerCase()));
+    const catNameToId = new Map((cats ?? []).map((c) => [c.name.toLowerCase(), c.id]));
+
+    // Insert new categories
+    const newCats = categories.filter((c) => !existingCatNames.has(c.name.toLowerCase()));
+    // Also infer categories from item.category_name when missing
+    for (const it of items) {
+      const cn = it.category_name?.trim();
+      if (cn && !existingCatNames.has(cn.toLowerCase()) && !newCats.find((c) => c.name.toLowerCase() === cn.toLowerCase())) {
+        newCats.push({ name: cn });
+      }
+    }
+    if (newCats.length) {
+      const baseOrder = cats?.length ?? 0;
+      const { data: inserted, error } = await supabase.from("categories")
+        .insert(newCats.map((c, i) => ({ store_id: store.id, name: c.name, sort_order: baseOrder + i })))
+        .select("id, name");
+      if (error) { toast.error(error.message); return; }
+      createdCats = inserted?.length ?? 0;
+      inserted?.forEach((r) => catNameToId.set(r.name.toLowerCase(), r.id));
+    }
+
+    // Insert products
+    if (items.length) {
+      const rows = items.map((it) => ({
+        store_id: store.id,
+        name: it.name,
+        price: Number(it.default_price) || 0,
+        image_url: it.image_url || null,
+        barcode: it.barcode || null,
+        category_id: it.category_name ? (catNameToId.get(it.category_name.toLowerCase()) ?? null) : null,
+      }));
+      const { error } = await supabase.from("products").insert(rows);
+      if (error) { toast.error(error.message); return; }
+      createdItems = rows.length;
+    }
+
+    toast.success(`أُضيف ${createdItems} منتج و ${createdCats} فئة`);
+    setCatalogOpen(false);
+    qc.invalidateQueries();
+  };
+
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
 
