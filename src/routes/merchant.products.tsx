@@ -23,7 +23,7 @@ function MerchantProducts() {
   const qc = useQueryClient();
   const { data: store } = useQuery({
     queryKey: ["my-store"],
-    queryFn: async () => (await supabase.from("stores").select("*").maybeSingle()).data,
+    queryFn: async () => (await supabase.from("stores").select("*").order("created_at", { ascending: true }).limit(1).maybeSingle()).data,
   });
   const { data: cats } = useQuery({
     queryKey: ["my-cats", store?.id], enabled: !!store?.id,
