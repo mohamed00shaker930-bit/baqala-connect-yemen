@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      catalog_categories: {
+        Row: {
+          created_at: string
+          icon: string | null
+          id: string
+          name: string
+          usage_count: number
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name: string
+          usage_count?: number
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          usage_count?: number
+        }
+        Relationships: []
+      }
+      catalog_items: {
+        Row: {
+          barcode: string | null
+          category_name: string | null
+          created_at: string
+          default_price: number
+          id: string
+          image_url: string | null
+          name: string
+          source: string
+          usage_count: number
+        }
+        Insert: {
+          barcode?: string | null
+          category_name?: string | null
+          created_at?: string
+          default_price?: number
+          id?: string
+          image_url?: string | null
+          name: string
+          source?: string
+          usage_count?: number
+        }
+        Update: {
+          barcode?: string | null
+          category_name?: string | null
+          created_at?: string
+          default_price?: number
+          id?: string
+          image_url?: string | null
+          name?: string
+          source?: string
+          usage_count?: number
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
