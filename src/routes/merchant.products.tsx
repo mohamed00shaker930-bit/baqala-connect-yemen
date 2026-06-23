@@ -81,8 +81,9 @@ function MerchantProducts() {
     const { error } = await supabase.from("products").insert({
       store_id: store.id, name: p.name.trim(), price: Number(p.price),
       image_url: p.image_url || null, category_id: p.category_id || null,
+      barcode: p.barcode.trim() || null,
     });
-    if (error) toast.error(error.message); else { toast.success("أُضيف المنتج"); setP({ name: "", price: "", image_url: "", category_id: "" }); setOpenProd(false); qc.invalidateQueries(); }
+    if (error) toast.error(error.message); else { toast.success("أُضيف المنتج"); setP({ name: "", price: "", image_url: "", category_id: "", barcode: "" }); setOpenProd(false); qc.invalidateQueries(); }
   };
 
   const toggleStock = async (id: string, in_stock: boolean) => {
