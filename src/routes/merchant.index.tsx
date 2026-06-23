@@ -14,7 +14,7 @@ export const Route = createFileRoute("/merchant/")({
 function MerchantDashboard() {
   const { data: store } = useQuery({
     queryKey: ["my-store"],
-    queryFn: async () => (await supabase.from("stores").select("*").maybeSingle()).data,
+    queryFn: async () => (await supabase.from("stores").select("*").order("created_at", { ascending: true }).limit(1).maybeSingle()).data,
   });
   const { data: stats } = useQuery({
     queryKey: ["merchant-stats", store?.id],

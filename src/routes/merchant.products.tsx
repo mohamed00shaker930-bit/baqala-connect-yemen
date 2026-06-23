@@ -23,7 +23,7 @@ function MerchantProducts() {
   const qc = useQueryClient();
   const { data: store } = useQuery({
     queryKey: ["my-store"],
-    queryFn: async () => (await supabase.from("stores").select("*").maybeSingle()).data,
+    queryFn: async () => (await supabase.from("stores").select("*").order("created_at", { ascending: true }).limit(1).maybeSingle()).data,
   });
   const { data: cats } = useQuery({
     queryKey: ["my-cats", store?.id], enabled: !!store?.id,
@@ -66,15 +66,18 @@ function MerchantProducts() {
   };
 
   const addCat = async () => {
-    if (!catName.trim() || !store) return;
+    if (!catName.trim()) { toast.error("اكتب اسم الفئة"); return; }
+    if (!store) { toast.error("لا يوجد متجر. أنشئ متجراً أولاً"); return; }
     const { error } = await supabase.from("categories").insert({ store_id: store.id, name: catName.trim(), sort_order: (cats?.length ?? 0) });
     if (error) toast.error(error.message); else { toast.success("أُضيفت الفئة"); setCatName(""); setOpenCat(false); qc.invalidateQueries(); }
   };
 
   const addProd = async () => {
-    if (!p.name || !p.price || !store) return;
+    if (!p.name.trim()) { toast.error("اكتب اسم المنتج"); return; }
+    if (!p.price) { toast.error("اكتب السعر"); return; }
+    if (!store) { toast.error("لا يوجد متجر. أنشئ متجراً أولاً"); return; }
     const { error } = await supabase.from("products").insert({
-      store_id: store.id, name: p.name, price: Number(p.price),
+      store_id: store.id, name: p.name.trim(), price: Number(p.price),
       image_url: p.image_url || null, category_id: p.category_id || null,
     });
     if (error) toast.error(error.message); else { toast.success("أُضيف المنتج"); setP({ name: "", price: "", image_url: "", category_id: "" }); setOpenProd(false); qc.invalidateQueries(); }
