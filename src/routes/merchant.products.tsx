@@ -10,8 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { fmtRial } from "@/lib/format";
-import { Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Plus, Trash2, Camera, Link2, X } from "lucide-react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/merchant/products")({
