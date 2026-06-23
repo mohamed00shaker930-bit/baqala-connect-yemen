@@ -1,3 +1,4 @@
+import { fetchMyStore } from "@/lib/my-store";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,7 +45,7 @@ function Reports() {
 
   const { data: store } = useQuery({
     queryKey: ["my-store"],
-    queryFn: async () => (await supabase.from("stores").select("*").order("created_at", { ascending: true }).limit(1).maybeSingle()).data,
+    queryFn: fetchMyStore,
   });
 
   const { data: orders } = useQuery({
