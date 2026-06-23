@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { getUserRole } from "@/lib/auth-helpers";
 
 export const Route = createFileRoute("/")({
-  ssr: false,
   component: IndexRedirect,
 });
 
