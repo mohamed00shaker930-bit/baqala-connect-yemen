@@ -5,13 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cart, useCart } from "@/lib/cart";
 import { fmtRial } from "@/lib/format";
-import { Trash2, Plus, Minus } from "lucide-react";
+import { Trash2, Plus, Minus, Banknote, Clock, Wallet } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+type PayMethod = "cash" | "credit" | "jeeb" | "jawali" | "hasab" | "onecash";
+const WALLETS: { id: PayMethod; name: string; color: string; short: string }[] = [
+  { id: "jeeb",    name: "جيب",     color: "#7C3AED", short: "ج" },
+  { id: "jawali",  name: "جوالي",   color: "#EA580C", short: "ج" },
+  { id: "hasab",   name: "حساب",    color: "#0891B2", short: "ح" },
+  { id: "onecash", name: "ون كاش",  color: "#16A34A", short: "1" },
+];
 
 export const Route = createFileRoute("/cart")({
   ssr: false,
