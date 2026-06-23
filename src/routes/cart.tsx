@@ -121,10 +121,42 @@ function CartPage() {
 
         <Card className="p-4 space-y-3">
           <h3 className="font-bold">طريقة الدفع</h3>
-          <RadioGroup value={payment} onValueChange={(v) => setPayment(v as any)}>
-            <div className="flex items-center gap-2"><RadioGroupItem value="cash" id="cash" /><Label htmlFor="cash">نقداً عند الاستلام</Label></div>
-            <div className="flex items-center gap-2"><RadioGroupItem value="credit" id="credit" /><Label htmlFor="credit">بالأجل (يحتاج موافقة البقالة) — بدون فوائد</Label></div>
-          </RadioGroup>
+          <div className="grid grid-cols-2 gap-2">
+            <button type="button" onClick={() => setPayment("cash")}
+              className={`flex items-center gap-2 p-3 rounded-xl border-2 transition ${payment==="cash"?"border-primary bg-primary/5":"border-border"}`}>
+              <Banknote className="w-5 h-5 text-success" />
+              <span className="text-sm font-medium">نقداً عند الاستلام</span>
+            </button>
+            <button type="button" onClick={() => setPayment("credit")}
+              className={`flex items-center gap-2 p-3 rounded-xl border-2 transition ${payment==="credit"?"border-primary bg-primary/5":"border-border"}`}>
+              <Clock className="w-5 h-5 text-warning" />
+              <span className="text-sm font-medium">بالأجل</span>
+            </button>
+          </div>
+
+          <div>
+            <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1"><Wallet className="w-3 h-3" /> المحافظ الإلكترونية</p>
+            <div className="grid grid-cols-4 gap-2">
+              {WALLETS.map((w) => (
+                <button key={w.id} type="button" onClick={() => setPayment(w.id)}
+                  className={`flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition ${payment===w.id?"border-primary bg-primary/5":"border-border"}`}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-lg shadow" style={{ background: w.color }}>{w.short}</div>
+                  <span className="text-[11px] font-medium">{w.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {payment !== "cash" && payment !== "credit" && (
+            <div className="space-y-1">
+              <Label className="text-xs">رقم العملية / المرجع (بعد التحويل)</Label>
+              <Input dir="ltr" value={walletRef} onChange={(e) => setWalletRef(e.target.value)} placeholder="مثال: TXN123456" />
+              <p className="text-[11px] text-muted-foreground">حوّل المبلغ إلى رقم البقالة ثم أدخل رقم العملية ليتأكد البقال.</p>
+            </div>
+          )}
+          {payment === "credit" && (
+            <p className="text-[11px] text-muted-foreground">يحتاج موافقة البقالة — بدون فوائد.</p>
+          )}
         </Card>
 
         <Card className="p-4 space-y-2">
