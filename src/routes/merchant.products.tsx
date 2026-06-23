@@ -143,7 +143,18 @@ function MerchantProducts() {
                 <SelectContent>{cats?.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
+            <div>
+              <Label>الباركود (اختياري)</Label>
+              <div className="flex gap-2">
+                <Input dir="ltr" value={p.barcode} onChange={(e) => setP({...p, barcode: e.target.value})} placeholder="6219..." />
+                <Button type="button" variant="outline" size="icon" onClick={() => setScanOpen(true)}>
+                  <ScanBarcode className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
             <Button onClick={addProd} className="w-full">حفظ</Button>
+          </div>
+          <BarcodeScanner open={scanOpen} onClose={() => setScanOpen(false)} onDetected={(code) => { setP((prev) => ({...prev, barcode: code})); setScanOpen(false); }} title="مسح باركود المنتج" />
           </div>
         </DialogContent>
       </Dialog>
