@@ -59,6 +59,12 @@ function CartPage() {
     try {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("غير مسجل");
+      const isWallet = payment !== "cash" && payment !== "credit";
+      const walletName = WALLETS.find((w) => w.id === payment)?.name;
+      const finalNote = [
+        isWallet && walletRef ? `محفظة ${walletName} • رقم العملية: ${walletRef}` : isWallet ? `دفع عبر ${walletName}` : null,
+        note || null,
+      ].filter(Boolean).join(" — ") || null;
       const { data: order, error } = await supabase.from("orders").insert({
         customer_id: u.user.id,
         store_id: c.storeId,
@@ -66,7 +72,7 @@ function CartPage() {
         payment_method: payment,
         credit_status: payment === "credit" ? "pending" : null,
         status: "sent",
-        note: note || null,
+        note: finalNote,
         location_landmark: landmark,
         location_phone: phone || null,
       }).select().single();
