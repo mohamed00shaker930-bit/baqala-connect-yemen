@@ -210,7 +210,9 @@ function MerchantProducts() {
           <BarcodeScanner open={scanOpen} onClose={() => setScanOpen(false)} onDetected={(code) => { setP((prev) => ({...prev, barcode: code})); setScanOpen(false); }} title="مسح باركود المنتج" />
         </DialogContent>
       </Dialog>
+      </div>
     }>
+      <CatalogPicker open={catalogOpen} onClose={() => setCatalogOpen(false)} onImport={importFromCatalog} />
       <div className="space-y-4">
         <Card className="p-4">
           <div className="flex justify-between items-center mb-2">
