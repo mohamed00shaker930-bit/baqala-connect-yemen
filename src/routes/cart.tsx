@@ -32,7 +32,8 @@ export const Route = createFileRoute("/cart")({
 function CartPage() {
   const c = useCart();
   const navigate = useNavigate();
-  const [payment, setPayment] = useState<"cash" | "credit">("cash");
+  const [payment, setPayment] = useState<PayMethod>("cash");
+  const [walletRef, setWalletRef] = useState("");
   const [landmark, setLandmark] = useState("");
   const [phone, setPhone] = useState("");
   const [note, setNote] = useState("");
