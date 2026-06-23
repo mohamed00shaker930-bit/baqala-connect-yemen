@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { fmtRial } from "@/lib/format";
-import { Plus, Trash2, Camera, Link2, X } from "lucide-react";
+import { Plus, Trash2, Camera, Link2, X, ScanBarcode } from "lucide-react";
+import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -37,8 +38,9 @@ function MerchantProducts() {
   const [openCat, setOpenCat] = useState(false);
   const [catName, setCatName] = useState("");
   const [openProd, setOpenProd] = useState(false);
-  const [p, setP] = useState({ name: "", price: "", image_url: "", category_id: "" });
+  const [p, setP] = useState({ name: "", price: "", image_url: "", category_id: "", barcode: "" });
   const [imgMode, setImgMode] = useState<"url" | "camera">("url");
+  const [scanOpen, setScanOpen] = useState(false);
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
 
@@ -79,8 +81,9 @@ function MerchantProducts() {
     const { error } = await supabase.from("products").insert({
       store_id: store.id, name: p.name.trim(), price: Number(p.price),
       image_url: p.image_url || null, category_id: p.category_id || null,
+      barcode: p.barcode.trim() || null,
     });
-    if (error) toast.error(error.message); else { toast.success("أُضيف المنتج"); setP({ name: "", price: "", image_url: "", category_id: "" }); setOpenProd(false); qc.invalidateQueries(); }
+    if (error) toast.error(error.message); else { toast.success("أُضيف المنتج"); setP({ name: "", price: "", image_url: "", category_id: "", barcode: "" }); setOpenProd(false); qc.invalidateQueries(); }
   };
 
   const toggleStock = async (id: string, in_stock: boolean) => {
@@ -140,8 +143,18 @@ function MerchantProducts() {
                 <SelectContent>{cats?.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
+            <div>
+              <Label>الباركود (اختياري)</Label>
+              <div className="flex gap-2">
+                <Input dir="ltr" value={p.barcode} onChange={(e) => setP({...p, barcode: e.target.value})} placeholder="6219..." />
+                <Button type="button" variant="outline" size="icon" onClick={() => setScanOpen(true)}>
+                  <ScanBarcode className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
             <Button onClick={addProd} className="w-full">حفظ</Button>
           </div>
+          <BarcodeScanner open={scanOpen} onClose={() => setScanOpen(false)} onDetected={(code) => { setP((prev) => ({...prev, barcode: code})); setScanOpen(false); }} title="مسح باركود المنتج" />
         </DialogContent>
       </Dialog>
     }>
