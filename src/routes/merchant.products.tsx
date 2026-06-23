@@ -38,8 +38,9 @@ function MerchantProducts() {
   const [openCat, setOpenCat] = useState(false);
   const [catName, setCatName] = useState("");
   const [openProd, setOpenProd] = useState(false);
-  const [p, setP] = useState({ name: "", price: "", image_url: "", category_id: "" });
+  const [p, setP] = useState({ name: "", price: "", image_url: "", category_id: "", barcode: "" });
   const [imgMode, setImgMode] = useState<"url" | "camera">("url");
+  const [scanOpen, setScanOpen] = useState(false);
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
 
