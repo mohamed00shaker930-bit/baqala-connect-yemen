@@ -99,7 +99,37 @@ function MerchantProducts() {
           <div className="space-y-3">
             <div><Label>الاسم</Label><Input value={p.name} onChange={(e) => setP({...p, name: e.target.value})} /></div>
             <div><Label>السعر (ر.ي)</Label><Input dir="ltr" value={p.price} onChange={(e) => setP({...p, price: e.target.value})} inputMode="numeric" /></div>
-            <div><Label>رابط الصورة (اختياري)</Label><Input dir="ltr" value={p.image_url} onChange={(e) => setP({...p, image_url: e.target.value})} /></div>
+            <div className="space-y-2">
+              <Label>صورة المنتج</Label>
+              {p.image_url ? (
+                <div className="relative w-28 h-28 rounded-lg overflow-hidden border">
+                  <img src={p.image_url} className="w-full h-full object-cover" />
+                  <button type="button" onClick={() => setP({...p, image_url: ""})}
+                    className="absolute top-1 left-1 bg-destructive text-destructive-foreground rounded-full p-1">
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Button type="button" size="sm" variant="outline" className="flex-1" onClick={() => cameraRef.current?.click()}>
+                    <Camera className="w-4 h-4 ml-1" /> التقط صورة
+                  </Button>
+                  <Button type="button" size="sm" variant="outline" className="flex-1" onClick={() => galleryRef.current?.click()}>
+                    من المعرض
+                  </Button>
+                  <Button type="button" size="sm" variant={imgMode==="url"?"default":"outline"} onClick={() => setImgMode("url")}>
+                    <Link2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+              <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden"
+                onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
+              <input ref={galleryRef} type="file" accept="image/*" className="hidden"
+                onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
+              {!p.image_url && imgMode === "url" && (
+                <Input dir="ltr" placeholder="https://..." value={p.image_url} onChange={(e) => setP({...p, image_url: e.target.value})} />
+              )}
+            </div>
             <div>
               <Label>الفئة</Label>
               <Select value={p.category_id} onValueChange={(v) => setP({...p, category_id: v})}>
