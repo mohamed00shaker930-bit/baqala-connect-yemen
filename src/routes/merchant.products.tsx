@@ -147,6 +147,10 @@ function MerchantProducts() {
 
   return (
     <MerchantShell title="المنتجات" action={
+      <div className="flex gap-2">
+      <Button size="sm" variant="outline" onClick={() => setCatalogOpen(true)}>
+        <LibraryBig className="w-4 h-4 ml-1" />المكتبة
+      </Button>
       <Dialog open={openProd} onOpenChange={setOpenProd}>
         <DialogTrigger asChild><Button size="sm" variant="secondary"><Plus className="w-4 h-4 ml-1" />منتج</Button></DialogTrigger>
         <DialogContent>
