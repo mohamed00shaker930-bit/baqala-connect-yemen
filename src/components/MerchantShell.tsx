@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, Package, ShoppingBag, Wallet, Settings, LogOut, Store } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Wallet, Settings, LogOut, Store, ScanBarcode, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -7,8 +7,10 @@ import type { ReactNode } from "react";
 
 const tabs = [
   { to: "/merchant", label: "اللوحة", icon: LayoutDashboard, exact: true },
+  { to: "/merchant/pos", label: "بيع", icon: ScanBarcode },
   { to: "/merchant/orders", label: "الطلبات", icon: ShoppingBag },
   { to: "/merchant/products", label: "المنتجات", icon: Package },
+  { to: "/merchant/reports", label: "التقارير", icon: BarChart3 },
   { to: "/merchant/credit", label: "الأجل", icon: Wallet },
   { to: "/merchant/settings", label: "المتجر", icon: Settings },
 ];
@@ -42,7 +44,7 @@ export function MerchantShell({ title, children, action }: { title: string; chil
       <main className="max-w-3xl mx-auto px-4 py-4">{children}</main>
 
       <nav className="fixed bottom-0 inset-x-0 z-30 bg-card border-t shadow-lg">
-        <div className="max-w-3xl mx-auto grid grid-cols-5">
+        <div className="max-w-3xl mx-auto grid grid-cols-7">
           {tabs.map((t) => {
             const Icon = t.icon;
             const active = t.exact ? path === t.to : path.startsWith(t.to);
