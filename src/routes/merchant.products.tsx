@@ -38,6 +38,32 @@ function MerchantProducts() {
   const [catName, setCatName] = useState("");
   const [openProd, setOpenProd] = useState(false);
   const [p, setP] = useState({ name: "", price: "", image_url: "", category_id: "" });
+  const [imgMode, setImgMode] = useState<"url" | "camera">("url");
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = (file: File) => {
+    if (file.size > 2 * 1024 * 1024) { toast.error("الصورة كبيرة جداً (الحد 2 ميجا)"); return; }
+    // Downscale via canvas to keep payload small
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = () => {
+      img.onload = () => {
+        const max = 600;
+        const scale = Math.min(1, max / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.78);
+        setP((prev) => ({ ...prev, image_url: dataUrl }));
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
 
   const addCat = async () => {
     if (!catName.trim() || !store) return;
