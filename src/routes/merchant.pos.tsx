@@ -118,11 +118,7 @@ function POS() {
 
       // Credit sale for a pending (non-registered) customer: store details for later linking.
       if (payment === "credit" && customer?.kind === "pending") {
-        const { error: pendErr } = await supabase.from("pending_customers")
-          .update({})
-          .eq("id", customer.id); // touch ensures row exists; main payload below
-        if (pendErr) throw pendErr;
-        // We still need an order row, but no auth customer_id exists yet — fall back to merchant id and add note.
+        // pending_customers row already exists; just record the order under the merchant as placeholder.
         const note = `أجل لعميل غير مسجل: ${customer.name} (${customer.phone}). سيتم تفعيله عند تسجيله.`;
         const { data: order, error } = await supabase.from("orders").insert({
           store_id: store.id,
