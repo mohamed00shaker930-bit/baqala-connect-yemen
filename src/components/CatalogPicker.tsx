@@ -73,6 +73,22 @@ export function CatalogPicker({ open, onClose, onImport }: Props) {
             <TabsTrigger value="cats">فئات ({filteredCats.length})</TabsTrigger>
           </TabsList>
           <TabsContent value="items" className="flex-1 overflow-y-auto space-y-1 mt-2">
+            {filteredItems.length > 0 && (() => {
+              const allChecked = filteredItems.every((i) => pickedItems[i.id]);
+              return (
+                <label className="flex items-center gap-2 p-2 rounded bg-accent/50 cursor-pointer sticky top-0 z-10">
+                  <Checkbox checked={allChecked} onCheckedChange={(v) => {
+                    setPickedItems((p) => {
+                      const n = {...p};
+                      if (v) filteredItems.forEach((it) => { n[it.id] = it; });
+                      else filteredItems.forEach((it) => { delete n[it.id]; });
+                      return n;
+                    });
+                  }} />
+                  <span className="text-sm font-medium">{allChecked ? "إلغاء تحديد الكل" : `تحديد الكل (${filteredItems.length})`}</span>
+                </label>
+              );
+            })()}
             {filteredItems.length === 0 && <p className="text-center text-sm text-muted-foreground py-8">لا منتجات</p>}
             {filteredItems.map((it) => {
               const checked = !!pickedItems[it.id];
@@ -92,6 +108,7 @@ export function CatalogPicker({ open, onClose, onImport }: Props) {
               );
             })}
           </TabsContent>
+
           <TabsContent value="cats" className="flex-1 overflow-y-auto space-y-1 mt-2">
             {filteredCats.length === 0 && <p className="text-center text-sm text-muted-foreground py-8">لا فئات</p>}
             {filteredCats.map((c) => {
