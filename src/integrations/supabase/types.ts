@@ -146,6 +146,7 @@ export type Database = {
           id: string
           note: string | null
           order_id: string | null
+          status: Database["public"]["Enums"]["credit_tx_status"]
           type: Database["public"]["Enums"]["credit_tx_type"]
         }
         Insert: {
@@ -155,6 +156,7 @@ export type Database = {
           id?: string
           note?: string | null
           order_id?: string | null
+          status?: Database["public"]["Enums"]["credit_tx_status"]
           type: Database["public"]["Enums"]["credit_tx_type"]
         }
         Update: {
@@ -164,6 +166,7 @@ export type Database = {
           id?: string
           note?: string | null
           order_id?: string | null
+          status?: Database["public"]["Enums"]["credit_tx_status"]
           type?: Database["public"]["Enums"]["credit_tx_type"]
         }
         Relationships: [
@@ -179,6 +182,114 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_product_requests: {
+        Row: {
+          created_at: string
+          customer_id: string
+          description: string | null
+          id: string
+          image_url: string | null
+          merchant_note: string | null
+          merchant_price: number | null
+          name: string
+          order_id: string | null
+          qty: number
+          status: Database["public"]["Enums"]["custom_request_status"]
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          merchant_note?: string | null
+          merchant_price?: number | null
+          name: string
+          order_id?: string | null
+          qty?: number
+          status?: Database["public"]["Enums"]["custom_request_status"]
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          merchant_note?: string | null
+          merchant_price?: number | null
+          name?: string
+          order_id?: string | null
+          qty?: number
+          status?: Database["public"]["Enums"]["custom_request_status"]
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_product_requests_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_product_requests_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_ratings: {
+        Row: {
+          comment: string | null
+          created_at: string
+          customer_id: string
+          id: string
+          order_id: string | null
+          stars: number
+          store_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          customer_id: string
+          id?: string
+          order_id?: string | null
+          stars: number
+          store_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          customer_id?: string
+          id?: string
+          order_id?: string | null
+          stars?: number
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_ratings_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_ratings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
             referencedColumns: ["id"]
           },
         ]
@@ -319,6 +430,60 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "orders_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_offers: {
+        Row: {
+          active: boolean
+          created_at: string
+          discount_price: number
+          ends_at: string | null
+          id: string
+          max_qty: number | null
+          product_id: string
+          sold_qty: number
+          starts_at: string
+          store_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          discount_price: number
+          ends_at?: string | null
+          id?: string
+          max_qty?: number | null
+          product_id: string
+          sold_qty?: number
+          starts_at?: string
+          store_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          discount_price?: number
+          ends_at?: string | null
+          id?: string
+          max_qty?: number | null
+          product_id?: string
+          sold_qty?: number
+          starts_at?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_offers_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_offers_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
@@ -517,6 +682,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_credit_customer: {
+        Args: { _account_id: string }
+        Returns: {
+          name: string
+          phone: string
+        }[]
+      }
+      get_order_customer: {
+        Args: { _order_id: string }
+        Returns: {
+          name: string
+          phone: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -528,7 +707,14 @@ export type Database = {
     Enums: {
       app_role: "customer" | "merchant"
       credit_status: "pending" | "approved" | "declined"
+      credit_tx_status: "pending" | "approved" | "rejected"
       credit_tx_type: "charge" | "payment"
+      custom_request_status:
+        | "pending"
+        | "quoted"
+        | "accepted"
+        | "rejected"
+        | "converted"
       order_channel: "online" | "in_store"
       order_status:
         | "sent"
@@ -674,7 +860,15 @@ export const Constants = {
     Enums: {
       app_role: ["customer", "merchant"],
       credit_status: ["pending", "approved", "declined"],
+      credit_tx_status: ["pending", "approved", "rejected"],
       credit_tx_type: ["charge", "payment"],
+      custom_request_status: [
+        "pending",
+        "quoted",
+        "accepted",
+        "rejected",
+        "converted",
+      ],
       order_channel: ["online", "in_store"],
       order_status: [
         "sent",

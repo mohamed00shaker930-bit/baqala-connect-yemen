@@ -8,8 +8,10 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { cart, useCart } from "@/lib/cart";
 import { fmtRial } from "@/lib/format";
-import { Plus, Minus, ShoppingCart, Search } from "lucide-react";
+import { Plus, Minus, ShoppingCart, Search, MessageSquarePlus } from "lucide-react";
+import { CustomRequestDialog } from "@/components/CustomRequestDialog";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/store/$storeId")({
   ssr: false,
@@ -24,6 +26,7 @@ function StorePage() {
   const { storeId } = Route.useParams();
   const navigate = useNavigate();
   const [q, setQ] = useState("");
+  const [customOpen, setCustomOpen] = useState(false);
   const cartState = useCart();
 
   const { data: store } = useQuery({
@@ -37,6 +40,18 @@ function StorePage() {
       return data ?? [];
     },
   });
+  const { data: offers } = useQuery({
+    queryKey: ["store-offers", storeId],
+    queryFn: async () => (await supabase.from("product_offers").select("*").eq("store_id", storeId).eq("active", true)).data ?? [],
+  });
+
+  const now = Date.now();
+  const offerOf = (pid: string) => (offers ?? []).find((o: any) => {
+    if (o.product_id !== pid) return false;
+    if (o.ends_at && new Date(o.ends_at).getTime() < now) return false;
+    if (o.max_qty != null && o.sold_qty >= o.max_qty) return false;
+    return true;
+  });
 
   const filtered = (products ?? []).filter((p) => p.name.includes(q));
   const grouped = filtered.reduce((acc: Record<string, typeof filtered>, p) => {
@@ -44,6 +59,7 @@ function StorePage() {
     (acc[k] ||= []).push(p);
     return acc;
   }, {});
+
 
   const getQty = (id: string) => cartState.items.find((i) => i.productId === id)?.qty || 0;
 
@@ -67,20 +83,26 @@ function StorePage() {
             <div className="grid grid-cols-2 gap-3">
               {items.map((p) => {
                 const qty = getQty(p.id);
+                const offer = offerOf(p.id);
+                const effectivePrice = offer ? Number(offer.discount_price) : Number(p.price);
                 return (
-                  <Card key={p.id} className="p-3 space-y-2">
+                  <Card key={p.id} className="p-3 space-y-2 relative">
+                    {offer && <span className="absolute top-1 left-1 z-10 bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded">عرض</span>}
                     <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-3xl">
                       {p.image_url ? <img src={p.image_url} alt={p.name} className="w-full h-full object-cover rounded-lg" /> : "🛒"}
                     </div>
                     <h3 className="text-sm font-medium line-clamp-2 min-h-[2.5rem]">{p.name}</h3>
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-primary">{fmtRial(p.price)}</span>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-primary">{fmtRial(effectivePrice)}</span>
+                        {offer && <span className="text-[10px] text-muted-foreground line-through">{fmtRial(p.price)}</span>}
+                      </div>
                       {!p.in_stock ? (
                         <span className="text-[10px] text-destructive">نفد</span>
                       ) : qty === 0 ? (
                         <Button size="sm" onClick={() => {
                           if (!store) return;
-                          cart.add(storeId, store.name, { productId: p.id, name: p.name, price: Number(p.price), qty: 1, imageUrl: p.image_url });
+                          cart.add(storeId, store.name, { productId: p.id, name: p.name, price: effectivePrice, qty: 1, imageUrl: p.image_url });
                           toast.success("أضيف للسلة");
                         }} className="h-8 w-8 p-0"><Plus className="w-4 h-4" /></Button>
                       ) : (
@@ -98,8 +120,15 @@ function StorePage() {
           </div>
         ))}
 
+        <Button variant="outline" className="w-full" onClick={() => setCustomOpen(true)}>
+          <MessageSquarePlus className="w-4 h-4 ml-2" /> طلب منتج غير موجود
+        </Button>
+
         {filtered.length === 0 && <Card className="p-8 text-center text-muted-foreground">لا توجد منتجات بعد.</Card>}
       </div>
+
+      <CustomRequestDialog open={customOpen} onClose={() => setCustomOpen(false)} storeId={storeId} />
+
     </CustomerShell>
   );
 }

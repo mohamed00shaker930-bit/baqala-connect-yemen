@@ -11,10 +11,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { fmtRial } from "@/lib/format";
-import { Plus, Trash2, Camera, Link2, X, ScanBarcode, LibraryBig } from "lucide-react";
+import { Plus, Trash2, Camera, Link2, X, ScanBarcode, LibraryBig, Pencil, Tag } from "lucide-react";
 import { CatalogPicker } from "@/components/CatalogPicker";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { useRef, useState } from "react";
+
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/merchant/products")({
@@ -36,14 +37,22 @@ function MerchantProducts() {
     queryKey: ["my-products", store?.id], enabled: !!store?.id,
     queryFn: async () => (await supabase.from("products").select("*").eq("store_id", store!.id).order("name")).data ?? [],
   });
+  const { data: offers } = useQuery({
+    queryKey: ["my-offers", store?.id], enabled: !!store?.id,
+    queryFn: async () => (await supabase.from("product_offers").select("*").eq("store_id", store!.id).eq("active", true)).data ?? [],
+  });
 
   const [openCat, setOpenCat] = useState(false);
   const [catName, setCatName] = useState("");
   const [openProd, setOpenProd] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [p, setP] = useState({ name: "", price: "", image_url: "", category_id: "", barcode: "" });
   const [imgMode, setImgMode] = useState<"url" | "camera">("url");
   const [scanOpen, setScanOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
+  const [offerFor, setOfferFor] = useState<any>(null);
+  const [offerForm, setOfferForm] = useState({ discount_price: "", ends_at: "", max_qty: "" });
+
 
   const importFromCatalog = async ({ items, categories }: { items: any[]; categories: any[] }) => {
     if (!store) { toast.error("لا يوجد متجر"); return; }
@@ -123,16 +132,27 @@ function MerchantProducts() {
     if (error) toast.error(error.message); else { toast.success("أُضيفت الفئة"); setCatName(""); setOpenCat(false); qc.invalidateQueries(); }
   };
 
+  const openAdd = () => { setEditingId(null); setP({ name: "", price: "", image_url: "", category_id: "", barcode: "" }); setOpenProd(true); };
+  const openEdit = (pr: any) => {
+    setEditingId(pr.id);
+    setP({ name: pr.name, price: String(pr.price), image_url: pr.image_url ?? "", category_id: pr.category_id ?? "", barcode: pr.barcode ?? "" });
+    setOpenProd(true);
+  };
+
   const addProd = async () => {
     if (!p.name.trim()) { toast.error("اكتب اسم المنتج"); return; }
     if (!p.price) { toast.error("اكتب السعر"); return; }
     if (!store) { toast.error("لا يوجد متجر. أنشئ متجراً أولاً"); return; }
-    const { error } = await supabase.from("products").insert({
-      store_id: store.id, name: p.name.trim(), price: Number(p.price),
+    const payload = {
+      name: p.name.trim(), price: Number(p.price),
       image_url: p.image_url || null, category_id: p.category_id || null,
       barcode: p.barcode.trim() || null,
-    });
-    if (error) toast.error(error.message); else { toast.success("أُضيف المنتج"); setP({ name: "", price: "", image_url: "", category_id: "", barcode: "" }); setOpenProd(false); qc.invalidateQueries(); }
+    };
+    const res = editingId
+      ? await supabase.from("products").update(payload).eq("id", editingId)
+      : await supabase.from("products").insert({ store_id: store.id, ...payload });
+    if (res.error) toast.error(res.error.message);
+    else { toast.success(editingId ? "تم التحديث" : "أُضيف المنتج"); setP({ name: "", price: "", image_url: "", category_id: "", barcode: "" }); setEditingId(null); setOpenProd(false); qc.invalidateQueries(); }
   };
 
   const toggleStock = async (id: string, in_stock: boolean) => {
@@ -145,16 +165,42 @@ function MerchantProducts() {
     toast.success("تم الحذف"); qc.invalidateQueries();
   };
 
+  const saveOffer = async () => {
+    if (!offerFor || !store) return;
+    if (!offerForm.discount_price) { toast.error("اكتب السعر المخفّض"); return; }
+    const payload = {
+      product_id: offerFor.id,
+      store_id: store.id,
+      discount_price: Number(offerForm.discount_price),
+      ends_at: offerForm.ends_at || null,
+      max_qty: offerForm.max_qty ? Number(offerForm.max_qty) : null,
+      active: true,
+    };
+    // Disable previous active offers
+    await supabase.from("product_offers").update({ active: false }).eq("product_id", offerFor.id).eq("active", true);
+    const { error } = await supabase.from("product_offers").insert(payload);
+    if (error) toast.error(error.message);
+    else { toast.success("تم حفظ العرض"); setOfferFor(null); setOfferForm({ discount_price: "", ends_at: "", max_qty: "" }); qc.invalidateQueries(); }
+  };
+
+  const cancelOffer = async (productId: string) => {
+    await supabase.from("product_offers").update({ active: false }).eq("product_id", productId).eq("active", true);
+    toast.success("أُلغي العرض"); qc.invalidateQueries();
+  };
+
+  const offerOf = (pid: string) => (offers ?? []).find((o: any) => o.product_id === pid);
+
   return (
     <MerchantShell title="المنتجات" action={
       <div className="flex gap-2">
       <Button size="sm" variant="outline" onClick={() => setCatalogOpen(true)}>
         <LibraryBig className="w-4 h-4 ml-1" />المكتبة
       </Button>
-      <Dialog open={openProd} onOpenChange={setOpenProd}>
-        <DialogTrigger asChild><Button size="sm" variant="secondary"><Plus className="w-4 h-4 ml-1" />منتج</Button></DialogTrigger>
+      <Dialog open={openProd} onOpenChange={(v) => { if (!v) setEditingId(null); setOpenProd(v); }}>
+        <DialogTrigger asChild><Button size="sm" variant="secondary" onClick={openAdd}><Plus className="w-4 h-4 ml-1" />منتج</Button></DialogTrigger>
+
         <DialogContent>
-          <DialogHeader><DialogTitle>منتج جديد</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editingId ? "تعديل منتج" : "منتج جديد"}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div><Label>الاسم</Label><Input value={p.name} onChange={(e) => setP({...p, name: e.target.value})} /></div>
             <div><Label>السعر (ر.ي)</Label><Input dir="ltr" value={p.price} onChange={(e) => setP({...p, price: e.target.value})} inputMode="numeric" /></div>
@@ -234,23 +280,60 @@ function MerchantProducts() {
 
         <div className="space-y-2">
           {products?.length === 0 && <Card className="p-8 text-center text-muted-foreground">لا منتجات بعد. أضف منتجك الأول.</Card>}
-          {products?.map((pr) => (
-            <Card key={pr.id} className="p-3 flex items-center gap-3">
-              <div className="w-12 h-12 bg-muted rounded flex items-center justify-center text-xl shrink-0">
-                {pr.image_url ? <img src={pr.image_url} className="w-full h-full object-cover rounded" /> : "🛒"}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{pr.name}</p>
-                <p className="text-xs text-primary">{fmtRial(pr.price)}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Switch checked={pr.in_stock} onCheckedChange={(v) => toggleStock(pr.id, v)} />
-                <Button size="sm" variant="ghost" onClick={() => removeProd(pr.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
-              </div>
-            </Card>
-          ))}
+          {products?.map((pr) => {
+            const offer = offerOf(pr.id);
+            return (
+              <Card key={pr.id} className="p-3 flex items-center gap-3">
+                <div className="w-12 h-12 bg-muted rounded flex items-center justify-center text-xl shrink-0">
+                  {pr.image_url ? <img src={pr.image_url} className="w-full h-full object-cover rounded" /> : "🛒"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">{pr.name}</p>
+                  {offer ? (
+                    <p className="text-xs">
+                      <span className="text-destructive font-bold">{fmtRial(offer.discount_price)}</span>
+                      <span className="text-muted-foreground line-through mr-1">{fmtRial(pr.price)}</span>
+                      <span className="text-[10px] bg-destructive/10 text-destructive rounded px-1 mr-1">عرض</span>
+                    </p>
+                  ) : (
+                    <p className="text-xs text-primary">{fmtRial(pr.price)}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-1">
+                  <Switch checked={pr.in_stock} onCheckedChange={(v) => toggleStock(pr.id, v)} />
+                  <Button size="sm" variant="ghost" onClick={() => openEdit(pr)} title="تعديل"><Pencil className="w-4 h-4" /></Button>
+                  <Button size="sm" variant="ghost" onClick={() => offer ? cancelOffer(pr.id) : (setOfferFor(pr), setOfferForm({ discount_price: "", ends_at: "", max_qty: "" }))} title="عرض">
+                    <Tag className={`w-4 h-4 ${offer ? "text-destructive" : ""}`} />
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => removeProd(pr.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                </div>
+              </Card>
+            );
+          })}
         </div>
       </div>
+
+      <Dialog open={!!offerFor} onOpenChange={(v) => !v && setOfferFor(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>عرض على: {offerFor?.name}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>السعر المخفّض (السعر الأصلي {fmtRial(offerFor?.price ?? 0)})</Label>
+              <Input dir="ltr" inputMode="numeric" value={offerForm.discount_price} onChange={(e) => setOfferForm({...offerForm, discount_price: e.target.value})} />
+            </div>
+            <div>
+              <Label>ينتهي في (اختياري)</Label>
+              <Input type="datetime-local" value={offerForm.ends_at} onChange={(e) => setOfferForm({...offerForm, ends_at: e.target.value})} />
+            </div>
+            <div>
+              <Label>الكمية القصوى للعرض (اختياري)</Label>
+              <Input dir="ltr" inputMode="numeric" placeholder="مثلاً 50" value={offerForm.max_qty} onChange={(e) => setOfferForm({...offerForm, max_qty: e.target.value})} />
+            </div>
+            <Button onClick={saveOffer} className="w-full">حفظ العرض</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </MerchantShell>
   );
 }

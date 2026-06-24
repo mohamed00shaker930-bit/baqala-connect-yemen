@@ -1,10 +1,13 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CustomerShell } from "@/components/CustomerShell";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { fmtRial, fmtDate } from "@/lib/format";
 import { Wallet } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/credit")({
   ssr: false,
@@ -16,6 +19,7 @@ export const Route = createFileRoute("/credit")({
 });
 
 function CreditPage() {
+  const qc = useQueryClient();
   const { data: accounts } = useQuery({
     queryKey: ["my-credit"],
     queryFn: async () => {
@@ -27,6 +31,18 @@ function CreditPage() {
   });
 
   const totalDebt = accounts?.reduce((s, a) => s + Number(a.balance), 0) ?? 0;
+  const pendingTx = accounts?.flatMap((a: any) =>
+    (a.credit_transactions ?? []).filter((t: any) => t.status === "pending" && t.type === "charge")
+      .map((t: any) => ({ ...t, storeName: a.stores?.name }))
+  ) ?? [];
+
+  const respond = async (id: string, approve: boolean) => {
+    const { error } = await supabase.from("credit_transactions")
+      .update({ status: approve ? "approved" : "rejected" })
+      .eq("id", id);
+    if (error) toast.error(error.message);
+    else { toast.success(approve ? "تمت الموافقة" : "تم الرفض"); qc.invalidateQueries(); }
+  };
 
   return (
     <CustomerShell title="دفتر الأجل">
@@ -41,6 +57,30 @@ function CreditPage() {
         <p className="text-[11px] mt-2 opacity-80">بدون فوائد أو غرامات تأخير — مبلغ ثابت</p>
       </Card>
 
+      {pendingTx.length > 0 && (
+        <Card className="p-4 mb-4 border-amber-500 border-2">
+          <p className="font-bold text-amber-700 mb-2">طلبات مديونية بانتظار موافقتك</p>
+          <div className="space-y-2">
+            {pendingTx.map((t: any) => (
+              <div key={t.id} className="border-t pt-2">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <p className="font-medium text-sm">{t.storeName}</p>
+                    <p className="text-xs text-muted-foreground">{t.note || "—"}</p>
+                    <p className="text-xs text-muted-foreground">{fmtDate(t.created_at)}</p>
+                  </div>
+                  <span className="font-bold">{fmtRial(t.amount)}</span>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" className="flex-1" onClick={() => respond(t.id, true)}>قبول</Button>
+                  <Button size="sm" variant="destructive" className="flex-1" onClick={() => respond(t.id, false)}>رفض</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
       <div className="space-y-3">
         {accounts?.length === 0 && <Card className="p-8 text-center text-muted-foreground">لا توجد حسابات أجل بعد.</Card>}
         {accounts?.map((a: any) => (
@@ -54,6 +94,7 @@ function CreditPage() {
                 <div key={t.id} className="flex justify-between border-b last:border-0 py-1.5">
                   <span className={t.type === "charge" ? "text-destructive" : "text-success"}>
                     {t.type === "charge" ? "+ مديونية" : "- دفعة"}
+                    {t.status !== "approved" && <Badge variant="outline" className="mr-1 text-[10px]">{t.status === "pending" ? "معلق" : "مرفوض"}</Badge>}
                   </span>
                   <span className="text-muted-foreground text-xs">{fmtDate(t.created_at)}</span>
                   <span className="font-medium">{fmtRial(t.amount)}</span>
