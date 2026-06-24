@@ -92,7 +92,7 @@ export async function getUserRole(userId: string): Promise<"customer" | "merchan
   return (data?.role as "customer" | "merchant" | null) ?? null;
 }
 
-export async function setUserRole(userId: string, role: "customer" | "merchant") {
-  const { error } = await supabase.from("user_roles").insert({ user_id: userId, role });
-  if (error && !error.message.includes("duplicate")) throw error;
+export async function setUserRole(_userId: string, role: "customer" | "merchant") {
+  const { error } = await supabase.rpc("assign_my_role", { _role: role });
+  if (error && !/already assigned/i.test(error.message)) throw error;
 }
