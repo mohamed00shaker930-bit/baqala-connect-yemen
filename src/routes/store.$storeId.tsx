@@ -26,6 +26,7 @@ function StorePage() {
   const { storeId } = Route.useParams();
   const navigate = useNavigate();
   const [q, setQ] = useState("");
+  const [customOpen, setCustomOpen] = useState(false);
   const cartState = useCart();
 
   const { data: store } = useQuery({
@@ -39,6 +40,18 @@ function StorePage() {
       return data ?? [];
     },
   });
+  const { data: offers } = useQuery({
+    queryKey: ["store-offers", storeId],
+    queryFn: async () => (await supabase.from("product_offers").select("*").eq("store_id", storeId).eq("active", true)).data ?? [],
+  });
+
+  const now = Date.now();
+  const offerOf = (pid: string) => (offers ?? []).find((o: any) => {
+    if (o.product_id !== pid) return false;
+    if (o.ends_at && new Date(o.ends_at).getTime() < now) return false;
+    if (o.max_qty != null && o.sold_qty >= o.max_qty) return false;
+    return true;
+  });
 
   const filtered = (products ?? []).filter((p) => p.name.includes(q));
   const grouped = filtered.reduce((acc: Record<string, typeof filtered>, p) => {
@@ -46,6 +59,7 @@ function StorePage() {
     (acc[k] ||= []).push(p);
     return acc;
   }, {});
+
 
   const getQty = (id: string) => cartState.items.find((i) => i.productId === id)?.qty || 0;
 
