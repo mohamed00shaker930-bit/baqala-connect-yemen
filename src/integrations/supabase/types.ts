@@ -720,6 +720,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_my_role: {
+        Args: { _role: Database["public"]["Enums"]["app_role"] }
+        Returns: undefined
+      }
+      customer_respond_credit: {
+        Args: { _approve: boolean; _tx_id: string }
+        Returns: undefined
+      }
       get_credit_customer: {
         Args: { _account_id: string }
         Returns: {
