@@ -200,7 +200,7 @@ function MerchantProducts() {
         <DialogTrigger asChild><Button size="sm" variant="secondary" onClick={openAdd}><Plus className="w-4 h-4 ml-1" />منتج</Button></DialogTrigger>
 
         <DialogContent>
-          <DialogHeader><DialogTitle>منتج جديد</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{editingId ? "تعديل منتج" : "منتج جديد"}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div><Label>الاسم</Label><Input value={p.name} onChange={(e) => setP({...p, name: e.target.value})} /></div>
             <div><Label>السعر (ر.ي)</Label><Input dir="ltr" value={p.price} onChange={(e) => setP({...p, price: e.target.value})} inputMode="numeric" /></div>
