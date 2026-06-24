@@ -3,7 +3,16 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CustomerShell } from "@/components/CustomerShell";
 import { Card } from "@/components/ui/card";
-import { Phone, MessageCircle } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Phone, MessageCircle, Lock } from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  isPinSet, isLockEnabled, setLockEnabled, setPin, clearPin, PIN_LENGTH, verifyPin,
+} from "@/lib/app-lock";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile")({
   ssr: false,
@@ -20,6 +29,43 @@ function ProfilePage() {
     queryFn: async () => (await supabase.from("profiles").select("*").maybeSingle()).data,
   });
 
+  const [enabled, setEnabled] = useState(false);
+  const [hasPin, setHasPin] = useState(false);
+  const [openSet, setOpenSet] = useState(false);
+  const [openRemove, setOpenRemove] = useState(false);
+  const [pin1, setPin1] = useState("");
+  const [pin2, setPin2] = useState("");
+  const [removePin, setRemovePin] = useState("");
+
+  useEffect(() => {
+    setHasPin(isPinSet());
+    setEnabled(isLockEnabled());
+  }, []);
+
+  const toggleLock = (v: boolean) => {
+    if (v && !isPinSet()) { setOpenSet(true); return; }
+    setLockEnabled(v);
+    setEnabled(v);
+    toast.success(v ? "تم تفعيل القفل" : "تم إيقاف القفل");
+  };
+
+  const savePin = async () => {
+    if (pin1.length !== PIN_LENGTH || pin2.length !== PIN_LENGTH) { toast.error(`الرمز ${PIN_LENGTH} أرقام`); return; }
+    if (pin1 !== pin2) { toast.error("الرمزان غير متطابقين"); return; }
+    await setPin(pin1);
+    setHasPin(true); setEnabled(true);
+    setOpenSet(false); setPin1(""); setPin2("");
+    toast.success("تم حفظ الرمز");
+  };
+
+  const removeLock = async () => {
+    if (!(await verifyPin(removePin))) { toast.error("الرمز خاطئ"); return; }
+    clearPin();
+    setHasPin(false); setEnabled(false);
+    setOpenRemove(false); setRemovePin("");
+    toast.success("تم حذف الرمز");
+  };
+
   return (
     <CustomerShell title="حسابي">
       <Card className="p-6 text-center mb-4">
@@ -28,6 +74,23 @@ function ProfilePage() {
         </div>
         <h2 className="font-bold text-lg">{profile?.name || "بدون اسم"}</h2>
         <p className="text-sm text-muted-foreground" dir="ltr">{profile?.phone}</p>
+      </Card>
+
+      <Card className="p-4 mb-4 space-y-3">
+        <h3 className="font-bold flex items-center gap-2"><Lock className="w-4 h-4 text-primary" /> قفل التطبيق</h3>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm">تفعيل قفل التطبيق برمز</p>
+            <p className="text-xs text-muted-foreground">رمز من {PIN_LENGTH} أرقام (مثل واتساب)</p>
+          </div>
+          <Switch checked={enabled} onCheckedChange={toggleLock} />
+        </div>
+        {hasPin && (
+          <div className="flex gap-2 pt-2 border-t">
+            <Button size="sm" variant="outline" className="flex-1" onClick={() => setOpenSet(true)}>تغيير الرمز</Button>
+            <Button size="sm" variant="ghost" className="flex-1 text-destructive" onClick={() => setOpenRemove(true)}>حذف الرمز</Button>
+          </div>
+        )}
       </Card>
 
       <Card className="p-4 space-y-3">
@@ -39,6 +102,44 @@ function ProfilePage() {
           <MessageCircle className="w-5 h-5 text-success" /> واتساب
         </a>
       </Card>
+
+      <Dialog open={openSet} onOpenChange={(v) => { setOpenSet(v); if (!v) { setPin1(""); setPin2(""); } }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>إنشاء رمز القفل</DialogTitle></DialogHeader>
+          <p className="text-xs text-muted-foreground">أدخل {PIN_LENGTH} أرقام</p>
+          <div dir="ltr" className="flex justify-center">
+            <InputOTP maxLength={PIN_LENGTH} value={pin1} onChange={setPin1}>
+              <InputOTPGroup>
+                {Array.from({ length: PIN_LENGTH }).map((_, i) => <InputOTPSlot key={i} index={i} />)}
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
+          <p className="text-xs text-muted-foreground">أعد كتابة الرمز للتأكيد</p>
+          <div dir="ltr" className="flex justify-center">
+            <InputOTP maxLength={PIN_LENGTH} value={pin2} onChange={setPin2}>
+              <InputOTPGroup>
+                {Array.from({ length: PIN_LENGTH }).map((_, i) => <InputOTPSlot key={i} index={i} />)}
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
+          <Button onClick={savePin}>حفظ</Button>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={openRemove} onOpenChange={(v) => { setOpenRemove(v); if (!v) setRemovePin(""); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>حذف رمز القفل</DialogTitle></DialogHeader>
+          <p className="text-xs text-muted-foreground">أدخل الرمز الحالي للتأكيد</p>
+          <div dir="ltr" className="flex justify-center">
+            <InputOTP maxLength={PIN_LENGTH} value={removePin} onChange={setRemovePin}>
+              <InputOTPGroup>
+                {Array.from({ length: PIN_LENGTH }).map((_, i) => <InputOTPSlot key={i} index={i} />)}
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
+          <Button variant="destructive" onClick={removeLock}>حذف</Button>
+        </DialogContent>
+      </Dialog>
     </CustomerShell>
   );
 }
