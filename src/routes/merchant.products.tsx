@@ -280,23 +280,60 @@ function MerchantProducts() {
 
         <div className="space-y-2">
           {products?.length === 0 && <Card className="p-8 text-center text-muted-foreground">لا منتجات بعد. أضف منتجك الأول.</Card>}
-          {products?.map((pr) => (
-            <Card key={pr.id} className="p-3 flex items-center gap-3">
-              <div className="w-12 h-12 bg-muted rounded flex items-center justify-center text-xl shrink-0">
-                {pr.image_url ? <img src={pr.image_url} className="w-full h-full object-cover rounded" /> : "🛒"}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{pr.name}</p>
-                <p className="text-xs text-primary">{fmtRial(pr.price)}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Switch checked={pr.in_stock} onCheckedChange={(v) => toggleStock(pr.id, v)} />
-                <Button size="sm" variant="ghost" onClick={() => removeProd(pr.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
-              </div>
-            </Card>
-          ))}
+          {products?.map((pr) => {
+            const offer = offerOf(pr.id);
+            return (
+              <Card key={pr.id} className="p-3 flex items-center gap-3">
+                <div className="w-12 h-12 bg-muted rounded flex items-center justify-center text-xl shrink-0">
+                  {pr.image_url ? <img src={pr.image_url} className="w-full h-full object-cover rounded" /> : "🛒"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">{pr.name}</p>
+                  {offer ? (
+                    <p className="text-xs">
+                      <span className="text-destructive font-bold">{fmtRial(offer.discount_price)}</span>
+                      <span className="text-muted-foreground line-through mr-1">{fmtRial(pr.price)}</span>
+                      <span className="text-[10px] bg-destructive/10 text-destructive rounded px-1 mr-1">عرض</span>
+                    </p>
+                  ) : (
+                    <p className="text-xs text-primary">{fmtRial(pr.price)}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-1">
+                  <Switch checked={pr.in_stock} onCheckedChange={(v) => toggleStock(pr.id, v)} />
+                  <Button size="sm" variant="ghost" onClick={() => openEdit(pr)} title="تعديل"><Pencil className="w-4 h-4" /></Button>
+                  <Button size="sm" variant="ghost" onClick={() => offer ? cancelOffer(pr.id) : (setOfferFor(pr), setOfferForm({ discount_price: "", ends_at: "", max_qty: "" }))} title="عرض">
+                    <Tag className={`w-4 h-4 ${offer ? "text-destructive" : ""}`} />
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => removeProd(pr.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                </div>
+              </Card>
+            );
+          })}
         </div>
       </div>
+
+      <Dialog open={!!offerFor} onOpenChange={(v) => !v && setOfferFor(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>عرض على: {offerFor?.name}</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>السعر المخفّض (السعر الأصلي {fmtRial(offerFor?.price ?? 0)})</Label>
+              <Input dir="ltr" inputMode="numeric" value={offerForm.discount_price} onChange={(e) => setOfferForm({...offerForm, discount_price: e.target.value})} />
+            </div>
+            <div>
+              <Label>ينتهي في (اختياري)</Label>
+              <Input type="datetime-local" value={offerForm.ends_at} onChange={(e) => setOfferForm({...offerForm, ends_at: e.target.value})} />
+            </div>
+            <div>
+              <Label>الكمية القصوى للعرض (اختياري)</Label>
+              <Input dir="ltr" inputMode="numeric" placeholder="مثلاً 50" value={offerForm.max_qty} onChange={(e) => setOfferForm({...offerForm, max_qty: e.target.value})} />
+            </div>
+            <Button onClick={saveOffer} className="w-full">حفظ العرض</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </MerchantShell>
   );
 }
