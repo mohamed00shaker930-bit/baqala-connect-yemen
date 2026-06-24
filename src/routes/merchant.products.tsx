@@ -132,16 +132,27 @@ function MerchantProducts() {
     if (error) toast.error(error.message); else { toast.success("أُضيفت الفئة"); setCatName(""); setOpenCat(false); qc.invalidateQueries(); }
   };
 
+  const openAdd = () => { setEditingId(null); setP({ name: "", price: "", image_url: "", category_id: "", barcode: "" }); setOpenProd(true); };
+  const openEdit = (pr: any) => {
+    setEditingId(pr.id);
+    setP({ name: pr.name, price: String(pr.price), image_url: pr.image_url ?? "", category_id: pr.category_id ?? "", barcode: pr.barcode ?? "" });
+    setOpenProd(true);
+  };
+
   const addProd = async () => {
     if (!p.name.trim()) { toast.error("اكتب اسم المنتج"); return; }
     if (!p.price) { toast.error("اكتب السعر"); return; }
     if (!store) { toast.error("لا يوجد متجر. أنشئ متجراً أولاً"); return; }
-    const { error } = await supabase.from("products").insert({
-      store_id: store.id, name: p.name.trim(), price: Number(p.price),
+    const payload = {
+      name: p.name.trim(), price: Number(p.price),
       image_url: p.image_url || null, category_id: p.category_id || null,
       barcode: p.barcode.trim() || null,
-    });
-    if (error) toast.error(error.message); else { toast.success("أُضيف المنتج"); setP({ name: "", price: "", image_url: "", category_id: "", barcode: "" }); setOpenProd(false); qc.invalidateQueries(); }
+    };
+    const res = editingId
+      ? await supabase.from("products").update(payload).eq("id", editingId)
+      : await supabase.from("products").insert({ store_id: store.id, ...payload });
+    if (res.error) toast.error(res.error.message);
+    else { toast.success(editingId ? "تم التحديث" : "أُضيف المنتج"); setP({ name: "", price: "", image_url: "", category_id: "", barcode: "" }); setEditingId(null); setOpenProd(false); qc.invalidateQueries(); }
   };
 
   const toggleStock = async (id: string, in_stock: boolean) => {
@@ -154,14 +165,40 @@ function MerchantProducts() {
     toast.success("تم الحذف"); qc.invalidateQueries();
   };
 
+  const saveOffer = async () => {
+    if (!offerFor || !store) return;
+    if (!offerForm.discount_price) { toast.error("اكتب السعر المخفّض"); return; }
+    const payload = {
+      product_id: offerFor.id,
+      store_id: store.id,
+      discount_price: Number(offerForm.discount_price),
+      ends_at: offerForm.ends_at || null,
+      max_qty: offerForm.max_qty ? Number(offerForm.max_qty) : null,
+      active: true,
+    };
+    // Disable previous active offers
+    await supabase.from("product_offers").update({ active: false }).eq("product_id", offerFor.id).eq("active", true);
+    const { error } = await supabase.from("product_offers").insert(payload);
+    if (error) toast.error(error.message);
+    else { toast.success("تم حفظ العرض"); setOfferFor(null); setOfferForm({ discount_price: "", ends_at: "", max_qty: "" }); qc.invalidateQueries(); }
+  };
+
+  const cancelOffer = async (productId: string) => {
+    await supabase.from("product_offers").update({ active: false }).eq("product_id", productId).eq("active", true);
+    toast.success("أُلغي العرض"); qc.invalidateQueries();
+  };
+
+  const offerOf = (pid: string) => (offers ?? []).find((o: any) => o.product_id === pid);
+
   return (
     <MerchantShell title="المنتجات" action={
       <div className="flex gap-2">
       <Button size="sm" variant="outline" onClick={() => setCatalogOpen(true)}>
         <LibraryBig className="w-4 h-4 ml-1" />المكتبة
       </Button>
-      <Dialog open={openProd} onOpenChange={setOpenProd}>
-        <DialogTrigger asChild><Button size="sm" variant="secondary"><Plus className="w-4 h-4 ml-1" />منتج</Button></DialogTrigger>
+      <Dialog open={openProd} onOpenChange={(v) => { if (!v) setEditingId(null); setOpenProd(v); }}>
+        <DialogTrigger asChild><Button size="sm" variant="secondary" onClick={openAdd}><Plus className="w-4 h-4 ml-1" />منتج</Button></DialogTrigger>
+
         <DialogContent>
           <DialogHeader><DialogTitle>منتج جديد</DialogTitle></DialogHeader>
           <div className="space-y-3">
