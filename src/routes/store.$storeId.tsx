@@ -8,8 +8,10 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { cart, useCart } from "@/lib/cart";
 import { fmtRial } from "@/lib/format";
-import { Plus, Minus, ShoppingCart, Search } from "lucide-react";
+import { Plus, Minus, ShoppingCart, Search, MessageSquarePlus } from "lucide-react";
+import { CustomRequestDialog } from "@/components/CustomRequestDialog";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/store/$storeId")({
   ssr: false,
