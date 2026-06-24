@@ -37,17 +37,10 @@ function CreditPage() {
   ) ?? [];
 
   const respond = async (tx: any, approve: boolean) => {
-    const { error } = await supabase.from("credit_transactions")
-      .update({ status: approve ? "approved" : "rejected" })
-      .eq("id", tx.id);
+    const { error } = await supabase.rpc("customer_respond_credit", {
+      _tx_id: tx.id, _approve: approve,
+    });
     if (error) { toast.error(error.message); return; }
-    if (tx.order_id) {
-      await supabase.from("orders")
-        .update(approve
-          ? { credit_status: "approved", status: "delivered" }
-          : { credit_status: "declined", status: "cancelled" })
-        .eq("id", tx.order_id);
-    }
     toast.success(approve ? "تمت الموافقة" : "تم الرفض");
     qc.invalidateQueries();
   };
