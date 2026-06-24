@@ -266,6 +266,12 @@ function POS() {
             {payment !== "cash" && payment !== "credit" && (
               <Input dir="ltr" placeholder="رقم مرجع المحفظة (اختياري)" value={walletRef} onChange={(e) => setWalletRef(e.target.value)} />
             )}
+            {payment === "credit" && store && (
+              <div className="border-t pt-3">
+                <CustomerPicker storeId={store.id} value={customer} onChange={setCustomer} />
+                <p className="text-[11px] text-muted-foreground mt-2">سيُرسل للعميل إشعار لقبول الفاتورة قبل إضافتها لذمته.</p>
+              </div>
+            )}
             <div className="flex justify-between items-center border-t pt-2">
               <span className="text-sm text-muted-foreground">الإجمالي</span>
               <span className="text-2xl font-bold text-primary">{fmtRial(total)}</span>
