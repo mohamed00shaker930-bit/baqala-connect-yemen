@@ -42,20 +42,17 @@ function MerchantCredit() {
   }, [accounts]);
 
   const [openFor, setOpenFor] = useState<string | null>(null);
-  const [type, setType] = useState<"charge" | "payment">("payment");
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
 
-  const add = async () => {
+  const addPayment = async () => {
     if (!openFor || !amount) return;
-    // Charges by merchant require customer approval; payments are immediate
-    const status = type === "charge" ? "pending" : "approved";
     const { error } = await supabase.from("credit_transactions").insert({
-      account_id: openFor, type, amount: Number(amount), note: note || null, status,
+      account_id: openFor, type: "payment", amount: Number(amount), note: note || null, status: "approved",
     });
     if (error) toast.error(error.message);
     else {
-      toast.success(type === "charge" ? "أُرسل طلب المديونية للعميل" : "تم تسجيل الدفعة");
+      toast.success("تم تسجيل الدفعة");
       setOpenFor(null); setAmount(""); setNote(""); qc.invalidateQueries();
     }
   };
@@ -99,9 +96,9 @@ function MerchantCredit() {
                 ))}
               </div>
               <div className="flex gap-2 mt-3">
-                <Button size="sm" variant="outline" className="flex-1" onClick={() => { setType("payment"); setOpenFor(a.id); }}>تسجيل دفعة</Button>
-                <Button size="sm" variant="outline" className="flex-1" onClick={() => { setType("charge"); setOpenFor(a.id); }}>طلب مديونية</Button>
+                <Button size="sm" variant="outline" className="flex-1" onClick={() => setOpenFor(a.id)}>تسجيل دفعة</Button>
               </div>
+              <p className="text-[11px] text-muted-foreground mt-2">المديونيات تُسجَّل فقط من نقطة البيع بعد موافقة العميل.</p>
             </Card>
           );
         })}
@@ -109,11 +106,10 @@ function MerchantCredit() {
 
       <Dialog open={!!openFor} onOpenChange={(v) => !v && setOpenFor(null)}>
         <DialogContent>
-          <DialogHeader><DialogTitle>{type === "payment" ? "تسجيل دفعة" : "طلب مديونية"}</DialogTitle></DialogHeader>
-          {type === "charge" && <p className="text-xs text-muted-foreground">سيُرسل الطلب للعميل وتُضاف للرصيد بعد موافقته.</p>}
+          <DialogHeader><DialogTitle>تسجيل دفعة</DialogTitle></DialogHeader>
           <Input dir="ltr" placeholder="المبلغ" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} />
           <Input placeholder="ملاحظة (اختياري)" value={note} onChange={(e) => setNote(e.target.value)} />
-          <Button onClick={add}>حفظ</Button>
+          <Button onClick={addPayment}>حفظ</Button>
         </DialogContent>
       </Dialog>
     </MerchantShell>
