@@ -1,101 +1,49 @@
-## ملاحظات التطبيق التجريبي — خطة المعالجة
+## الخطة النهائية
 
-تغطّي هذه الخطة السبع نقاط التي ذكرتها، مع تنظيمها في 7 وحدات قابلة للتنفيذ.
+### 1) ربط المديونية بطلب فعلي يوافق عليه العميل
+- حذف زر "طلب مديونية" من `merchant.credit` (يبقى زر "تسجيل دفعة" فقط).
+- في `merchant.pos` عند اختيار "آجل":
+  - حقل **بحث عن العميل بالاسم** (RPC جديدة `search_customers_by_name(q text)` security definer ترجع `id, name, phone` فقط للنتائج المطابقة، حد أقصى 10 نتائج، بحد أدنى حرفين).
+  - زر **"+ عميل جديد"** يفتح Dialog يطلب الاسم ورقم الجوال (إلزامي، تحقق E.164 يمني):
+    - يُنشأ سجل في `pending_customers` (جدول جديد: `id, name, phone, store_id, created_by, claimed_by_user_id, created_at`) — لأن العميل لم يسجل بعد في التطبيق.
+    - عند تسجيل عميل جديد في التطبيق بنفس رقم الجوال، تربط الديون المعلقة تلقائياً (trigger على `profiles` insert يبحث في `pending_customers` بنفس الرقم).
+  - عند الحفظ مع عميل مسجل: يُنشأ `order` بحالة `pending_customer_approval`, `credit_status='pending'` + `order_items` + `credit_transactions` بحالة `pending` (الـ trigger الحالي `apply_credit_tx` لا يحدّث الرصيد إلا بعد `approved`).
+  - مع عميل غير مسجل (pending_customer): يُنشأ سجل في جدول `pending_credit_orders` يحتوي تفاصيل الطلب، يتحول لـ order فعلي عند تسجيل العميل وموافقته.
+- في `credit.tsx` و `orders.tsx` لدى العميل: قسم "طلبات بانتظار موافقتك" يعرض المنتجات والمبلغ + زر **موافقة** / **رفض**.
+  - موافقة: `update credit_transactions set status='approved'` + `update orders set credit_status='approved', status='delivered'`.
+  - رفض: الحالتان `rejected` ولا يتأثر الرصيد.
 
----
+### 2) قفل التطبيق برمز PIN + تذكر العميل
+- إعداد PIN في `profile.tsx`: **6 أرقام** (أكثر أماناً، مع ترك الباب مفتوحاً لإضافة بصمة WebAuthn لاحقاً).
+- التخزين: hash (SHA-256 + salt عشوائي 16 بايت) في `localStorage`: `app_pin_hash`, `app_pin_salt`, `app_lock_enabled`.
+- `LockScreen.tsx`: لوحة أرقام عربية شبيهة بواتساب، تُعرض عند فتح التطبيق إذا كان القفل مفعّلاً والجلسة قائمة. خيار "نسيت الرمز" → تسجيل خروج.
+- "تذكرني" في `auth.tsx`: مُفعّل افتراضياً (الحالي `persistSession: true`). إذا أُلغي، نستخدم `sessionStorage` لهذه الجلسة فقط.
+- إعادة قفل تلقائي بعد 5 دقائق خمول (قابل للتعطيل في الإعدادات).
+- ملاحظة: WebAuthn/بصمة لاحقاً عبر `navigator.credentials` — نتركها كمرحلة ثانية.
 
-### 1) المديونية تتطلب موافقة العميل
+### 3) إصلاح ماسح الباركود
+في `src/components/BarcodeScanner.tsx`:
+- استدعاء صريح لـ `navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } })`.
+- تعيين `video.srcObject = stream` و `await video.play()` صراحة.
+- تمرير الـ video element للقارئ بعد بدء التشغيل.
+- عرض رسالة خطأ عربية واضحة مع زر "إعادة المحاولة" عند فشل الإذن.
+- إيقاف جميع المسارات (`stream.getTracks().forEach(t => t.stop())`) عند الإغلاق.
+- التأكد من `playsInline muted autoplay` على عنصر video (لـ iOS).
 
-**المشكلة الحالية:** التاجر يفتح "دفتر الأجل" ويضغط "إضافة مديونية" فيُسجَّل المبلغ مباشرة على العميل.
-
-**الحل:**
-- إضافة عمود `status` على `credit_transactions` بقيم: `pending` / `approved` / `rejected` (افتراضياً `pending` لكل مديونية يضيفها التاجر يدوياً).
-- الـ trigger `apply_credit_tx` يُعدَّل ليرفع الرصيد فقط عند `status='approved'`.
-- مديونية ناتجة عن طلب POS/أونلاين بموافقة العميل تُسجَّل `approved` مباشرة.
-- في تطبيق العميل تظهر تنبيه/شارة "طلبات مديونية بانتظار موافقتك" مع زر قبول/رفض.
-- في `merchant.credit.tsx` يظهر بجانب المعاملة المعلّقة وسم "بانتظار موافقة العميل".
-
-### 2) ظهور بيانات العميل للتاجر
-
-**المشكلة:** سياسات `profiles` تمنع التاجر من قراءة بيانات العميل، فتظهر فقط `#abcdef`.
-
-**الحل:**
-- دالة `security definer` باسم `public.get_order_customer(order_id)` تُرجع `name`, `phone` فقط لمالك المتجر الذي ينتمي له الطلب (أو حساب الأجل).
-- شاشات التاجر (`merchant.orders`, `merchant.credit`, `merchant.pos`) تستدعيها لعرض الاسم والجوال بدلاً من شظية الـ UUID.
-- لا توسعة عامة لسياسة SELECT على `profiles` للحفاظ على الخصوصية.
-
-### 3) تعديل سعر المنتج
-
-**الوضع الحالي:** شاشة `merchant.products` فيها إضافة فقط دون تعديل.
-
-**الحل:**
-- زر "تعديل" على كل بطاقة منتج يفتح نفس Dialog الإضافة معبأً بقيم المنتج (الاسم، السعر، الفئة، الصورة، الباركود، الحالة `in_stock`).
-- عند الحفظ: `update` على `products` لنفس الـ id.
-- الـ RLS الحالية تسمح UPDATE لمالك المتجر فقط.
-
-### 4) العروض (تخفيضات + فترة + كمية)
-
-**جدول جديد `product_offers`:**
-- `product_id`, `discount_price NUMERIC`, `starts_at`, `ends_at`, `max_qty` (اختياري — العدد المخصص للعرض)، `sold_qty` (عدّاد), `active BOOLEAN`.
-- View أو حقل محسوب: السعر الفعّال = `discount_price` إذا كان العرض ساري (الوقت ضمن الفترة و `sold_qty < max_qty`)، وإلا `products.price`.
-- شاشة `merchant.products`: زر "عرض" على المنتج يفتح Dialog لإدخال السعر المخفّض + التاريخين + الكمية.
-- واجهة العميل (`store.$storeId.tsx`): شارة "عرض" حمراء + السعر القديم مشطوب + السعر الجديد + عدّاد تنازلي للوقت/الكمية.
-- عند إضافة المنتج للسلة يُحجز السعر المخفّض، وعند تأكيد الطلب يُزاد `sold_qty` (trigger على `order_items`).
-
-### 5) التقييم المتبادل (عميل ↔ تاجر)
-
-**الحالة الحالية:** `ratings` فيها تقييم العميل للمتجر فقط.
-
-**الحل:**
-- جدول جديد `customer_ratings` (تقييم التاجر للعميل): `customer_id`, `store_id`, `order_id`, `stars`, `comment`.
-- بعد تسليم الطلب:
-  - للعميل: تنبيه "قيّم تجربتك مع التاجر" (يستخدم `ratings` الحالية).
-  - للتاجر: في `merchant.orders` زر "قيّم العميل" يفتح Dialog (5 نجوم + ملاحظة).
-- في `profile.tsx` للعميل: متوسط تقييم التاجر له (مهم لاحقاً للمصداقية في الأجل).
-- في صفحة المتجر للعميل: متوسط التقييمات يظهر كما هو الآن.
-
-### 6) طلب منتج غير موجود في القائمة
-
-**التدفّق:**
-1. في صفحة المتجر للعميل: زر "اطلب منتجاً غير موجود".
-2. Dialog: اسم المنتج، الوصف، الكمية، صورة اختيارية (رفع إلى storage bucket جديد `custom-requests`).
-3. يُنشأ سجل في جدول جديد `custom_product_requests` بالحالة `pending`.
-4. التاجر يرى الطلب في تبويب جديد "طلبات خاصة" داخل `merchant.orders` ويُدخل: السعر، التوفّر، ملاحظة → حالة `quoted`.
-5. العميل يستلم إشعاراً بالعرض → يقبل (`accepted` → يُحوَّل تلقائياً إلى `order` عادي بالسعر المتفق) أو يرفض (`rejected`).
-
-**الجدول:**
-`custom_product_requests`: `customer_id`, `store_id`, `name`, `description`, `qty`, `image_url`, `merchant_price`, `merchant_note`, `status` ENUM(`pending`,`quoted`,`accepted`,`rejected`,`converted`), `order_id` (بعد التحويل).
-
-### 7) تحديد الكل في المكتبة (إضافة للوضع الحالي)
-
-**الوضع الحالي:** التاجر يختار منتجاً منتجاً واحداً واحداً من `CatalogPicker`.
-
-**الحل:**
-- في تبويب "منتجات" وبجانب شريط البحث: checkbox "تحديد الكل" تعمل على القائمة **المُصفّاة حالياً** (فقط النتائج التي تظهر بعد البحث، لا المكتبة بأكملها).
-- إذا ضغط مرة: تحديد كل العناصر المرئية. مرة أخرى: إلغاء التحديد.
-- يبقى زر "استيراد المحدد (N)" يُحدّث العدد.
-- نفس المبدأ لتبويب "فئات" إذا أراد التاجر استيراد كل فئات المرئية دفعة واحدة.
-
----
-
-### الملفات والتغييرات
-
-**Migrations (واحدة شاملة):**
-- ALTER `credit_transactions` + تعديل trigger.
-- دالة `get_order_customer`.
-- جدول `product_offers` + trigger عدّاد + RLS + GRANT.
-- جدول `customer_ratings` + RLS + GRANT.
-- جدول `custom_product_requests` + RLS + GRANT.
-- Storage bucket `custom-requests` (عام للقراءة، رفع للمصادَق فقط).
+### الملفات
+**Migration:**
+- جدول `pending_customers` + `pending_credit_orders` + RLS + GRANTs
+- RPC `search_customers_by_name(q)` 
+- trigger على `profiles` لربط `pending_customers` بنفس الجوال
+- سياسة تسمح للعميل صاحب `credit_transactions.account_id` بتحديث `status` من `pending` إلى `approved/rejected`
 
 **Frontend:**
-- `src/components/CatalogPicker.tsx` — checkbox تحديد الكل.
-- `src/routes/merchant.credit.tsx` — معاملات معلقة + اسم العميل.
-- `src/routes/merchant.products.tsx` — تعديل المنتج + Dialog العروض.
-- `src/routes/store.$storeId.tsx` — عرض السعر المخفّض + زر "طلب منتج خاص".
-- `src/routes/merchant.orders.tsx` — تبويب الطلبات الخاصة + زر تقييم العميل + اسم/جوال العميل.
-- `src/routes/orders.tsx` (للعميل) — موافقة/رفض الديون + قبول/رفض عروض الطلبات الخاصة + تقييم التاجر.
-- مكوّن جديد `CustomRequestDialog.tsx` و `OfferDialog.tsx`.
-
-**ما لا يتغيّر:**
-- بنية `products` و `orders` الأساسية، POS، التقارير، المكتبة المشتركة.
+- `src/components/BarcodeScanner.tsx` (إصلاح الكاميرا)
+- `src/components/LockScreen.tsx` (جديد)
+- `src/components/CustomerPicker.tsx` (جديد — بحث + إضافة عميل جديد)
+- `src/routes/merchant.pos.tsx` (اختيار العميل + آجل معلّق)
+- `src/routes/merchant.credit.tsx` (حذف طلب المديونية)
+- `src/routes/credit.tsx` و `src/routes/orders.tsx` (موافقة/رفض)
+- `src/routes/auth.tsx` (تذكرني)
+- `src/routes/profile.tsx` (إعداد PIN 6 أرقام)
+- `src/routes/__root.tsx` (تركيب LockScreen + idle timer)

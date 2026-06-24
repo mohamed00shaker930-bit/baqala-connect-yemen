@@ -437,6 +437,44 @@ export type Database = {
           },
         ]
       }
+      pending_customers: {
+        Row: {
+          claimed_by_user_id: string | null
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          phone: string
+          store_id: string
+        }
+        Insert: {
+          claimed_by_user_id?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          phone: string
+          store_id: string
+        }
+        Update: {
+          claimed_by_user_id?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          phone?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pending_customers_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_offers: {
         Row: {
           active: boolean
@@ -702,6 +740,14 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      search_customers_by_name: {
+        Args: { _q: string }
+        Returns: {
+          id: string
+          name: string
+          phone: string
+        }[]
       }
     }
     Enums: {

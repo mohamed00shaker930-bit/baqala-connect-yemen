@@ -36,12 +36,20 @@ function CreditPage() {
       .map((t: any) => ({ ...t, storeName: a.stores?.name }))
   ) ?? [];
 
-  const respond = async (id: string, approve: boolean) => {
+  const respond = async (tx: any, approve: boolean) => {
     const { error } = await supabase.from("credit_transactions")
       .update({ status: approve ? "approved" : "rejected" })
-      .eq("id", id);
-    if (error) toast.error(error.message);
-    else { toast.success(approve ? "تمت الموافقة" : "تم الرفض"); qc.invalidateQueries(); }
+      .eq("id", tx.id);
+    if (error) { toast.error(error.message); return; }
+    if (tx.order_id) {
+      await supabase.from("orders")
+        .update(approve
+          ? { credit_status: "approved", status: "delivered" }
+          : { credit_status: "declined", status: "cancelled" })
+        .eq("id", tx.order_id);
+    }
+    toast.success(approve ? "تمت الموافقة" : "تم الرفض");
+    qc.invalidateQueries();
   };
 
   return (
@@ -72,8 +80,8 @@ function CreditPage() {
                   <span className="font-bold">{fmtRial(t.amount)}</span>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" className="flex-1" onClick={() => respond(t.id, true)}>قبول</Button>
-                  <Button size="sm" variant="destructive" className="flex-1" onClick={() => respond(t.id, false)}>رفض</Button>
+                  <Button size="sm" className="flex-1" onClick={() => respond(t, true)}>قبول</Button>
+                  <Button size="sm" variant="destructive" className="flex-1" onClick={() => respond(t, false)}>رفض</Button>
                 </div>
               </div>
             ))}

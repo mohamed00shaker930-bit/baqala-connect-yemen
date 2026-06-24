@@ -12,6 +12,7 @@ import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { fmtRial } from "@/lib/format";
 import { ScanBarcode, Plus, Minus, Trash2, Search, CheckCircle2, Wallet, Banknote, BookOpen } from "lucide-react";
 import { useMemo, useState } from "react";
+import { CustomerPicker, type PickedCustomer } from "@/components/CustomerPicker";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/merchant/pos")({
@@ -49,6 +50,7 @@ function POS() {
   const [newProd, setNewProd] = useState({ name: "", price: "" });
   const [receipt, setReceipt] = useState<{ id: string; lines: Line[]; total: number; payment: PayMethod } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [customer, setCustomer] = useState<PickedCustomer | null>(null);
 
   const total = useMemo(() => lines.reduce((s, l) => s + l.price * l.qty, 0), [lines]);
   const filtered = useMemo(() => {
@@ -106,20 +108,50 @@ function POS() {
   const checkout = async () => {
     if (!store) { toast.error("لا يوجد متجر"); return; }
     if (lines.length === 0) { toast.error("الفاتورة فارغة"); return; }
+    if (payment === "credit" && !customer) { toast.error("اختر العميل لبيع الأجل"); return; }
     setSaving(true);
     try {
       const { data: userData } = await supabase.auth.getUser();
       const uid = userData.user?.id;
       if (!uid) { toast.error("غير مسجل"); return; }
       const isWallet = payment !== "cash" && payment !== "credit";
+
+      // Credit sale for a pending (non-registered) customer: store details for later linking.
+      if (payment === "credit" && customer?.kind === "pending") {
+        // pending_customers row already exists; just record the order under the merchant as placeholder.
+        const note = `أجل لعميل غير مسجل: ${customer.name} (${customer.phone}). سيتم تفعيله عند تسجيله.`;
+        const { data: order, error } = await supabase.from("orders").insert({
+          store_id: store.id,
+          customer_id: uid, // placeholder — appears in merchant view only
+          total,
+          payment_method: "credit",
+          status: "sent",
+          channel: "in_store",
+          credit_status: "pending",
+          note,
+        }).select().single();
+        if (error) throw error;
+        const items = lines.map((l) => ({
+          order_id: order.id, product_id: l.product_id, name: l.name, price: l.price, qty: l.qty,
+        }));
+        const { error: itemsErr } = await supabase.from("order_items").insert(items);
+        if (itemsErr) throw itemsErr;
+        setReceipt({ id: order.id, lines, total, payment });
+        setLines([]); setWalletRef(""); setPayment("cash"); setCustomer(null);
+        toast.success("سجّلنا البيع — سيُربط بالعميل عند تسجيله");
+        return;
+      }
+
+      const orderCustomer = payment === "credit" && customer?.kind === "registered" ? customer.id : uid;
+
       const { data: order, error } = await supabase.from("orders").insert({
         store_id: store.id,
-        customer_id: uid,
+        customer_id: orderCustomer,
         total,
         payment_method: payment,
-        status: "delivered",
+        status: payment === "credit" ? "sent" : "delivered",
         channel: "in_store",
-        credit_status: payment === "credit" ? "approved" : null,
+        credit_status: payment === "credit" ? "pending" : null,
         note: isWallet && walletRef ? `محفظة ${payment} - مرجع: ${walletRef}` : null,
       }).select().single();
       if (error) throw error;
@@ -130,19 +162,25 @@ function POS() {
       const { error: itemsErr } = await supabase.from("order_items").insert(items);
       if (itemsErr) throw itemsErr;
 
-      // Credit account
-      if (payment === "credit") {
-        let { data: acc } = await supabase.from("credit_accounts").select("id").eq("customer_id", uid).eq("store_id", store.id).maybeSingle();
+      // Credit account for a registered customer — pending until they approve
+      if (payment === "credit" && customer?.kind === "registered") {
+        let { data: acc } = await supabase.from("credit_accounts").select("id")
+          .eq("customer_id", customer.id).eq("store_id", store.id).maybeSingle();
         if (!acc) {
-          const { data: created } = await supabase.from("credit_accounts").insert({ customer_id: uid, store_id: store.id, balance: 0 }).select().single();
+          const { data: created } = await supabase.from("credit_accounts")
+            .insert({ customer_id: customer.id, store_id: store.id, balance: 0 })
+            .select().single();
           acc = created;
         }
-        if (acc) await supabase.from("credit_transactions").insert({ account_id: acc.id, type: "charge", amount: total, order_id: order.id, note: "بيع داخل المحل - أجل" });
+        if (acc) await supabase.from("credit_transactions").insert({
+          account_id: acc.id, type: "charge", amount: total, order_id: order.id,
+          note: "بيع داخل المحل - أجل", status: "pending",
+        });
       }
 
       setReceipt({ id: order.id, lines, total, payment });
-      setLines([]); setWalletRef(""); setPayment("cash");
-      toast.success("تم إتمام البيع");
+      setLines([]); setWalletRef(""); setPayment("cash"); setCustomer(null);
+      toast.success(payment === "credit" ? "أُرسل للعميل للموافقة" : "تم إتمام البيع");
     } catch (e: any) {
       toast.error(e.message ?? "فشل الحفظ");
     } finally {
@@ -223,6 +261,12 @@ function POS() {
             </div>
             {payment !== "cash" && payment !== "credit" && (
               <Input dir="ltr" placeholder="رقم مرجع المحفظة (اختياري)" value={walletRef} onChange={(e) => setWalletRef(e.target.value)} />
+            )}
+            {payment === "credit" && store && (
+              <div className="border-t pt-3">
+                <CustomerPicker storeId={store.id} value={customer} onChange={setCustomer} />
+                <p className="text-[11px] text-muted-foreground mt-2">سيُرسل للعميل إشعار لقبول الفاتورة قبل إضافتها لذمته.</p>
+              </div>
             )}
             <div className="flex justify-between items-center border-t pt-2">
               <span className="text-sm text-muted-foreground">الإجمالي</span>
