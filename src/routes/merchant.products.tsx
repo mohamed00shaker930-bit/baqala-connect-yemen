@@ -37,14 +37,22 @@ function MerchantProducts() {
     queryKey: ["my-products", store?.id], enabled: !!store?.id,
     queryFn: async () => (await supabase.from("products").select("*").eq("store_id", store!.id).order("name")).data ?? [],
   });
+  const { data: offers } = useQuery({
+    queryKey: ["my-offers", store?.id], enabled: !!store?.id,
+    queryFn: async () => (await supabase.from("product_offers").select("*").eq("store_id", store!.id).eq("active", true)).data ?? [],
+  });
 
   const [openCat, setOpenCat] = useState(false);
   const [catName, setCatName] = useState("");
   const [openProd, setOpenProd] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [p, setP] = useState({ name: "", price: "", image_url: "", category_id: "", barcode: "" });
   const [imgMode, setImgMode] = useState<"url" | "camera">("url");
   const [scanOpen, setScanOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
+  const [offerFor, setOfferFor] = useState<any>(null);
+  const [offerForm, setOfferForm] = useState({ discount_price: "", ends_at: "", max_qty: "" });
+
 
   const importFromCatalog = async ({ items, categories }: { items: any[]; categories: any[] }) => {
     if (!store) { toast.error("لا يوجد متجر"); return; }
