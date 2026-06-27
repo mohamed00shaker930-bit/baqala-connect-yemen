@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      banners: {
+        Row: {
+          bg_color: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          link: string | null
+          sort_order: number
+          store_id: string | null
+          subtitle: string | null
+          title: string
+        }
+        Insert: {
+          bg_color?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          link?: string | null
+          sort_order?: number
+          store_id?: string | null
+          subtitle?: string | null
+          title: string
+        }
+        Update: {
+          bg_color?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          link?: string | null
+          sort_order?: number
+          store_id?: string | null
+          subtitle?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "banners_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       catalog_categories: {
         Row: {
           created_at: string
@@ -347,6 +394,39 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           phone?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          read_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title?: string
+          type?: string
           user_id?: string
         }
         Relationships: []
@@ -751,6 +831,84 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          method: string | null
+          note: string | null
+          order_id: string | null
+          reference: string | null
+          status: Database["public"]["Enums"]["wallet_tx_status"]
+          type: Database["public"]["Enums"]["wallet_tx_type"]
+          user_id: string
+          wallet_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          method?: string | null
+          note?: string | null
+          order_id?: string | null
+          reference?: string | null
+          status?: Database["public"]["Enums"]["wallet_tx_status"]
+          type: Database["public"]["Enums"]["wallet_tx_type"]
+          user_id: string
+          wallet_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          method?: string | null
+          note?: string | null
+          order_id?: string | null
+          reference?: string | null
+          status?: Database["public"]["Enums"]["wallet_tx_status"]
+          type?: Database["public"]["Enums"]["wallet_tx_type"]
+          user_id?: string
+          wallet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_transactions_wallet_id_fkey"
+            columns: ["wallet_id"]
+            isOneToOne: false
+            referencedRelation: "wallets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallets: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -768,6 +926,7 @@ export type Database = {
         Args: { _approve: boolean; _tx_id: string }
         Returns: undefined
       }
+      ensure_wallet: { Args: never; Returns: string }
       get_credit_customer: {
         Args: { _account_id: string }
         Returns: {
@@ -788,6 +947,17 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      pay_order_with_wallet: { Args: { _order_id: string }; Returns: undefined }
+      push_notification: {
+        Args: {
+          _body: string
+          _link: string
+          _title: string
+          _type: string
+          _user_id: string
+        }
+        Returns: undefined
       }
       search_customers_by_name: {
         Args: { _q: string }
@@ -826,6 +996,8 @@ export type Database = {
         | "hasab"
         | "onecash"
       return_status: "none" | "requested" | "approved" | "rejected"
+      wallet_tx_status: "pending" | "approved" | "rejected"
+      wallet_tx_type: "topup" | "payment" | "refund" | "adjustment"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -976,6 +1148,8 @@ export const Constants = {
       ],
       payment_method: ["cash", "credit", "jeeb", "jawali", "hasab", "onecash"],
       return_status: ["none", "requested", "approved", "rejected"],
+      wallet_tx_status: ["pending", "approved", "rejected"],
+      wallet_tx_type: ["topup", "payment", "refund", "adjustment"],
     },
   },
 } as const
