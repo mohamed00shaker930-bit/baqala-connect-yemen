@@ -3,6 +3,7 @@ import { Home, ShoppingCart, ClipboardList, Wallet, User, LogOut, ShoppingBasket
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
+import { NotificationBell } from "@/components/NotificationBell";
 import { toast } from "sonner";
 import type { ReactNode } from "react";
 
