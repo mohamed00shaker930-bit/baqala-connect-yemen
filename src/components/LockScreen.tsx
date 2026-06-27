@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { isLockEnabled, isLockedNow, markLocked, markUnlocked, verifyPin, PIN_LENGTH, clearPin } from "@/lib/app-lock";
+import {
+  isLockEnabled, isLockedNow, markLocked, markUnlocked, verifyPin, PIN_LENGTH, clearPin,
+  getLockDuration, isIdleLockEnabled, isHideLockEnabled, getLastActive, markActive,
+} from "@/lib/app-lock";
 import { supabase } from "@/integrations/supabase/client";
 import { Lock, Delete, ShoppingBasket } from "lucide-react";
-
-const IDLE_MS = 5 * 60 * 1000;
 
 export function LockScreen() {
   const [locked, setLocked] = useState(false);
@@ -11,33 +12,53 @@ export function LockScreen() {
   const [error, setError] = useState(false);
   const timerRef = useRef<number | null>(null);
 
-  // Initial mount: if enabled and previously locked OR fresh visit, lock.
+  // Initial mount: decide based on grace duration.
   useEffect(() => {
     if (!isLockEnabled()) return;
-    if (isLockedNow()) {
-      setLocked(true);
-    } else {
-      // lock on every cold start
+    if (isLockedNow()) { setLocked(true); return; }
+    const grace = getLockDuration(); // minutes
+    const last = getLastActive();
+    const elapsedMin = (Date.now() - last) / 60000;
+    if (grace === 0 || !last || elapsedMin >= grace) {
       markLocked();
       setLocked(true);
+    } else {
+      markActive();
     }
   }, []);
 
   // Idle / visibility based auto-lock
   useEffect(() => {
     if (!isLockEnabled()) return;
+    const grace = getLockDuration();
+    const idleEnabled = isIdleLockEnabled();
+    const hideEnabled = isHideLockEnabled();
+    const idleMs = (grace === 0 ? 1 : grace) * 60 * 1000;
+
     const reset = () => {
+      markActive();
+      if (!idleEnabled) return;
       if (timerRef.current) window.clearTimeout(timerRef.current);
       timerRef.current = window.setTimeout(() => {
         markLocked();
         setLocked(true);
-      }, IDLE_MS);
+      }, idleMs);
     };
     const onVis = () => {
       if (document.visibilityState === "hidden") {
-        markLocked();
-        setLocked(true);
+        if (hideEnabled && grace === 0) {
+          markLocked();
+          setLocked(true);
+        }
+        markActive();
       } else {
+        // Returning to the app: re-check grace
+        const last = getLastActive();
+        const elapsedMin = (Date.now() - last) / 60000;
+        if (hideEnabled && (grace === 0 || elapsedMin >= grace)) {
+          markLocked();
+          setLocked(true);
+        }
         reset();
       }
     };

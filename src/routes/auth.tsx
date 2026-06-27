@@ -31,7 +31,7 @@ function AuthPage() {
     const p = normalizePhone(phoneInput);
     setPhone(p);
     const code = generateOtp(p);
-    toast.success(`رمز التحقق (تجريبي): ${code}`, { duration: 12000, description: "أدخله في الخانة التالية" });
+    toast.success(`رمز التحقق (تجريبي): ${code}`, { duration: 8000, description: "أدخله في الخانة التالية" });
     setStep("otp");
   };
 
@@ -43,7 +43,8 @@ function AuthPage() {
       const user = await signInOrSignUpWithPhone(phone, name || undefined);
       clearOtp();
       const role = await getUserRole(user.id);
-      toast.success("تم تسجيل الدخول");
+      toast.dismiss();
+      toast.success("تم تسجيل الدخول", { duration: 1500 });
       if (!role) navigate({ to: "/choose-role" });
       else if (role === "merchant") navigate({ to: "/merchant" });
       else navigate({ to: "/home" });
