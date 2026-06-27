@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { fmtRial, fmtDate, STATUS_LABEL, STATUS_ORDER } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
-import { Star } from "lucide-react";
+import { Star, Undo2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
