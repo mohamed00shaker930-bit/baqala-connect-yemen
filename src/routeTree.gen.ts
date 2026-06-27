@@ -40,6 +40,7 @@ import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminMerchantsRouteImport } from './routes/admin.merchants'
 import { Route as AdminBroadcastRouteImport } from './routes/admin.broadcast'
 import { Route as AdminBannersRouteImport } from './routes/admin.banners'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 
 const WalletRoute = WalletRouteImport.update({
   id: '/wallet',
@@ -196,6 +197,11 @@ const AdminBannersRoute = AdminBannersRouteImport.update({
   path: '/banners',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -212,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
   '/wallet': typeof WalletRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/merchants': typeof AdminMerchantsRoute
@@ -243,6 +250,7 @@ export interface FileRoutesByTo {
   '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
   '/wallet': typeof WalletRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/merchants': typeof AdminMerchantsRoute
@@ -277,6 +285,7 @@ export interface FileRoutesById {
   '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
   '/wallet': typeof WalletRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/merchants': typeof AdminMerchantsRoute
@@ -312,6 +321,7 @@ export interface FileRouteTypes {
     | '/orders'
     | '/profile'
     | '/wallet'
+    | '/admin/analytics'
     | '/admin/banners'
     | '/admin/broadcast'
     | '/admin/merchants'
@@ -343,6 +353,7 @@ export interface FileRouteTypes {
     | '/orders'
     | '/profile'
     | '/wallet'
+    | '/admin/analytics'
     | '/admin/banners'
     | '/admin/broadcast'
     | '/admin/merchants'
@@ -376,6 +387,7 @@ export interface FileRouteTypes {
     | '/orders'
     | '/profile'
     | '/wallet'
+    | '/admin/analytics'
     | '/admin/banners'
     | '/admin/broadcast'
     | '/admin/merchants'
@@ -632,10 +644,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBannersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/analytics': {
+      id: '/admin/analytics'
+      path: '/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminBannersRoute: typeof AdminBannersRoute
   AdminBroadcastRoute: typeof AdminBroadcastRoute
   AdminMerchantsRoute: typeof AdminMerchantsRoute
@@ -647,6 +667,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminBannersRoute: AdminBannersRoute,
   AdminBroadcastRoute: AdminBroadcastRoute,
   AdminMerchantsRoute: AdminMerchantsRoute,
@@ -705,13 +726,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
