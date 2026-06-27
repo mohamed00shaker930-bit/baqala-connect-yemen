@@ -73,10 +73,15 @@ function StorePage() {
       )
     }>
       <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <FavoriteButton type="store" id={storeId} />
+          <p className="text-xs text-muted-foreground">{store?.area}</p>
+        </div>
         <div className="relative">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="ابحث عن منتج..." value={q} onChange={(e) => setQ(e.target.value)} className="pr-9" />
         </div>
+
 
         {Object.entries(grouped).map(([cat, items]) => (
           <div key={cat}>
