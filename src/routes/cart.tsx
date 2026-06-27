@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-type PayMethod = "cash" | "credit" | "jeeb" | "jawali" | "hasab" | "onecash";
+type PayMethod = "cash" | "credit" | "wallet" | "jeeb" | "jawali" | "hasab" | "onecash";
 const WALLETS: { id: PayMethod; name: string; color: string; short: string }[] = [
   { id: "jeeb",    name: "جيب",     color: "#7C3AED", short: "ج" },
   { id: "jawali",  name: "جوالي",   color: "#EA580C", short: "ج" },
@@ -53,26 +53,41 @@ function CartPage() {
     );
   }
 
+  const { data: wallet } = useQuery({
+    queryKey: ["wallet-cart"],
+    queryFn: async () => {
+      await supabase.rpc("ensure_wallet");
+      return (await supabase.from("wallets").select("*").maybeSingle()).data;
+    },
+  });
+
   const checkout = async () => {
     if (!landmark.trim()) { toast.error("اكتب وصف موقع التوصيل"); return; }
     if (!c.storeId) return;
+    if (payment === "wallet" && Number(wallet?.balance ?? 0) < total) {
+      toast.error("رصيد المحفظة غير كافٍ");
+      return;
+    }
     setLoading(true);
     try {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("غير مسجل");
-      const isWallet = payment !== "cash" && payment !== "credit";
+      const isExternalWallet = payment !== "cash" && payment !== "credit" && payment !== "wallet";
       const walletName = WALLETS.find((w) => w.id === payment)?.name;
       const finalNote = [
-        isWallet && walletRef ? `محفظة ${walletName} • رقم العملية: ${walletRef}` : isWallet ? `دفع عبر ${walletName}` : null,
+        isExternalWallet && walletRef ? `محفظة ${walletName} • رقم العملية: ${walletRef}` : isExternalWallet ? `دفع عبر ${walletName}` : null,
+        payment === "wallet" ? "دفع من محفظة التطبيق" : null,
         note || null,
       ].filter(Boolean).join(" — ") || null;
+      // payment_method enum doesn't include 'wallet' — store as 'cash' and pay via RPC
+      const dbPayment = payment === "wallet" ? "cash" : payment;
       const { data: order, error } = await supabase.from("orders").insert({
         customer_id: u.user.id,
         store_id: c.storeId,
         total,
-        payment_method: payment,
+        payment_method: dbPayment as any,
         credit_status: payment === "credit" ? "pending" : null,
-        status: "sent",
+        status: payment === "wallet" ? "delivered" : "sent",
         note: finalNote,
         location_landmark: landmark,
         location_phone: phone || null,
@@ -83,6 +98,10 @@ function CartPage() {
       }));
       const { error: ie } = await supabase.from("order_items").insert(items);
       if (ie) throw ie;
+      if (payment === "wallet") {
+        const { error: we } = await supabase.rpc("pay_order_with_wallet", { _order_id: order.id });
+        if (we) throw we;
+      }
       cart.clear();
       toast.success("تم إرسال الطلب");
       navigate({ to: "/orders" });
@@ -131,18 +150,27 @@ function CartPage() {
 
         <Card className="p-4 space-y-3">
           <h3 className="font-bold">طريقة الدفع</h3>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <button type="button" onClick={() => setPayment("cash")}
-              className={`flex items-center gap-2 p-3 rounded-xl border-2 transition ${payment==="cash"?"border-primary bg-primary/5":"border-border"}`}>
+              className={`flex items-center gap-1 p-3 rounded-xl border-2 transition ${payment==="cash"?"border-primary bg-primary/5":"border-border"}`}>
               <Banknote className="w-5 h-5 text-success" />
-              <span className="text-sm font-medium">نقداً عند الاستلام</span>
+              <span className="text-xs font-medium">نقداً</span>
             </button>
             <button type="button" onClick={() => setPayment("credit")}
-              className={`flex items-center gap-2 p-3 rounded-xl border-2 transition ${payment==="credit"?"border-primary bg-primary/5":"border-border"}`}>
+              className={`flex items-center gap-1 p-3 rounded-xl border-2 transition ${payment==="credit"?"border-primary bg-primary/5":"border-border"}`}>
               <Clock className="w-5 h-5 text-warning" />
-              <span className="text-sm font-medium">بالأجل</span>
+              <span className="text-xs font-medium">بالأجل</span>
+            </button>
+            <button type="button" onClick={() => setPayment("wallet")}
+              className={`flex flex-col items-start gap-0 p-3 rounded-xl border-2 transition text-right ${payment==="wallet"?"border-primary bg-primary/5":"border-border"}`}>
+              <div className="flex items-center gap-1"><Wallet className="w-5 h-5 text-primary" /><span className="text-xs font-medium">المحفظة</span></div>
+              <span className="text-[10px] text-muted-foreground">{fmtRial(Number(wallet?.balance ?? 0))}</span>
             </button>
           </div>
+          {payment === "wallet" && Number(wallet?.balance ?? 0) < total && (
+            <p className="text-[11px] text-destructive">الرصيد غير كافٍ — اشحن المحفظة أولاً.</p>
+          )}
+
 
           <div>
             <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1"><Wallet className="w-3 h-3" /> المحافظ الإلكترونية</p>
@@ -157,7 +185,7 @@ function CartPage() {
             </div>
           </div>
 
-          {payment !== "cash" && payment !== "credit" && (
+          {payment !== "cash" && payment !== "credit" && payment !== "wallet" && (
             <div className="space-y-1">
               <Label className="text-xs">رقم العملية / المرجع (بعد التحويل)</Label>
               <Input dir="ltr" value={walletRef} onChange={(e) => setWalletRef(e.target.value)} placeholder="مثال: TXN123456" />

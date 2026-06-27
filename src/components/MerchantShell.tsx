@@ -2,6 +2,7 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { LayoutDashboard, Package, ShoppingBag, Wallet, Settings, LogOut, Store, ScanBarcode, BarChart3, Undo2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { NotificationBell } from "@/components/NotificationBell";
 import { toast } from "sonner";
 import type { ReactNode } from "react";
 
@@ -36,11 +37,13 @@ export function MerchantShell({ title, children, action }: { title: string; chil
             <h1 className="text-base font-bold leading-tight">{title}</h1>
           </div>
           {action}
+          <NotificationBell />
           <Button size="sm" variant="ghost" onClick={signOut} className="text-background hover:bg-background/10">
             <LogOut className="w-5 h-5" />
           </Button>
         </div>
       </header>
+
 
       <main className="max-w-3xl mx-auto px-4 py-4">{children}</main>
 

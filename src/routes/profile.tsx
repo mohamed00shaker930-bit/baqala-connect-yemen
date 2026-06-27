@@ -5,14 +5,16 @@ import { CustomerShell } from "@/components/CustomerShell";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Phone, MessageCircle, Lock, Clock, EyeOff, Timer } from "lucide-react";
+import { Phone, MessageCircle, Lock, Clock, EyeOff, Timer, Languages, Wallet, MapPin, Heart } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import {
   isPinSet, isLockEnabled, setLockEnabled, setPin, clearPin, PIN_LENGTH, verifyPin,
   LOCK_DURATIONS, getLockDuration, setLockDuration,
   isIdleLockEnabled, setIdleLockEnabled,
   isHideLockEnabled, setHideLockEnabled,
 } from "@/lib/app-lock";
+import { useLang, setLang } from "@/lib/i18n";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -95,8 +97,20 @@ function ProfilePage() {
         <p className="text-sm text-muted-foreground" dir="ltr">{profile?.phone}</p>
       </Card>
 
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        <Link to="/wallet"><Card className="p-3 flex flex-col items-center gap-1 hover:border-primary"><Wallet className="w-5 h-5 text-primary" /><span className="text-xs font-medium">المحفظة</span></Card></Link>
+        <Link to="/favorites"><Card className="p-3 flex flex-col items-center gap-1 hover:border-primary"><Heart className="w-5 h-5 text-destructive" /><span className="text-xs font-medium">المفضلة</span></Card></Link>
+        <Link to="/locations"><Card className="p-3 flex flex-col items-center gap-1 hover:border-primary"><MapPin className="w-5 h-5 text-primary" /><span className="text-xs font-medium">مواقعي</span></Card></Link>
+      </div>
+
+      <Card className="p-4 mb-4">
+        <h3 className="font-bold flex items-center gap-2 mb-3"><Languages className="w-4 h-4 text-primary" /> اللغة / Language</h3>
+        <LanguageSwitcher />
+      </Card>
+
       <Card className="p-4 mb-4 space-y-3">
         <h3 className="font-bold flex items-center gap-2"><Lock className="w-4 h-4 text-primary" /> قفل التطبيق</h3>
+
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm">تفعيل قفل التطبيق برمز</p>
@@ -196,3 +210,14 @@ function ProfilePage() {
     </CustomerShell>
   );
 }
+
+function LanguageSwitcher() {
+  const lang = useLang();
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      <Button variant={lang === "ar" ? "default" : "outline"} onClick={() => { setLang("ar"); toast.success("تم تغيير اللغة"); }}>العربية</Button>
+      <Button variant={lang === "en" ? "default" : "outline"} onClick={() => { setLang("en"); toast.success("Language changed"); }}>English</Button>
+    </div>
+  );
+}
+

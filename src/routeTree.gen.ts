@@ -9,8 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as OrdersRouteImport } from './routes/orders'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MerchantRouteImport } from './routes/merchant'
 import { Route as LocationsRouteImport } from './routes/locations'
 import { Route as HomeRouteImport } from './routes/home'
@@ -30,6 +32,11 @@ import { Route as MerchantPosRouteImport } from './routes/merchant.pos'
 import { Route as MerchantOrdersRouteImport } from './routes/merchant.orders'
 import { Route as MerchantCreditRouteImport } from './routes/merchant.credit'
 
+const WalletRoute = WalletRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -38,6 +45,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const OrdersRoute = OrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MerchantRoute = MerchantRouteImport.update({
@@ -141,8 +153,10 @@ export interface FileRoutesByFullPath {
   '/home': typeof HomeRoute
   '/locations': typeof LocationsRoute
   '/merchant': typeof MerchantRouteWithChildren
+  '/notifications': typeof NotificationsRoute
   '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
+  '/wallet': typeof WalletRoute
   '/merchant/credit': typeof MerchantCreditRoute
   '/merchant/orders': typeof MerchantOrdersRoute
   '/merchant/pos': typeof MerchantPosRoute
@@ -162,8 +176,10 @@ export interface FileRoutesByTo {
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
   '/locations': typeof LocationsRoute
+  '/notifications': typeof NotificationsRoute
   '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
+  '/wallet': typeof WalletRoute
   '/merchant/credit': typeof MerchantCreditRoute
   '/merchant/orders': typeof MerchantOrdersRoute
   '/merchant/pos': typeof MerchantPosRoute
@@ -185,8 +201,10 @@ export interface FileRoutesById {
   '/home': typeof HomeRoute
   '/locations': typeof LocationsRoute
   '/merchant': typeof MerchantRouteWithChildren
+  '/notifications': typeof NotificationsRoute
   '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
+  '/wallet': typeof WalletRoute
   '/merchant/credit': typeof MerchantCreditRoute
   '/merchant/orders': typeof MerchantOrdersRoute
   '/merchant/pos': typeof MerchantPosRoute
@@ -209,8 +227,10 @@ export interface FileRouteTypes {
     | '/home'
     | '/locations'
     | '/merchant'
+    | '/notifications'
     | '/orders'
     | '/profile'
+    | '/wallet'
     | '/merchant/credit'
     | '/merchant/orders'
     | '/merchant/pos'
@@ -230,8 +250,10 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/home'
     | '/locations'
+    | '/notifications'
     | '/orders'
     | '/profile'
+    | '/wallet'
     | '/merchant/credit'
     | '/merchant/orders'
     | '/merchant/pos'
@@ -252,8 +274,10 @@ export interface FileRouteTypes {
     | '/home'
     | '/locations'
     | '/merchant'
+    | '/notifications'
     | '/orders'
     | '/profile'
+    | '/wallet'
     | '/merchant/credit'
     | '/merchant/orders'
     | '/merchant/pos'
@@ -275,13 +299,22 @@ export interface RootRouteChildren {
   HomeRoute: typeof HomeRoute
   LocationsRoute: typeof LocationsRoute
   MerchantRoute: typeof MerchantRouteWithChildren
+  NotificationsRoute: typeof NotificationsRoute
   OrdersRoute: typeof OrdersRoute
   ProfileRoute: typeof ProfileRoute
+  WalletRoute: typeof WalletRoute
   StoreStoreIdRoute: typeof StoreStoreIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/wallet': {
+      id: '/wallet'
+      path: '/wallet'
+      fullPath: '/wallet'
+      preLoaderRoute: typeof WalletRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
@@ -294,6 +327,13 @@ declare module '@tanstack/react-router' {
       path: '/orders'
       fullPath: '/orders'
       preLoaderRoute: typeof OrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/merchant': {
@@ -461,8 +501,10 @@ const rootRouteChildren: RootRouteChildren = {
   HomeRoute: HomeRoute,
   LocationsRoute: LocationsRoute,
   MerchantRoute: MerchantRouteWithChildren,
+  NotificationsRoute: NotificationsRoute,
   OrdersRoute: OrdersRoute,
   ProfileRoute: ProfileRoute,
+  WalletRoute: WalletRoute,
   StoreStoreIdRoute: StoreStoreIdRoute,
 }
 export const routeTree = rootRouteImport
