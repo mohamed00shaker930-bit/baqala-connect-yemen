@@ -45,7 +45,7 @@ export function MerchantShell({ title, children, action }: { title: string; chil
       <main className="max-w-3xl mx-auto px-4 py-4">{children}</main>
 
       <nav className="fixed bottom-0 inset-x-0 z-30 bg-card border-t shadow-lg">
-        <div className="max-w-3xl mx-auto grid grid-cols-7">
+        <div className="max-w-3xl mx-auto grid grid-cols-8">
           {tabs.map((t) => {
             const Icon = t.icon;
             const active = t.exact ? path === t.to : path.startsWith(t.to);
