@@ -166,6 +166,21 @@ function OrdersPage() {
           <Button onClick={submitRating}>إرسال</Button>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!returnFor} onOpenChange={(v) => !v && setReturnFor(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>طلب إرجاع</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">اشرح سبب رغبتك في إرجاع هذا الطلب — التاجر سيراجع الطلب ويقبله أو يرفضه.</p>
+          <Textarea rows={3} placeholder="مثال: المنتج تالف / لم يصل المطلوب..." value={returnReason} onChange={(e) => setReturnReason(e.target.value)} />
+          <Button onClick={async () => {
+            if (!returnReason.trim()) { toast.error("اكتب سبب الإرجاع"); return; }
+            const { error } = await supabase.rpc("customer_request_return", { _order_id: returnFor.id, _reason: returnReason });
+            if (error) toast.error(error.message);
+            else { toast.success("تم إرسال طلب الإرجاع"); setReturnFor(null); qc.invalidateQueries(); }
+          }}>إرسال طلب الإرجاع</Button>
+        </DialogContent>
+      </Dialog>
     </CustomerShell>
   );
 }
+
