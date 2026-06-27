@@ -44,7 +44,7 @@ export function AdminShell({ title, children, action }: { title: string; childre
       </header>
       <main className="max-w-5xl mx-auto px-4 py-4">{children}</main>
       <nav className="fixed bottom-0 inset-x-0 z-30 bg-card border-t shadow-lg">
-        <div className="max-w-5xl mx-auto grid grid-cols-8">
+        <div className="max-w-5xl mx-auto grid grid-cols-9">
           {tabs.map((t) => {
             const Icon = t.icon;
             const active = t.exact ? path === t.to : path.startsWith(t.to);
