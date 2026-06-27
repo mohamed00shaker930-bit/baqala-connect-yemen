@@ -10,6 +10,7 @@ import { cart, useCart } from "@/lib/cart";
 import { fmtRial } from "@/lib/format";
 import { Plus, Minus, ShoppingCart, Search, MessageSquarePlus } from "lucide-react";
 import { CustomRequestDialog } from "@/components/CustomRequestDialog";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import { toast } from "sonner";
 
 
