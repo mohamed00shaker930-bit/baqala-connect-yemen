@@ -5,14 +5,16 @@ import { CustomerShell } from "@/components/CustomerShell";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Phone, MessageCircle, Lock, Clock, EyeOff, Timer } from "lucide-react";
+import { Phone, MessageCircle, Lock, Clock, EyeOff, Timer, Languages, Wallet, MapPin, Heart } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import {
   isPinSet, isLockEnabled, setLockEnabled, setPin, clearPin, PIN_LENGTH, verifyPin,
   LOCK_DURATIONS, getLockDuration, setLockDuration,
   isIdleLockEnabled, setIdleLockEnabled,
   isHideLockEnabled, setHideLockEnabled,
 } from "@/lib/app-lock";
+import { useLang, setLang } from "@/lib/i18n";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
