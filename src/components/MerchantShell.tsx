@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, Package, ShoppingBag, Wallet, Settings, LogOut, Store, ScanBarcode, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Wallet, Settings, LogOut, Store, ScanBarcode, BarChart3, Undo2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -9,8 +9,9 @@ const tabs = [
   { to: "/merchant", label: "اللوحة", icon: LayoutDashboard, exact: true },
   { to: "/merchant/pos", label: "بيع", icon: ScanBarcode },
   { to: "/merchant/orders", label: "الطلبات", icon: ShoppingBag },
-  { to: "/merchant/products", label: "المنتجات", icon: Package },
-  { to: "/merchant/reports", label: "التقارير", icon: BarChart3 },
+  { to: "/merchant/products", label: "منتجات", icon: Package },
+  { to: "/merchant/returns", label: "مرتجعات", icon: Undo2 },
+  { to: "/merchant/reports", label: "تقارير", icon: BarChart3 },
   { to: "/merchant/credit", label: "الأجل", icon: Wallet },
   { to: "/merchant/settings", label: "المتجر", icon: Settings },
 ];

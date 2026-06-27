@@ -11,6 +11,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { MapPicker } from "@/components/MapPicker";
+import { MapPin } from "lucide-react";
+import type { LatLng } from "@/lib/geo";
 
 export const Route = createFileRoute("/merchant/settings")({
   ssr: false,
@@ -19,21 +22,28 @@ export const Route = createFileRoute("/merchant/settings")({
 
 function MerchantSettings() {
   const qc = useQueryClient();
-  const { data: store } = useQuery({
-    queryKey: ["my-store"],
-    queryFn: fetchMyStore,
-  });
+  const { data: store } = useQuery({ queryKey: ["my-store"], queryFn: fetchMyStore });
   const [form, setForm] = useState({ name: "", area: "", delivery_info: "", phone: "", is_open: true });
+  const [coords, setCoords] = useState<LatLng | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
+
   useEffect(() => {
-    if (store) setForm({
-      name: store.name, area: store.area || "", delivery_info: store.delivery_info || "",
-      phone: store.phone || "", is_open: store.is_open,
-    });
+    if (store) {
+      setForm({
+        name: store.name, area: store.area || "", delivery_info: store.delivery_info || "",
+        phone: store.phone || "", is_open: store.is_open,
+      });
+      if (store.lat != null && store.lng != null) {
+        setCoords({ lat: Number(store.lat), lng: Number(store.lng) });
+      }
+    }
   }, [store]);
 
   const save = async () => {
     if (!store) return;
-    const { error } = await supabase.from("stores").update(form).eq("id", store.id);
+    const payload: any = { ...form };
+    if (coords) { payload.lat = coords.lat; payload.lng = coords.lng; }
+    const { error } = await supabase.from("stores").update(payload).eq("id", store.id);
     if (error) toast.error(error.message); else { toast.success("تم الحفظ"); qc.invalidateQueries(); }
   };
 
@@ -42,14 +52,23 @@ function MerchantSettings() {
       <Card className="p-4 space-y-4">
         <div className="flex items-center justify-between p-3 bg-accent/30 rounded">
           <Label className="font-bold">المتجر مفتوح للطلبات</Label>
-          <Switch checked={form.is_open} onCheckedChange={(v) => setForm({...form, is_open: v})} />
+          <Switch checked={form.is_open} onCheckedChange={(v) => setForm({ ...form, is_open: v })} />
         </div>
-        <div><Label>اسم المتجر</Label><Input value={form.name} onChange={(e) => setForm({...form, name: e.target.value})} /></div>
-        <div><Label>الحي / المنطقة</Label><Input value={form.area} onChange={(e) => setForm({...form, area: e.target.value})} /></div>
-        <div><Label>رقم الجوال</Label><Input dir="ltr" value={form.phone} onChange={(e) => setForm({...form, phone: e.target.value})} /></div>
-        <div><Label>معلومات التوصيل / الرسوم</Label><Textarea rows={3} value={form.delivery_info} onChange={(e) => setForm({...form, delivery_info: e.target.value})} /></div>
+        <div><Label>اسم المتجر</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+        <div><Label>الحي / المنطقة</Label><Input value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })} /></div>
+        <div><Label>رقم الجوال</Label><Input dir="ltr" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+        <div><Label>معلومات التوصيل / الرسوم</Label><Textarea rows={3} value={form.delivery_info} onChange={(e) => setForm({ ...form, delivery_info: e.target.value })} /></div>
+        <div>
+          <Label>موقع المتجر على الخريطة</Label>
+          <Button type="button" variant="outline" className="w-full mt-1" onClick={() => setPickerOpen(true)}>
+            <MapPin className="w-4 h-4 ml-1" />
+            {coords ? `محدد: ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}` : "اختر موقع متجرك"}
+          </Button>
+          <p className="text-[11px] text-muted-foreground mt-1">يساعد العملاء على رؤية الأقرب وترتيب المتاجر بناءً على موقعهم.</p>
+        </div>
         <Button onClick={save} className="w-full h-12">حفظ</Button>
       </Card>
+      <MapPicker open={pickerOpen} onOpenChange={setPickerOpen} initial={coords} onPick={setCoords} title="موقع متجرك" />
     </MerchantShell>
   );
 }
