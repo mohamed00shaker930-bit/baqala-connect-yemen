@@ -187,3 +187,23 @@ function CartPage() {
     </CustomerShell>
   );
 }
+
+function SavedLocationsPicker({ onPick }: { onPick: (l: { label: string; landmark_text: string; phone: string | null }) => void }) {
+  const { data: locs } = useQuery({
+    queryKey: ["locations"],
+    queryFn: async () => (await supabase.from("locations").select("*").order("created_at", { ascending: false })).data ?? [],
+  });
+  if (!locs || locs.length === 0) return null;
+  return (
+    <div className="flex gap-2 overflow-x-auto -mx-1 px-1">
+      {locs.map((l: any) => (
+        <button key={l.id} type="button" onClick={() => onPick(l)}
+          className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full bg-accent/40 hover:bg-accent border text-xs">
+          <MapPin className="w-3 h-3 text-primary" />
+          <span className="font-medium">{l.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
