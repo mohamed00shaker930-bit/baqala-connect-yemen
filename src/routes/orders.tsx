@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { fmtRial, fmtDate, STATUS_LABEL, STATUS_ORDER } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
-import { Star } from "lucide-react";
+import { Star, Undo2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -44,6 +44,8 @@ function OrdersPage() {
   const [rateFor, setRateFor] = useState<any>(null);
   const [stars, setStars] = useState(5);
   const [comment, setComment] = useState("");
+  const [returnFor, setReturnFor] = useState<any>(null);
+  const [returnReason, setReturnReason] = useState("");
 
   const ratedOrders = new Set((myRatings ?? []).map((r: any) => r.order_id));
 
@@ -126,15 +128,29 @@ function OrdersPage() {
                 <span className="text-sm">{o.payment_method === "cash" ? "نقداً" : `أجل (${o.credit_status || "—"})`}</span>
                 <span className="font-bold text-primary">{fmtRial(o.total)}</span>
               </div>
-              {canRate && (
-                <Button size="sm" variant="outline" className="w-full" onClick={() => { setRateFor(o); setStars(5); setComment(""); }}>
-                  <Star className="w-4 h-4 ml-1" /> قيّم التاجر
-                </Button>
+              {o.return_status && o.return_status !== "none" && (
+                <div className={`text-xs p-2 rounded ${o.return_status === "approved" ? "bg-success/15 text-success" : o.return_status === "rejected" ? "bg-destructive/15 text-destructive" : "bg-warning/15 text-warning-foreground"}`}>
+                  إرجاع: {o.return_status === "requested" ? "بانتظار التاجر" : o.return_status === "approved" ? "تمت الموافقة" : "مرفوض"}
+                  {o.return_reason && <span className="block opacity-80">{o.return_reason}</span>}
+                </div>
               )}
+              <div className="flex gap-2">
+                {canRate && (
+                  <Button size="sm" variant="outline" className="flex-1" onClick={() => { setRateFor(o); setStars(5); setComment(""); }}>
+                    <Star className="w-4 h-4 ml-1" /> قيّم
+                  </Button>
+                )}
+                {o.status === "delivered" && (!o.return_status || o.return_status === "none") && (
+                  <Button size="sm" variant="outline" className="flex-1" onClick={() => { setReturnFor(o); setReturnReason(""); }}>
+                    <Undo2 className="w-4 h-4 ml-1" /> طلب إرجاع
+                  </Button>
+                )}
+              </div>
             </Card>
           );
         })}
       </div>
+
 
       <Dialog open={!!rateFor} onOpenChange={(v) => !v && setRateFor(null)}>
         <DialogContent>
@@ -150,6 +166,21 @@ function OrdersPage() {
           <Button onClick={submitRating}>إرسال</Button>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!returnFor} onOpenChange={(v) => !v && setReturnFor(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>طلب إرجاع</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">اشرح سبب رغبتك في إرجاع هذا الطلب — التاجر سيراجع الطلب ويقبله أو يرفضه.</p>
+          <Textarea rows={3} placeholder="مثال: المنتج تالف / لم يصل المطلوب..." value={returnReason} onChange={(e) => setReturnReason(e.target.value)} />
+          <Button onClick={async () => {
+            if (!returnReason.trim()) { toast.error("اكتب سبب الإرجاع"); return; }
+            const { error } = await supabase.rpc("customer_request_return", { _order_id: returnFor.id, _reason: returnReason });
+            if (error) toast.error(error.message);
+            else { toast.success("تم إرسال طلب الإرجاع"); setReturnFor(null); qc.invalidateQueries(); }
+          }}>إرسال طلب الإرجاع</Button>
+        </DialogContent>
+      </Dialog>
     </CustomerShell>
   );
 }
+

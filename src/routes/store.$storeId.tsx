@@ -10,6 +10,7 @@ import { cart, useCart } from "@/lib/cart";
 import { fmtRial } from "@/lib/format";
 import { Plus, Minus, ShoppingCart, Search, MessageSquarePlus } from "lucide-react";
 import { CustomRequestDialog } from "@/components/CustomRequestDialog";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import { toast } from "sonner";
 
 
@@ -72,10 +73,15 @@ function StorePage() {
       )
     }>
       <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <FavoriteButton type="store" id={storeId} />
+          <p className="text-xs text-muted-foreground">{store?.area}</p>
+        </div>
         <div className="relative">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="ابحث عن منتج..." value={q} onChange={(e) => setQ(e.target.value)} className="pr-9" />
         </div>
+
 
         {Object.entries(grouped).map(([cat, items]) => (
           <div key={cat}>
@@ -88,6 +94,7 @@ function StorePage() {
                 return (
                   <Card key={p.id} className="p-3 space-y-2 relative">
                     {offer && <span className="absolute top-1 left-1 z-10 bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded">عرض</span>}
+                    <FavoriteButton type="product" id={p.id} className="absolute top-1 right-1 z-10" size={14} />
                     <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-3xl">
                       {p.image_url ? <img src={p.image_url} alt={p.name} className="w-full h-full object-cover rounded-lg" /> : "🛒"}
                     </div>

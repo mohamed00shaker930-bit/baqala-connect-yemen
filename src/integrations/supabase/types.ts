@@ -294,6 +294,30 @@ export type Database = {
           },
         ]
       }
+      favorites: {
+        Row: {
+          created_at: string
+          id: string
+          target_id: string
+          target_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          target_id: string
+          target_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          target_id?: string
+          target_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       locations: {
         Row: {
           created_at: string
@@ -386,6 +410,10 @@ export type Database = {
           location_phone: string | null
           note: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
+          return_reason: string | null
+          return_requested_at: string | null
+          return_responded_at: string | null
+          return_status: Database["public"]["Enums"]["return_status"]
           status: Database["public"]["Enums"]["order_status"]
           store_id: string
           total: number
@@ -404,6 +432,10 @@ export type Database = {
           location_phone?: string | null
           note?: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
+          return_reason?: string | null
+          return_requested_at?: string | null
+          return_responded_at?: string | null
+          return_status?: Database["public"]["Enums"]["return_status"]
           status?: Database["public"]["Enums"]["order_status"]
           store_id: string
           total: number
@@ -422,6 +454,10 @@ export type Database = {
           location_phone?: string | null
           note?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"]
+          return_reason?: string | null
+          return_requested_at?: string | null
+          return_responded_at?: string | null
+          return_status?: Database["public"]["Enums"]["return_status"]
           status?: Database["public"]["Enums"]["order_status"]
           store_id?: string
           total?: number
@@ -724,6 +760,10 @@ export type Database = {
         Args: { _role: Database["public"]["Enums"]["app_role"] }
         Returns: undefined
       }
+      customer_request_return: {
+        Args: { _order_id: string; _reason: string }
+        Returns: undefined
+      }
       customer_respond_credit: {
         Args: { _approve: boolean; _tx_id: string }
         Returns: undefined
@@ -785,6 +825,7 @@ export type Database = {
         | "jawali"
         | "hasab"
         | "onecash"
+      return_status: "none" | "requested" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -934,6 +975,7 @@ export const Constants = {
         "cancelled",
       ],
       payment_method: ["cash", "credit", "jeeb", "jawali", "hasab", "onecash"],
+      return_status: ["none", "requested", "approved", "rejected"],
     },
   },
 } as const

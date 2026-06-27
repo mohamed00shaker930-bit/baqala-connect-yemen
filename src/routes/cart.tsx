@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate, Link } from "@tanstack/react-router";
 import { CustomerShell } from "@/components/CustomerShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,9 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cart, useCart } from "@/lib/cart";
 import { fmtRial } from "@/lib/format";
-import { Trash2, Plus, Minus, Banknote, Clock, Wallet } from "lucide-react";
-import { useState } from "react";
+import { Trash2, Plus, Minus, Banknote, Clock, Wallet, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 type PayMethod = "cash" | "credit" | "jeeb" | "jawali" | "hasab" | "onecash";
@@ -108,7 +109,15 @@ function CartPage() {
         ))}
 
         <Card className="p-4 space-y-3">
-          <h3 className="font-bold">موقع التوصيل</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold">موقع التوصيل</h3>
+            <Link to="/locations" className="text-xs text-primary">إدارة المواقع</Link>
+          </div>
+          <SavedLocationsPicker onPick={(l) => {
+            setLandmark(l.landmark_text || "");
+            if (l.phone) setPhone(l.phone);
+            toast.success(`تم استخدام موقع: ${l.label}`);
+          }} />
           <div className="space-y-2">
             <Label>وصف الموقع / معلم قريب *</Label>
             <Textarea value={landmark} onChange={(e) => setLandmark(e.target.value)} placeholder="مثال: بجانب الجامع الأزرق، البيت الثاني..." rows={2} />
@@ -118,6 +127,7 @@ function CartPage() {
             <Input value={phone} onChange={(e) => setPhone(e.target.value)} dir="ltr" placeholder="7XXXXXXXX" />
           </div>
         </Card>
+
 
         <Card className="p-4 space-y-3">
           <h3 className="font-bold">طريقة الدفع</h3>
@@ -177,3 +187,23 @@ function CartPage() {
     </CustomerShell>
   );
 }
+
+function SavedLocationsPicker({ onPick }: { onPick: (l: { label: string; landmark_text: string; phone: string | null }) => void }) {
+  const { data: locs } = useQuery({
+    queryKey: ["locations"],
+    queryFn: async () => (await supabase.from("locations").select("*").order("created_at", { ascending: false })).data ?? [],
+  });
+  if (!locs || locs.length === 0) return null;
+  return (
+    <div className="flex gap-2 overflow-x-auto -mx-1 px-1">
+      {locs.map((l: any) => (
+        <button key={l.id} type="button" onClick={() => onPick(l)}
+          className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full bg-accent/40 hover:bg-accent border text-xs">
+          <MapPin className="w-3 h-3 text-primary" />
+          <span className="font-medium">{l.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
