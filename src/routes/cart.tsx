@@ -109,7 +109,15 @@ function CartPage() {
         ))}
 
         <Card className="p-4 space-y-3">
-          <h3 className="font-bold">موقع التوصيل</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold">موقع التوصيل</h3>
+            <Link to="/locations" className="text-xs text-primary">إدارة المواقع</Link>
+          </div>
+          <SavedLocationsPicker onPick={(l) => {
+            setLandmark(l.landmark_text || "");
+            if (l.phone) setPhone(l.phone);
+            toast.success(`تم استخدام موقع: ${l.label}`);
+          }} />
           <div className="space-y-2">
             <Label>وصف الموقع / معلم قريب *</Label>
             <Textarea value={landmark} onChange={(e) => setLandmark(e.target.value)} placeholder="مثال: بجانب الجامع الأزرق، البيت الثاني..." rows={2} />
@@ -119,6 +127,7 @@ function CartPage() {
             <Input value={phone} onChange={(e) => setPhone(e.target.value)} dir="ltr" placeholder="7XXXXXXXX" />
           </div>
         </Card>
+
 
         <Card className="p-4 space-y-3">
           <h3 className="font-bold">طريقة الدفع</h3>
