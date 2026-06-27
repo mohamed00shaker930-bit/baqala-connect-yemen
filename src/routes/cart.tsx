@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-type PayMethod = "cash" | "credit" | "jeeb" | "jawali" | "hasab" | "onecash";
+type PayMethod = "cash" | "credit" | "wallet" | "jeeb" | "jawali" | "hasab" | "onecash";
 const WALLETS: { id: PayMethod; name: string; color: string; short: string }[] = [
   { id: "jeeb",    name: "جيب",     color: "#7C3AED", short: "ج" },
   { id: "jawali",  name: "جوالي",   color: "#EA580C", short: "ج" },
