@@ -89,6 +89,7 @@ function StorePage() {
                 return (
                   <Card key={p.id} className="p-3 space-y-2 relative">
                     {offer && <span className="absolute top-1 left-1 z-10 bg-destructive text-destructive-foreground text-[10px] font-bold px-2 py-0.5 rounded">عرض</span>}
+                    <FavoriteButton type="product" id={p.id} className="absolute top-1 right-1 z-10" size={14} />
                     <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-3xl">
                       {p.image_url ? <img src={p.image_url} alt={p.name} className="w-full h-full object-cover rounded-lg" /> : "🛒"}
                     </div>
