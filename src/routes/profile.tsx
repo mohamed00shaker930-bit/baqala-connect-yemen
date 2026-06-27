@@ -97,8 +97,20 @@ function ProfilePage() {
         <p className="text-sm text-muted-foreground" dir="ltr">{profile?.phone}</p>
       </Card>
 
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        <Link to="/wallet"><Card className="p-3 flex flex-col items-center gap-1 hover:border-primary"><Wallet className="w-5 h-5 text-primary" /><span className="text-xs font-medium">المحفظة</span></Card></Link>
+        <Link to="/favorites"><Card className="p-3 flex flex-col items-center gap-1 hover:border-primary"><Heart className="w-5 h-5 text-destructive" /><span className="text-xs font-medium">المفضلة</span></Card></Link>
+        <Link to="/locations"><Card className="p-3 flex flex-col items-center gap-1 hover:border-primary"><MapPin className="w-5 h-5 text-primary" /><span className="text-xs font-medium">مواقعي</span></Card></Link>
+      </div>
+
+      <Card className="p-4 mb-4">
+        <h3 className="font-bold flex items-center gap-2 mb-3"><Languages className="w-4 h-4 text-primary" /> اللغة / Language</h3>
+        <LanguageSwitcher />
+      </Card>
+
       <Card className="p-4 mb-4 space-y-3">
         <h3 className="font-bold flex items-center gap-2"><Lock className="w-4 h-4 text-primary" /> قفل التطبيق</h3>
+
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm">تفعيل قفل التطبيق برمز</p>
