@@ -44,6 +44,8 @@ function OrdersPage() {
   const [rateFor, setRateFor] = useState<any>(null);
   const [stars, setStars] = useState(5);
   const [comment, setComment] = useState("");
+  const [returnFor, setReturnFor] = useState<any>(null);
+  const [returnReason, setReturnReason] = useState("");
 
   const ratedOrders = new Set((myRatings ?? []).map((r: any) => r.order_id));
 
