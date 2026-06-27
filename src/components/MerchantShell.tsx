@@ -36,11 +36,13 @@ export function MerchantShell({ title, children, action }: { title: string; chil
             <h1 className="text-base font-bold leading-tight">{title}</h1>
           </div>
           {action}
+          <NotificationBell />
           <Button size="sm" variant="ghost" onClick={signOut} className="text-background hover:bg-background/10">
             <LogOut className="w-5 h-5" />
           </Button>
         </div>
       </header>
+
 
       <main className="max-w-3xl mx-auto px-4 py-4">{children}</main>
 
