@@ -5,13 +5,17 @@ import { CustomerShell } from "@/components/CustomerShell";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Phone, MessageCircle, Lock } from "lucide-react";
+import { Phone, MessageCircle, Lock, Clock, EyeOff, Timer } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   isPinSet, isLockEnabled, setLockEnabled, setPin, clearPin, PIN_LENGTH, verifyPin,
+  LOCK_DURATIONS, getLockDuration, setLockDuration,
+  isIdleLockEnabled, setIdleLockEnabled,
+  isHideLockEnabled, setHideLockEnabled,
 } from "@/lib/app-lock";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile")({
@@ -36,17 +40,23 @@ function ProfilePage() {
   const [pin1, setPin1] = useState("");
   const [pin2, setPin2] = useState("");
   const [removePin, setRemovePin] = useState("");
+  const [duration, setDuration] = useState<number>(10);
+  const [idleOn, setIdleOn] = useState(true);
+  const [hideOn, setHideOn] = useState(true);
 
   useEffect(() => {
     setHasPin(isPinSet());
     setEnabled(isLockEnabled());
+    setDuration(getLockDuration());
+    setIdleOn(isIdleLockEnabled());
+    setHideOn(isHideLockEnabled());
   }, []);
 
   const toggleLock = (v: boolean) => {
     if (v && !isPinSet()) { setOpenSet(true); return; }
     setLockEnabled(v);
     setEnabled(v);
-    toast.success(v ? "تم تفعيل القفل" : "تم إيقاف القفل");
+    toast.success(v ? "تم تفعيل القفل" : "تم إيقاف القفل", { duration: 2000 });
   };
 
   const savePin = async () => {
@@ -55,7 +65,7 @@ function ProfilePage() {
     await setPin(pin1);
     setHasPin(true); setEnabled(true);
     setOpenSet(false); setPin1(""); setPin2("");
-    toast.success("تم حفظ الرمز");
+    toast.success("تم حفظ الرمز", { duration: 2000 });
   };
 
   const removeLock = async () => {
@@ -63,8 +73,17 @@ function ProfilePage() {
     clearPin();
     setHasPin(false); setEnabled(false);
     setOpenRemove(false); setRemovePin("");
-    toast.success("تم حذف الرمز");
+    toast.success("تم حذف الرمز", { duration: 2000 });
   };
+
+  const onDurationChange = (val: string) => {
+    const n = Number(val);
+    setDuration(n);
+    setLockDuration(n);
+    toast.success("تم تحديث مدة القفل", { duration: 1800 });
+  };
+  const onIdleChange = (v: boolean) => { setIdleOn(v); setIdleLockEnabled(v); };
+  const onHideChange = (v: boolean) => { setHideOn(v); setHideLockEnabled(v); };
 
   return (
     <CustomerShell title="حسابي">
@@ -85,11 +104,45 @@ function ProfilePage() {
           </div>
           <Switch checked={enabled} onCheckedChange={toggleLock} />
         </div>
-        {hasPin && (
-          <div className="flex gap-2 pt-2 border-t">
-            <Button size="sm" variant="outline" className="flex-1" onClick={() => setOpenSet(true)}>تغيير الرمز</Button>
-            <Button size="sm" variant="ghost" className="flex-1 text-destructive" onClick={() => setOpenRemove(true)}>حذف الرمز</Button>
-          </div>
+
+        {enabled && hasPin && (
+          <>
+            <div className="pt-3 border-t space-y-3">
+              <div className="space-y-1">
+                <label className="text-sm flex items-center gap-2"><Timer className="w-4 h-4 text-primary" /> اطلب الرمز</label>
+                <Select value={String(duration)} onValueChange={onDurationChange}>
+                  <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {LOCK_DURATIONS.map((d) => (
+                      <SelectItem key={d.value} value={String(d.value)}>{d.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">المدة التي يبقى بعدها التطبيق مفتوحاً قبل طلب الرمز.</p>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm flex items-center gap-2"><Clock className="w-4 h-4 text-muted-foreground" /> القفل عند الخمول</p>
+                  <p className="text-xs text-muted-foreground">قفل التطبيق تلقائياً عند عدم الاستخدام</p>
+                </div>
+                <Switch checked={idleOn} onCheckedChange={onIdleChange} />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm flex items-center gap-2"><EyeOff className="w-4 h-4 text-muted-foreground" /> القفل عند إخفاء التطبيق</p>
+                  <p className="text-xs text-muted-foreground">قفل التطبيق عند الخروج منه أو تبديله</p>
+                </div>
+                <Switch checked={hideOn} onCheckedChange={onHideChange} />
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-3 border-t">
+              <Button size="sm" variant="outline" className="flex-1" onClick={() => setOpenSet(true)}>تغيير الرمز</Button>
+              <Button size="sm" variant="ghost" className="flex-1 text-destructive" onClick={() => setOpenRemove(true)}>حذف الرمز</Button>
+            </div>
+          </>
         )}
       </Card>
 
