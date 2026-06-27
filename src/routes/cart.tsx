@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate, Link } from "@tanstack/react-router";
 import { CustomerShell } from "@/components/CustomerShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,9 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cart, useCart } from "@/lib/cart";
 import { fmtRial } from "@/lib/format";
-import { Trash2, Plus, Minus, Banknote, Clock, Wallet } from "lucide-react";
-import { useState } from "react";
+import { Trash2, Plus, Minus, Banknote, Clock, Wallet, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 type PayMethod = "cash" | "credit" | "jeeb" | "jawali" | "hasab" | "onecash";
