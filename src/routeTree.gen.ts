@@ -21,8 +21,10 @@ import { Route as CreditRouteImport } from './routes/credit'
 import { Route as ChooseRoleRouteImport } from './routes/choose-role'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MerchantIndexRouteImport } from './routes/merchant.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as StoreStoreIdRouteImport } from './routes/store.$storeId'
 import { Route as MerchantSettingsRouteImport } from './routes/merchant.settings'
 import { Route as MerchantReturnsRouteImport } from './routes/merchant.returns'
@@ -31,6 +33,13 @@ import { Route as MerchantProductsRouteImport } from './routes/merchant.products
 import { Route as MerchantPosRouteImport } from './routes/merchant.pos'
 import { Route as MerchantOrdersRouteImport } from './routes/merchant.orders'
 import { Route as MerchantCreditRouteImport } from './routes/merchant.credit'
+import { Route as AdminWalletsRouteImport } from './routes/admin.wallets'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
+import { Route as AdminMerchantsRouteImport } from './routes/admin.merchants'
+import { Route as AdminBroadcastRouteImport } from './routes/admin.broadcast'
+import { Route as AdminBannersRouteImport } from './routes/admin.banners'
 
 const WalletRoute = WalletRouteImport.update({
   id: '/wallet',
@@ -92,6 +101,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -101,6 +115,11 @@ const MerchantIndexRoute = MerchantIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => MerchantRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const StoreStoreIdRoute = StoreStoreIdRouteImport.update({
   id: '/store/$storeId',
@@ -142,9 +161,45 @@ const MerchantCreditRoute = MerchantCreditRouteImport.update({
   path: '/credit',
   getParentRoute: () => MerchantRoute,
 } as any)
+const AdminWalletsRoute = AdminWalletsRouteImport.update({
+  id: '/wallets',
+  path: '/wallets',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminOrdersRoute = AdminOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMerchantsRoute = AdminMerchantsRouteImport.update({
+  id: '/merchants',
+  path: '/merchants',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBroadcastRoute = AdminBroadcastRouteImport.update({
+  id: '/broadcast',
+  path: '/broadcast',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBannersRoute = AdminBannersRouteImport.update({
+  id: '/banners',
+  path: '/banners',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/choose-role': typeof ChooseRoleRoute
@@ -157,6 +212,13 @@ export interface FileRoutesByFullPath {
   '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
   '/wallet': typeof WalletRoute
+  '/admin/banners': typeof AdminBannersRoute
+  '/admin/broadcast': typeof AdminBroadcastRoute
+  '/admin/merchants': typeof AdminMerchantsRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/wallets': typeof AdminWalletsRoute
   '/merchant/credit': typeof MerchantCreditRoute
   '/merchant/orders': typeof MerchantOrdersRoute
   '/merchant/pos': typeof MerchantPosRoute
@@ -165,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/merchant/returns': typeof MerchantReturnsRoute
   '/merchant/settings': typeof MerchantSettingsRoute
   '/store/$storeId': typeof StoreStoreIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/merchant/': typeof MerchantIndexRoute
 }
 export interface FileRoutesByTo {
@@ -180,6 +243,13 @@ export interface FileRoutesByTo {
   '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
   '/wallet': typeof WalletRoute
+  '/admin/banners': typeof AdminBannersRoute
+  '/admin/broadcast': typeof AdminBroadcastRoute
+  '/admin/merchants': typeof AdminMerchantsRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/wallets': typeof AdminWalletsRoute
   '/merchant/credit': typeof MerchantCreditRoute
   '/merchant/orders': typeof MerchantOrdersRoute
   '/merchant/pos': typeof MerchantPosRoute
@@ -188,11 +258,13 @@ export interface FileRoutesByTo {
   '/merchant/returns': typeof MerchantReturnsRoute
   '/merchant/settings': typeof MerchantSettingsRoute
   '/store/$storeId': typeof StoreStoreIdRoute
+  '/admin': typeof AdminIndexRoute
   '/merchant': typeof MerchantIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/choose-role': typeof ChooseRoleRoute
@@ -205,6 +277,13 @@ export interface FileRoutesById {
   '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
   '/wallet': typeof WalletRoute
+  '/admin/banners': typeof AdminBannersRoute
+  '/admin/broadcast': typeof AdminBroadcastRoute
+  '/admin/merchants': typeof AdminMerchantsRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/wallets': typeof AdminWalletsRoute
   '/merchant/credit': typeof MerchantCreditRoute
   '/merchant/orders': typeof MerchantOrdersRoute
   '/merchant/pos': typeof MerchantPosRoute
@@ -213,12 +292,14 @@ export interface FileRoutesById {
   '/merchant/returns': typeof MerchantReturnsRoute
   '/merchant/settings': typeof MerchantSettingsRoute
   '/store/$storeId': typeof StoreStoreIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/merchant/': typeof MerchantIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/auth'
     | '/cart'
     | '/choose-role'
@@ -231,6 +312,13 @@ export interface FileRouteTypes {
     | '/orders'
     | '/profile'
     | '/wallet'
+    | '/admin/banners'
+    | '/admin/broadcast'
+    | '/admin/merchants'
+    | '/admin/orders'
+    | '/admin/settings'
+    | '/admin/users'
+    | '/admin/wallets'
     | '/merchant/credit'
     | '/merchant/orders'
     | '/merchant/pos'
@@ -239,6 +327,7 @@ export interface FileRouteTypes {
     | '/merchant/returns'
     | '/merchant/settings'
     | '/store/$storeId'
+    | '/admin/'
     | '/merchant/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -254,6 +343,13 @@ export interface FileRouteTypes {
     | '/orders'
     | '/profile'
     | '/wallet'
+    | '/admin/banners'
+    | '/admin/broadcast'
+    | '/admin/merchants'
+    | '/admin/orders'
+    | '/admin/settings'
+    | '/admin/users'
+    | '/admin/wallets'
     | '/merchant/credit'
     | '/merchant/orders'
     | '/merchant/pos'
@@ -262,10 +358,12 @@ export interface FileRouteTypes {
     | '/merchant/returns'
     | '/merchant/settings'
     | '/store/$storeId'
+    | '/admin'
     | '/merchant'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/auth'
     | '/cart'
     | '/choose-role'
@@ -278,6 +376,13 @@ export interface FileRouteTypes {
     | '/orders'
     | '/profile'
     | '/wallet'
+    | '/admin/banners'
+    | '/admin/broadcast'
+    | '/admin/merchants'
+    | '/admin/orders'
+    | '/admin/settings'
+    | '/admin/users'
+    | '/admin/wallets'
     | '/merchant/credit'
     | '/merchant/orders'
     | '/merchant/pos'
@@ -286,11 +391,13 @@ export interface FileRouteTypes {
     | '/merchant/returns'
     | '/merchant/settings'
     | '/store/$storeId'
+    | '/admin/'
     | '/merchant/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   CartRoute: typeof CartRoute
   ChooseRoleRoute: typeof ChooseRoleRoute
@@ -392,6 +499,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -405,6 +519,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/merchant/'
       preLoaderRoute: typeof MerchantIndexRouteImport
       parentRoute: typeof MerchantRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/store/$storeId': {
       id: '/store/$storeId'
@@ -462,8 +583,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MerchantCreditRouteImport
       parentRoute: typeof MerchantRoute
     }
+    '/admin/wallets': {
+      id: '/admin/wallets'
+      path: '/wallets'
+      fullPath: '/admin/wallets'
+      preLoaderRoute: typeof AdminWalletsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/orders': {
+      id: '/admin/orders'
+      path: '/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AdminOrdersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/merchants': {
+      id: '/admin/merchants'
+      path: '/merchants'
+      fullPath: '/admin/merchants'
+      preLoaderRoute: typeof AdminMerchantsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/broadcast': {
+      id: '/admin/broadcast'
+      path: '/broadcast'
+      fullPath: '/admin/broadcast'
+      preLoaderRoute: typeof AdminBroadcastRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/banners': {
+      id: '/admin/banners'
+      path: '/banners'
+      fullPath: '/admin/banners'
+      preLoaderRoute: typeof AdminBannersRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
+
+interface AdminRouteChildren {
+  AdminBannersRoute: typeof AdminBannersRoute
+  AdminBroadcastRoute: typeof AdminBroadcastRoute
+  AdminMerchantsRoute: typeof AdminMerchantsRoute
+  AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminWalletsRoute: typeof AdminWalletsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminBannersRoute: AdminBannersRoute,
+  AdminBroadcastRoute: AdminBroadcastRoute,
+  AdminMerchantsRoute: AdminMerchantsRoute,
+  AdminOrdersRoute: AdminOrdersRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminWalletsRoute: AdminWalletsRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface MerchantRouteChildren {
   MerchantCreditRoute: typeof MerchantCreditRoute
@@ -493,6 +687,7 @@ const MerchantRouteWithChildren = MerchantRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   CartRoute: CartRoute,
   ChooseRoleRoute: ChooseRoleRoute,
