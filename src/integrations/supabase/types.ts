@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      app_admins: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      app_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       banners: {
         Row: {
           bg_color: string | null
@@ -479,6 +512,8 @@ export type Database = {
       orders: {
         Row: {
           channel: Database["public"]["Enums"]["order_channel"]
+          commission_amount: number
+          commission_pct: number
           created_at: string
           credit_status: Database["public"]["Enums"]["credit_status"] | null
           customer_id: string
@@ -501,6 +536,8 @@ export type Database = {
         }
         Insert: {
           channel?: Database["public"]["Enums"]["order_channel"]
+          commission_amount?: number
+          commission_pct?: number
           created_at?: string
           credit_status?: Database["public"]["Enums"]["credit_status"] | null
           customer_id: string
@@ -523,6 +560,8 @@ export type Database = {
         }
         Update: {
           channel?: Database["public"]["Enums"]["order_channel"]
+          commission_amount?: number
+          commission_pct?: number
           created_at?: string
           credit_status?: Database["public"]["Enums"]["credit_status"] | null
           customer_id?: string
@@ -765,6 +804,7 @@ export type Database = {
       stores: {
         Row: {
           area: string | null
+          commission_pct: number | null
           created_at: string
           delivery_info: string | null
           id: string
@@ -777,9 +817,11 @@ export type Database = {
           phone: string | null
           rating: number
           rating_count: number
+          status: Database["public"]["Enums"]["store_status"]
         }
         Insert: {
           area?: string | null
+          commission_pct?: number | null
           created_at?: string
           delivery_info?: string | null
           id?: string
@@ -792,9 +834,11 @@ export type Database = {
           phone?: string | null
           rating?: number
           rating_count?: number
+          status?: Database["public"]["Enums"]["store_status"]
         }
         Update: {
           area?: string | null
+          commission_pct?: number | null
           created_at?: string
           delivery_info?: string | null
           id?: string
@@ -807,6 +851,7 @@ export type Database = {
           phone?: string | null
           rating?: number
           rating_count?: number
+          status?: Database["public"]["Enums"]["store_status"]
         }
         Relationships: []
       }
@@ -914,6 +959,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_broadcast_notification: {
+        Args: { _body: string; _link: string; _segment: string; _title: string }
+        Returns: number
+      }
+      admin_grant_admin: { Args: { _uid: string }; Returns: undefined }
+      admin_respond_wallet_tx: {
+        Args: { _approve: boolean; _tx: string }
+        Returns: undefined
+      }
+      admin_revoke_admin: { Args: { _uid: string }; Returns: undefined }
+      admin_set_setting: {
+        Args: { _key: string; _value: Json }
+        Returns: undefined
+      }
+      admin_set_store_commission: {
+        Args: { _pct: number; _store: string }
+        Returns: undefined
+      }
+      admin_set_store_status: {
+        Args: { _status: string; _store: string }
+        Returns: undefined
+      }
       assign_my_role: {
         Args: { _role: Database["public"]["Enums"]["app_role"] }
         Returns: undefined
@@ -948,6 +1015,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_admin: { Args: { _uid?: string }; Returns: boolean }
       pay_order_with_wallet: { Args: { _order_id: string }; Returns: undefined }
       push_notification: {
         Args: {
@@ -996,6 +1064,7 @@ export type Database = {
         | "hasab"
         | "onecash"
       return_status: "none" | "requested" | "approved" | "rejected"
+      store_status: "pending" | "active" | "suspended" | "rejected"
       wallet_tx_status: "pending" | "approved" | "rejected"
       wallet_tx_type: "topup" | "payment" | "refund" | "adjustment"
     }
@@ -1148,6 +1217,7 @@ export const Constants = {
       ],
       payment_method: ["cash", "credit", "jeeb", "jawali", "hasab", "onecash"],
       return_status: ["none", "requested", "approved", "rejected"],
+      store_status: ["pending", "active", "suspended", "rejected"],
       wallet_tx_status: ["pending", "approved", "rejected"],
       wallet_tx_type: ["topup", "payment", "refund", "adjustment"],
     },
