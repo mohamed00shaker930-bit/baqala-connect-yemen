@@ -210,3 +210,14 @@ function ProfilePage() {
     </CustomerShell>
   );
 }
+
+function LanguageSwitcher() {
+  const lang = useLang();
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      <Button variant={lang === "ar" ? "default" : "outline"} onClick={() => { setLang("ar"); toast.success("تم تغيير اللغة"); }}>العربية</Button>
+      <Button variant={lang === "en" ? "default" : "outline"} onClick={() => { setLang("en"); toast.success("Language changed"); }}>English</Button>
+    </div>
+  );
+}
+
