@@ -11,6 +11,7 @@ import {
   generateOtp, verifyOtp, normalizePhone, clearOtp,
   signInOrSignUpWithPhone, getUserRole,
 } from "@/lib/auth-helpers";
+import { isCurrentUserAdmin } from "@/lib/admin";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
