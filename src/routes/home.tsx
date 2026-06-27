@@ -87,6 +87,9 @@ function HomePage() {
         <Navigation className="w-4 h-4 ml-1" /> {locating ? "..." : (myLoc ? "تحديث" : "موقعي")}
       </Button>
     }>
+      {/* بانرات */}
+      <div className="mb-4"><BannerCarousel /></div>
+
       {/* اطلب مرة أخرى */}
       {(recentOrders ?? []).length > 0 && (
         <div className="mb-4">
@@ -111,14 +114,13 @@ function HomePage() {
       )}
 
       {/* روابط سريعة */}
-      <div className="grid grid-cols-2 gap-2 mb-4">
-        <Link to="/favorites">
-          <Card className="p-3 flex items-center gap-2 hover:border-primary"><Heart className="w-5 h-5 text-destructive" /><span className="text-sm font-medium">المفضلة</span></Card>
-        </Link>
-        <Link to="/locations">
-          <Card className="p-3 flex items-center gap-2 hover:border-primary"><MapPin className="w-5 h-5 text-primary" /><span className="text-sm font-medium">مواقعي</span></Card>
-        </Link>
+      <div className="grid grid-cols-4 gap-2 mb-4">
+        <Link to="/favorites"><Card className="p-3 flex flex-col items-center gap-1 hover:border-primary"><Heart className="w-5 h-5 text-destructive" /><span className="text-[11px] font-medium">المفضلة</span></Card></Link>
+        <Link to="/wallet"><Card className="p-3 flex flex-col items-center gap-1 hover:border-primary"><Wallet className="w-5 h-5 text-primary" /><span className="text-[11px] font-medium">المحفظة</span></Card></Link>
+        <Link to="/locations"><Card className="p-3 flex flex-col items-center gap-1 hover:border-primary"><MapPin className="w-5 h-5 text-primary" /><span className="text-[11px] font-medium">مواقعي</span></Card></Link>
+        <Link to="/notifications"><Card className="p-3 flex flex-col items-center gap-1 hover:border-primary"><Bell className="w-5 h-5 text-warning" /><span className="text-[11px] font-medium">إشعارات</span></Card></Link>
       </div>
+
 
       <div className="space-y-3">
         {isLoading && [1,2,3].map(i => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}
