@@ -150,18 +150,27 @@ function CartPage() {
 
         <Card className="p-4 space-y-3">
           <h3 className="font-bold">طريقة الدفع</h3>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <button type="button" onClick={() => setPayment("cash")}
-              className={`flex items-center gap-2 p-3 rounded-xl border-2 transition ${payment==="cash"?"border-primary bg-primary/5":"border-border"}`}>
+              className={`flex items-center gap-1 p-3 rounded-xl border-2 transition ${payment==="cash"?"border-primary bg-primary/5":"border-border"}`}>
               <Banknote className="w-5 h-5 text-success" />
-              <span className="text-sm font-medium">نقداً عند الاستلام</span>
+              <span className="text-xs font-medium">نقداً</span>
             </button>
             <button type="button" onClick={() => setPayment("credit")}
-              className={`flex items-center gap-2 p-3 rounded-xl border-2 transition ${payment==="credit"?"border-primary bg-primary/5":"border-border"}`}>
+              className={`flex items-center gap-1 p-3 rounded-xl border-2 transition ${payment==="credit"?"border-primary bg-primary/5":"border-border"}`}>
               <Clock className="w-5 h-5 text-warning" />
-              <span className="text-sm font-medium">بالأجل</span>
+              <span className="text-xs font-medium">بالأجل</span>
+            </button>
+            <button type="button" onClick={() => setPayment("wallet")}
+              className={`flex flex-col items-start gap-0 p-3 rounded-xl border-2 transition text-right ${payment==="wallet"?"border-primary bg-primary/5":"border-border"}`}>
+              <div className="flex items-center gap-1"><Wallet className="w-5 h-5 text-primary" /><span className="text-xs font-medium">المحفظة</span></div>
+              <span className="text-[10px] text-muted-foreground">{fmtRial(Number(wallet?.balance ?? 0))}</span>
             </button>
           </div>
+          {payment === "wallet" && Number(wallet?.balance ?? 0) < total && (
+            <p className="text-[11px] text-destructive">الرصيد غير كافٍ — اشحن المحفظة أولاً.</p>
+          )}
+
 
           <div>
             <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1"><Wallet className="w-3 h-3" /> المحافظ الإلكترونية</p>
