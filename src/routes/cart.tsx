@@ -53,26 +53,41 @@ function CartPage() {
     );
   }
 
+  const { data: wallet } = useQuery({
+    queryKey: ["wallet-cart"],
+    queryFn: async () => {
+      await supabase.rpc("ensure_wallet");
+      return (await supabase.from("wallets").select("*").maybeSingle()).data;
+    },
+  });
+
   const checkout = async () => {
     if (!landmark.trim()) { toast.error("اكتب وصف موقع التوصيل"); return; }
     if (!c.storeId) return;
+    if (payment === "wallet" && Number(wallet?.balance ?? 0) < total) {
+      toast.error("رصيد المحفظة غير كافٍ");
+      return;
+    }
     setLoading(true);
     try {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("غير مسجل");
-      const isWallet = payment !== "cash" && payment !== "credit";
+      const isExternalWallet = payment !== "cash" && payment !== "credit" && payment !== "wallet";
       const walletName = WALLETS.find((w) => w.id === payment)?.name;
       const finalNote = [
-        isWallet && walletRef ? `محفظة ${walletName} • رقم العملية: ${walletRef}` : isWallet ? `دفع عبر ${walletName}` : null,
+        isExternalWallet && walletRef ? `محفظة ${walletName} • رقم العملية: ${walletRef}` : isExternalWallet ? `دفع عبر ${walletName}` : null,
+        payment === "wallet" ? "دفع من محفظة التطبيق" : null,
         note || null,
       ].filter(Boolean).join(" — ") || null;
+      // payment_method enum doesn't include 'wallet' — store as 'cash' and pay via RPC
+      const dbPayment = payment === "wallet" ? "cash" : payment;
       const { data: order, error } = await supabase.from("orders").insert({
         customer_id: u.user.id,
         store_id: c.storeId,
         total,
-        payment_method: payment,
+        payment_method: dbPayment as any,
         credit_status: payment === "credit" ? "pending" : null,
-        status: "sent",
+        status: payment === "wallet" ? "delivered" : "sent",
         note: finalNote,
         location_landmark: landmark,
         location_phone: phone || null,
@@ -83,6 +98,10 @@ function CartPage() {
       }));
       const { error: ie } = await supabase.from("order_items").insert(items);
       if (ie) throw ie;
+      if (payment === "wallet") {
+        const { error: we } = await supabase.rpc("pay_order_with_wallet", { _order_id: order.id });
+        if (we) throw we;
+      }
       cart.clear();
       toast.success("تم إرسال الطلب");
       navigate({ to: "/orders" });
