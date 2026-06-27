@@ -185,7 +185,7 @@ function CartPage() {
             </div>
           </div>
 
-          {payment !== "cash" && payment !== "credit" && (
+          {payment !== "cash" && payment !== "credit" && payment !== "wallet" && (
             <div className="space-y-1">
               <Label className="text-xs">رقم العملية / المرجع (بعد التحويل)</Label>
               <Input dir="ltr" value={walletRef} onChange={(e) => setWalletRef(e.target.value)} placeholder="مثال: TXN123456" />
