@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as MerchantRouteImport } from './routes/merchant'
+import { Route as LocationsRouteImport } from './routes/locations'
 import { Route as HomeRouteImport } from './routes/home'
+import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as CreditRouteImport } from './routes/credit'
 import { Route as ChooseRoleRouteImport } from './routes/choose-role'
 import { Route as CartRouteImport } from './routes/cart'
@@ -21,6 +23,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as MerchantIndexRouteImport } from './routes/merchant.index'
 import { Route as StoreStoreIdRouteImport } from './routes/store.$storeId'
 import { Route as MerchantSettingsRouteImport } from './routes/merchant.settings'
+import { Route as MerchantReturnsRouteImport } from './routes/merchant.returns'
 import { Route as MerchantReportsRouteImport } from './routes/merchant.reports'
 import { Route as MerchantProductsRouteImport } from './routes/merchant.products'
 import { Route as MerchantPosRouteImport } from './routes/merchant.pos'
@@ -42,9 +45,19 @@ const MerchantRoute = MerchantRouteImport.update({
   path: '/merchant',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LocationsRoute = LocationsRouteImport.update({
+  id: '/locations',
+  path: '/locations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HomeRoute = HomeRouteImport.update({
   id: '/home',
   path: '/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FavoritesRoute = FavoritesRouteImport.update({
+  id: '/favorites',
+  path: '/favorites',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CreditRoute = CreditRouteImport.update({
@@ -87,6 +100,11 @@ const MerchantSettingsRoute = MerchantSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => MerchantRoute,
 } as any)
+const MerchantReturnsRoute = MerchantReturnsRouteImport.update({
+  id: '/returns',
+  path: '/returns',
+  getParentRoute: () => MerchantRoute,
+} as any)
 const MerchantReportsRoute = MerchantReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -119,7 +137,9 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/choose-role': typeof ChooseRoleRoute
   '/credit': typeof CreditRoute
+  '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
+  '/locations': typeof LocationsRoute
   '/merchant': typeof MerchantRouteWithChildren
   '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
@@ -128,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/merchant/pos': typeof MerchantPosRoute
   '/merchant/products': typeof MerchantProductsRoute
   '/merchant/reports': typeof MerchantReportsRoute
+  '/merchant/returns': typeof MerchantReturnsRoute
   '/merchant/settings': typeof MerchantSettingsRoute
   '/store/$storeId': typeof StoreStoreIdRoute
   '/merchant/': typeof MerchantIndexRoute
@@ -138,7 +159,9 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/choose-role': typeof ChooseRoleRoute
   '/credit': typeof CreditRoute
+  '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
+  '/locations': typeof LocationsRoute
   '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
   '/merchant/credit': typeof MerchantCreditRoute
@@ -146,6 +169,7 @@ export interface FileRoutesByTo {
   '/merchant/pos': typeof MerchantPosRoute
   '/merchant/products': typeof MerchantProductsRoute
   '/merchant/reports': typeof MerchantReportsRoute
+  '/merchant/returns': typeof MerchantReturnsRoute
   '/merchant/settings': typeof MerchantSettingsRoute
   '/store/$storeId': typeof StoreStoreIdRoute
   '/merchant': typeof MerchantIndexRoute
@@ -157,7 +181,9 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/choose-role': typeof ChooseRoleRoute
   '/credit': typeof CreditRoute
+  '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
+  '/locations': typeof LocationsRoute
   '/merchant': typeof MerchantRouteWithChildren
   '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
@@ -166,6 +192,7 @@ export interface FileRoutesById {
   '/merchant/pos': typeof MerchantPosRoute
   '/merchant/products': typeof MerchantProductsRoute
   '/merchant/reports': typeof MerchantReportsRoute
+  '/merchant/returns': typeof MerchantReturnsRoute
   '/merchant/settings': typeof MerchantSettingsRoute
   '/store/$storeId': typeof StoreStoreIdRoute
   '/merchant/': typeof MerchantIndexRoute
@@ -178,7 +205,9 @@ export interface FileRouteTypes {
     | '/cart'
     | '/choose-role'
     | '/credit'
+    | '/favorites'
     | '/home'
+    | '/locations'
     | '/merchant'
     | '/orders'
     | '/profile'
@@ -187,6 +216,7 @@ export interface FileRouteTypes {
     | '/merchant/pos'
     | '/merchant/products'
     | '/merchant/reports'
+    | '/merchant/returns'
     | '/merchant/settings'
     | '/store/$storeId'
     | '/merchant/'
@@ -197,7 +227,9 @@ export interface FileRouteTypes {
     | '/cart'
     | '/choose-role'
     | '/credit'
+    | '/favorites'
     | '/home'
+    | '/locations'
     | '/orders'
     | '/profile'
     | '/merchant/credit'
@@ -205,6 +237,7 @@ export interface FileRouteTypes {
     | '/merchant/pos'
     | '/merchant/products'
     | '/merchant/reports'
+    | '/merchant/returns'
     | '/merchant/settings'
     | '/store/$storeId'
     | '/merchant'
@@ -215,7 +248,9 @@ export interface FileRouteTypes {
     | '/cart'
     | '/choose-role'
     | '/credit'
+    | '/favorites'
     | '/home'
+    | '/locations'
     | '/merchant'
     | '/orders'
     | '/profile'
@@ -224,6 +259,7 @@ export interface FileRouteTypes {
     | '/merchant/pos'
     | '/merchant/products'
     | '/merchant/reports'
+    | '/merchant/returns'
     | '/merchant/settings'
     | '/store/$storeId'
     | '/merchant/'
@@ -235,7 +271,9 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   ChooseRoleRoute: typeof ChooseRoleRoute
   CreditRoute: typeof CreditRoute
+  FavoritesRoute: typeof FavoritesRoute
   HomeRoute: typeof HomeRoute
+  LocationsRoute: typeof LocationsRoute
   MerchantRoute: typeof MerchantRouteWithChildren
   OrdersRoute: typeof OrdersRoute
   ProfileRoute: typeof ProfileRoute
@@ -265,11 +303,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MerchantRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/locations': {
+      id: '/locations'
+      path: '/locations'
+      fullPath: '/locations'
+      preLoaderRoute: typeof LocationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/home': {
       id: '/home'
       path: '/home'
       fullPath: '/home'
       preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/favorites': {
+      id: '/favorites'
+      path: '/favorites'
+      fullPath: '/favorites'
+      preLoaderRoute: typeof FavoritesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/credit': {
@@ -328,6 +380,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MerchantSettingsRouteImport
       parentRoute: typeof MerchantRoute
     }
+    '/merchant/returns': {
+      id: '/merchant/returns'
+      path: '/returns'
+      fullPath: '/merchant/returns'
+      preLoaderRoute: typeof MerchantReturnsRouteImport
+      parentRoute: typeof MerchantRoute
+    }
     '/merchant/reports': {
       id: '/merchant/reports'
       path: '/reports'
@@ -372,6 +431,7 @@ interface MerchantRouteChildren {
   MerchantPosRoute: typeof MerchantPosRoute
   MerchantProductsRoute: typeof MerchantProductsRoute
   MerchantReportsRoute: typeof MerchantReportsRoute
+  MerchantReturnsRoute: typeof MerchantReturnsRoute
   MerchantSettingsRoute: typeof MerchantSettingsRoute
   MerchantIndexRoute: typeof MerchantIndexRoute
 }
@@ -382,6 +442,7 @@ const MerchantRouteChildren: MerchantRouteChildren = {
   MerchantPosRoute: MerchantPosRoute,
   MerchantProductsRoute: MerchantProductsRoute,
   MerchantReportsRoute: MerchantReportsRoute,
+  MerchantReturnsRoute: MerchantReturnsRoute,
   MerchantSettingsRoute: MerchantSettingsRoute,
   MerchantIndexRoute: MerchantIndexRoute,
 }
@@ -396,7 +457,9 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   ChooseRoleRoute: ChooseRoleRoute,
   CreditRoute: CreditRoute,
+  FavoritesRoute: FavoritesRoute,
   HomeRoute: HomeRoute,
+  LocationsRoute: LocationsRoute,
   MerchantRoute: MerchantRouteWithChildren,
   OrdersRoute: OrdersRoute,
   ProfileRoute: ProfileRoute,
