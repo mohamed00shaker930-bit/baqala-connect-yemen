@@ -43,9 +43,10 @@ function AuthPage() {
     try {
       const user = await signInOrSignUpWithPhone(phone, name || undefined);
       clearOtp();
-      const role = await getUserRole(user.id);
       toast.dismiss();
       toast.success("تم تسجيل الدخول", { duration: 1500 });
+      if (await isCurrentUserAdmin()) { navigate({ to: "/admin" }); return; }
+      const role = await getUserRole(user.id);
       if (!role) navigate({ to: "/choose-role" });
       else if (role === "merchant") navigate({ to: "/merchant" });
       else navigate({ to: "/home" });
