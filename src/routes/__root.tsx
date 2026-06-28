@@ -15,6 +15,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { LockScreen } from "@/components/LockScreen";
 import { initLang } from "@/lib/i18n";
+import { registerBaqalatiPwa } from "@/lib/pwa";
 
 function NotFoundComponent() {
   return (
@@ -107,7 +108,10 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
 
-  useEffect(() => { initLang(); }, []);
+  useEffect(() => {
+    initLang();
+    registerBaqalatiPwa();
+  }, []);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
