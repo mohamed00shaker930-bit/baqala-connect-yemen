@@ -15,6 +15,7 @@ import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MerchantRouteImport } from './routes/merchant'
 import { Route as LocationsRouteImport } from './routes/locations'
+import { Route as LibraryImportRouteImport } from './routes/library-import'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as CreditRouteImport } from './routes/credit'
@@ -70,6 +71,11 @@ const MerchantRoute = MerchantRouteImport.update({
 const LocationsRoute = LocationsRouteImport.update({
   id: '/locations',
   path: '/locations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LibraryImportRoute = LibraryImportRouteImport.update({
+  id: '/library-import',
+  path: '/library-import',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HomeRoute = HomeRouteImport.update({
@@ -212,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/credit': typeof CreditRoute
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
+  '/library-import': typeof LibraryImportRoute
   '/locations': typeof LocationsRoute
   '/merchant': typeof MerchantRouteWithChildren
   '/notifications': typeof NotificationsRoute
@@ -245,6 +252,7 @@ export interface FileRoutesByTo {
   '/credit': typeof CreditRoute
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
+  '/library-import': typeof LibraryImportRoute
   '/locations': typeof LocationsRoute
   '/notifications': typeof NotificationsRoute
   '/orders': typeof OrdersRoute
@@ -279,6 +287,7 @@ export interface FileRoutesById {
   '/credit': typeof CreditRoute
   '/favorites': typeof FavoritesRoute
   '/home': typeof HomeRoute
+  '/library-import': typeof LibraryImportRoute
   '/locations': typeof LocationsRoute
   '/merchant': typeof MerchantRouteWithChildren
   '/notifications': typeof NotificationsRoute
@@ -315,6 +324,7 @@ export interface FileRouteTypes {
     | '/credit'
     | '/favorites'
     | '/home'
+    | '/library-import'
     | '/locations'
     | '/merchant'
     | '/notifications'
@@ -348,6 +358,7 @@ export interface FileRouteTypes {
     | '/credit'
     | '/favorites'
     | '/home'
+    | '/library-import'
     | '/locations'
     | '/notifications'
     | '/orders'
@@ -381,6 +392,7 @@ export interface FileRouteTypes {
     | '/credit'
     | '/favorites'
     | '/home'
+    | '/library-import'
     | '/locations'
     | '/merchant'
     | '/notifications'
@@ -416,6 +428,7 @@ export interface RootRouteChildren {
   CreditRoute: typeof CreditRoute
   FavoritesRoute: typeof FavoritesRoute
   HomeRoute: typeof HomeRoute
+  LibraryImportRoute: typeof LibraryImportRoute
   LocationsRoute: typeof LocationsRoute
   MerchantRoute: typeof MerchantRouteWithChildren
   NotificationsRoute: typeof NotificationsRoute
@@ -467,6 +480,13 @@ declare module '@tanstack/react-router' {
       path: '/locations'
       fullPath: '/locations'
       preLoaderRoute: typeof LocationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/library-import': {
+      id: '/library-import'
+      path: '/library-import'
+      fullPath: '/library-import'
+      preLoaderRoute: typeof LibraryImportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/home': {
@@ -715,6 +735,7 @@ const rootRouteChildren: RootRouteChildren = {
   CreditRoute: CreditRoute,
   FavoritesRoute: FavoritesRoute,
   HomeRoute: HomeRoute,
+  LibraryImportRoute: LibraryImportRoute,
   LocationsRoute: LocationsRoute,
   MerchantRoute: MerchantRouteWithChildren,
   NotificationsRoute: NotificationsRoute,
