@@ -99,21 +99,27 @@ export type Database = {
           created_at: string
           icon: string | null
           id: string
+          image_url: string | null
           name: string
+          sort_order: number
           usage_count: number
         }
         Insert: {
           created_at?: string
           icon?: string | null
           id?: string
+          image_url?: string | null
           name: string
+          sort_order?: number
           usage_count?: number
         }
         Update: {
           created_at?: string
           icon?: string | null
           id?: string
+          image_url?: string | null
           name?: string
+          sort_order?: number
           usage_count?: number
         }
         Relationships: []
@@ -121,38 +127,55 @@ export type Database = {
       catalog_items: {
         Row: {
           barcode: string | null
+          category_id: string | null
           category_name: string | null
           created_at: string
           default_price: number
+          description: string
           id: string
           image_url: string | null
           name: string
+          sort_order: number
           source: string
           usage_count: number
         }
         Insert: {
           barcode?: string | null
+          category_id?: string | null
           category_name?: string | null
           created_at?: string
           default_price?: number
+          description?: string
           id?: string
           image_url?: string | null
           name: string
+          sort_order?: number
           source?: string
           usage_count?: number
         }
         Update: {
           barcode?: string | null
+          category_id?: string | null
           category_name?: string | null
           created_at?: string
           default_price?: number
+          description?: string
           id?: string
           image_url?: string | null
           name?: string
+          sort_order?: number
           source?: string
           usage_count?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "catalog_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       categories: {
         Row: {
