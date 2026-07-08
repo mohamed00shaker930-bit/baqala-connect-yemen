@@ -33,7 +33,19 @@ export function CatalogPicker({ open, onClose, onImport }: Props) {
 
   const { data: items = [] } = useQuery({
     queryKey: ["catalog-items"], enabled: open,
-    queryFn: async () => (await supabase.from("catalog_items").select("*").order("usage_count", { ascending: false }).limit(500)).data as CatalogItem[] ?? [],
+    queryFn: async () => {
+      const all: CatalogItem[] = [];
+      const pageSize = 1000;
+      let from = 0;
+      while (true) {
+        const { data } = await supabase.from("catalog_items").select("*").order("sort_order", { ascending: true }).range(from, from + pageSize - 1);
+        const rows = (data as CatalogItem[] | null) ?? [];
+        all.push(...rows);
+        if (rows.length < pageSize) break;
+        from += pageSize;
+      }
+      return all;
+    },
   });
   const { data: cats = [] } = useQuery({
     queryKey: ["catalog-cats"], enabled: open,

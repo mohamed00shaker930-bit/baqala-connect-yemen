@@ -100,7 +100,9 @@ export type Database = {
           icon: string | null
           id: string
           image_url: string | null
+          main_section: string | null
           name: string
+          parent_category: string | null
           sort_order: number
           usage_count: number
         }
@@ -109,7 +111,9 @@ export type Database = {
           icon?: string | null
           id?: string
           image_url?: string | null
+          main_section?: string | null
           name: string
+          parent_category?: string | null
           sort_order?: number
           usage_count?: number
         }
@@ -118,7 +122,9 @@ export type Database = {
           icon?: string | null
           id?: string
           image_url?: string | null
+          main_section?: string | null
           name?: string
+          parent_category?: string | null
           sort_order?: number
           usage_count?: number
         }
@@ -129,42 +135,51 @@ export type Database = {
           barcode: string | null
           category_id: string | null
           category_name: string | null
+          category_path: string | null
           created_at: string
           default_price: number
           description: string
           id: string
           image_url: string | null
+          main_section: string | null
           name: string
           sort_order: number
           source: string
+          subcategory: string | null
           usage_count: number
         }
         Insert: {
           barcode?: string | null
           category_id?: string | null
           category_name?: string | null
+          category_path?: string | null
           created_at?: string
           default_price?: number
           description?: string
           id?: string
           image_url?: string | null
+          main_section?: string | null
           name: string
           sort_order?: number
           source?: string
+          subcategory?: string | null
           usage_count?: number
         }
         Update: {
           barcode?: string | null
           category_id?: string | null
           category_name?: string | null
+          category_path?: string | null
           created_at?: string
           default_price?: number
           description?: string
           id?: string
           image_url?: string | null
+          main_section?: string | null
           name?: string
           sort_order?: number
           source?: string
+          subcategory?: string | null
           usage_count?: number
         }
         Relationships: [
