@@ -109,7 +109,7 @@ export function LockScreen() {
       <div className="w-14 h-14 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center mb-3">
         <ShoppingBasket className="w-7 h-7" />
       </div>
-      <h2 className="text-lg font-bold mb-1">بقالتي مقفل</h2>
+      <h2 className="text-lg font-bold mb-1">وصل مقفل</h2>
       <p className="text-sm text-muted-foreground mb-6 flex items-center gap-1"><Lock className="w-3 h-3" /> أدخل رمز الدخول</p>
 
       <div className={`flex gap-3 mb-8 ${error ? "animate-pulse" : ""}`}>
