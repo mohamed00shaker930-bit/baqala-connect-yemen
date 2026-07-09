@@ -31,6 +31,7 @@ function StorePage() {
   const [q, setQ] = useState("");
   const [customOpen, setCustomOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const cartState = useCart();
 
   const { data: store } = useQuery({
