@@ -62,7 +62,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "theme-color", content: "#0E7C86" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
-      { name: "apple-mobile-web-app-title", content: "بقالتي" },
+      { name: "apple-mobile-web-app-title", content: "وصل" },
       { title: "وصل — اطلب من بقالتك القريبة" },
       { name: "description", content: "تطبيق بقالتي يربطك ببقالة الحي لطلب البقالة والتوصيل، مع دفتر بيع بالأجل آمن وبدون فوائد." },
       { property: "og:title", content: "بقالتي — اطلب من بقالتك القريبة" },
