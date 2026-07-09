@@ -52,15 +52,15 @@ function StorePage() {
   const { data: catalogCats } = useQuery({
     queryKey: ["catalog-cats-lookup"],
     queryFn: async () => {
-      const { data } = await supabase.from("catalog_categories").select("name, main_section, sort_order");
+      const { data } = await supabase.from("catalog_categories").select("name, main_section, sort_order, image_url");
       return data ?? [];
     },
   });
 
   const catLookup = useMemo(() => {
-    const m = new Map<string, { main_section: string | null; sort_order: number | null }>();
+    const m = new Map<string, { main_section: string | null; sort_order: number | null; image_url: string | null }>();
     (catalogCats ?? []).forEach((c: any) => {
-      m.set(c.name, { main_section: c.main_section, sort_order: c.sort_order });
+      m.set(c.name, { main_section: c.main_section, sort_order: c.sort_order, image_url: c.image_url });
     });
     return m;
   }, [catalogCats]);
