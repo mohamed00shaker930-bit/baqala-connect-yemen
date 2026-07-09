@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useMemo, useState, useEffect } from "react";
 import { cart, useCart } from "@/lib/cart";
 import { fmtRial } from "@/lib/format";
-import { Plus, Minus, ShoppingCart, Search, MessageSquarePlus } from "lucide-react";
+import { Plus, Minus, ShoppingCart, Search, MessageSquarePlus, Package, ArrowRight } from "lucide-react";
 import { CustomRequestDialog } from "@/components/CustomRequestDialog";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { toast } from "sonner";
@@ -31,6 +31,7 @@ function StorePage() {
   const [q, setQ] = useState("");
   const [customOpen, setCustomOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const cartState = useCart();
 
   const { data: store } = useQuery({
@@ -51,15 +52,15 @@ function StorePage() {
   const { data: catalogCats } = useQuery({
     queryKey: ["catalog-cats-lookup"],
     queryFn: async () => {
-      const { data } = await supabase.from("catalog_categories").select("name, main_section, sort_order");
+      const { data } = await supabase.from("catalog_categories").select("name, main_section, sort_order, image_url");
       return data ?? [];
     },
   });
 
   const catLookup = useMemo(() => {
-    const m = new Map<string, { main_section: string | null; sort_order: number | null }>();
+    const m = new Map<string, { main_section: string | null; sort_order: number | null; image_url: string | null }>();
     (catalogCats ?? []).forEach((c: any) => {
-      m.set(c.name, { main_section: c.main_section, sort_order: c.sort_order });
+      m.set(c.name, { main_section: c.main_section, sort_order: c.sort_order, image_url: c.image_url });
     });
     return m;
   }, [catalogCats]);
@@ -103,6 +104,10 @@ function StorePage() {
       setActiveSection(sectionsOrdered[0] ?? null);
     }
   }, [sectionsOrdered, activeSection]);
+
+  useEffect(() => {
+    setSelectedCategory(null);
+  }, [activeSection]);
 
   // For search results (flat grouped by category) - existing behavior
   const groupedSearch = filtered.reduce((acc: Record<string, typeof filtered>, p) => {
@@ -186,7 +191,7 @@ function StorePage() {
         </div>
         <div className="relative">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="ابحث عن منتج..." value={q} onChange={(e) => setQ(e.target.value)} className="pr-9" />
+          <Input placeholder="ابحث عن منتج..." value={q} onChange={(e) => { setQ(e.target.value); if (e.target.value.length > 0) setSelectedCategory(null); }} className="pr-9" />
         </div>
 
         {searching ? (
@@ -225,14 +230,41 @@ function StorePage() {
               </div>
             </aside>
             <div className="flex-1 min-w-0 space-y-4">
-              {sectionCategories.map(({ name, items }) => (
-                <div key={name}>
-                  <h2 className="font-bold text-sm mb-2 text-primary">{name}</h2>
+              {selectedCategory ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => setSelectedCategory(null)}>
+                      <ArrowRight className="w-4 h-4" />
+                    </Button>
+                    <h2 className="font-bold text-base text-primary">{selectedCategory}</h2>
+                  </div>
                   <div className="grid grid-cols-2 gap-3">
-                    {items.map(renderProduct)}
+                    {(sectionCategories.find((c) => c.name === selectedCategory)?.items ?? []).map(renderProduct)}
                   </div>
                 </div>
-              ))}
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {sectionCategories.map(({ name }) => {
+                    const img = catLookup.get(name)?.image_url;
+                    return (
+                      <Card
+                        key={name}
+                        onClick={() => setSelectedCategory(name)}
+                        className="p-2 space-y-2 cursor-pointer hover:shadow-md transition"
+                      >
+                        <div className="aspect-square w-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                          {img ? (
+                            <img src={img} alt={name} className="w-full h-full object-cover" />
+                          ) : (
+                            <Package className="w-8 h-8 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="text-xs font-bold text-center line-clamp-2 min-h-[2rem]">{name}</div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         ) : null}
