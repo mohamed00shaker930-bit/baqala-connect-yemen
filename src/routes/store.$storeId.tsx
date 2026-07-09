@@ -230,14 +230,41 @@ function StorePage() {
               </div>
             </aside>
             <div className="flex-1 min-w-0 space-y-4">
-              {sectionCategories.map(({ name, items }) => (
-                <div key={name}>
-                  <h2 className="font-bold text-sm mb-2 text-primary">{name}</h2>
+              {selectedCategory ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => setSelectedCategory(null)}>
+                      <ArrowRight className="w-4 h-4" />
+                    </Button>
+                    <h2 className="font-bold text-base text-primary">{selectedCategory}</h2>
+                  </div>
                   <div className="grid grid-cols-2 gap-3">
-                    {items.map(renderProduct)}
+                    {(sectionCategories.find((c) => c.name === selectedCategory)?.items ?? []).map(renderProduct)}
                   </div>
                 </div>
-              ))}
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  {sectionCategories.map(({ name }) => {
+                    const img = catLookup.get(name)?.image_url;
+                    return (
+                      <Card
+                        key={name}
+                        onClick={() => setSelectedCategory(name)}
+                        className="p-2 space-y-2 cursor-pointer hover:shadow-md transition"
+                      >
+                        <div className="aspect-square w-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                          {img ? (
+                            <img src={img} alt={name} className="w-full h-full object-cover" />
+                          ) : (
+                            <Package className="w-8 h-8 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="text-xs font-bold text-center line-clamp-2 min-h-[2rem]">{name}</div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         ) : null}
