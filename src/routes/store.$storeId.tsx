@@ -191,7 +191,7 @@ function StorePage() {
         </div>
         <div className="relative">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="ابحث عن منتج..." value={q} onChange={(e) => setQ(e.target.value)} className="pr-9" />
+          <Input placeholder="ابحث عن منتج..." value={q} onChange={(e) => { setQ(e.target.value); if (e.target.value.length > 0) setSelectedCategory(null); }} className="pr-9" />
         </div>
 
         {searching ? (
