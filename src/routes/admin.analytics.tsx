@@ -249,7 +249,7 @@ function AnalyticsPage() {
 
   const onExportPdf = () => {
     exportPdfPrint({
-      title: "تقرير بقالتي",
+      title: "تقرير وصل",
       subtitle,
       sections: [
         { heading: "ملخص KPIs", columns: ["البند", "القيمة"], rows: [

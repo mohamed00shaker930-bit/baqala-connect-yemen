@@ -62,7 +62,7 @@ function AuthPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary text-primary-foreground mb-3">
             <ShoppingBasket className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-bold">بقالتي</h1>
+          <h1 className="text-2xl font-bold">وصل</h1>
           <p className="text-sm text-muted-foreground mt-1">بقالة الحي في جوالك</p>
         </div>
 
