@@ -105,6 +105,10 @@ function StorePage() {
     }
   }, [sectionsOrdered, activeSection]);
 
+  useEffect(() => {
+    setSelectedCategory(null);
+  }, [activeSection]);
+
   // For search results (flat grouped by category) - existing behavior
   const groupedSearch = filtered.reduce((acc: Record<string, typeof filtered>, p) => {
     const k = (p as any).categories?.name || "منتجات";
