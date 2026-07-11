@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 
 const tabs = [
   { to: "/admin", label: "الرئيسية", icon: LayoutDashboard, exact: true },
+  { to: "/admin/library", label: "المكتبة", icon: Library },
   { to: "/admin/analytics", label: "تحليلات", icon: BarChart3 },
   { to: "/admin/merchants", label: "المتاجر", icon: Store },
   { to: "/admin/users", label: "المستخدمون", icon: Users },
