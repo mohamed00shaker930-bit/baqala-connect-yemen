@@ -730,9 +730,12 @@ export type Database = {
           id: string
           image_url: string | null
           in_stock: boolean
+          lib_category: string | null
+          main_section: string | null
           name: string
           price: number
           store_id: string
+          subcategory: string | null
         }
         Insert: {
           barcode?: string | null
@@ -741,9 +744,12 @@ export type Database = {
           id?: string
           image_url?: string | null
           in_stock?: boolean
+          lib_category?: string | null
+          main_section?: string | null
           name: string
           price: number
           store_id: string
+          subcategory?: string | null
         }
         Update: {
           barcode?: string | null
@@ -752,9 +758,12 @@ export type Database = {
           id?: string
           image_url?: string | null
           in_stock?: boolean
+          lib_category?: string | null
+          main_section?: string | null
           name?: string
           price?: number
           store_id?: string
+          subcategory?: string | null
         }
         Relationships: [
           {
@@ -1022,6 +1031,13 @@ export type Database = {
       assign_my_role: {
         Args: { _role: Database["public"]["Enums"]["app_role"] }
         Returns: undefined
+      }
+      catalog_category_counts: {
+        Args: never
+        Returns: {
+          category_id: string
+          items_count: number
+        }[]
       }
       customer_request_return: {
         Args: { _order_id: string; _reason: string }

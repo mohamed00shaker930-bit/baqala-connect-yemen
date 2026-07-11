@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, Users, Store, ShoppingBag, Wallet, Megaphone, Image as ImageIcon, Settings, LogOut, ShieldCheck, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Users, Store, ShoppingBag, Wallet, Megaphone, Image as ImageIcon, Settings, LogOut, ShieldCheck, BarChart3, Library } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 
 const tabs = [
   { to: "/admin", label: "الرئيسية", icon: LayoutDashboard, exact: true },
+  { to: "/admin/library", label: "المكتبة", icon: Library },
   { to: "/admin/analytics", label: "تحليلات", icon: BarChart3 },
   { to: "/admin/merchants", label: "المتاجر", icon: Store },
   { to: "/admin/users", label: "المستخدمون", icon: Users },
@@ -44,12 +45,12 @@ export function AdminShell({ title, children, action }: { title: string; childre
       </header>
       <main className="max-w-5xl mx-auto px-4 py-4">{children}</main>
       <nav className="fixed bottom-0 inset-x-0 z-30 bg-card border-t shadow-lg">
-        <div className="max-w-5xl mx-auto grid grid-cols-9">
+        <div className="max-w-5xl mx-auto flex overflow-x-auto no-scrollbar">
           {tabs.map((t) => {
             const Icon = t.icon;
             const active = t.exact ? path === t.to : path.startsWith(t.to);
             return (
-              <Link key={t.to} to={t.to} className={`flex flex-col items-center gap-0.5 py-2 text-[10px] ${active ? "text-primary" : "text-muted-foreground"}`}>
+              <Link key={t.to} to={t.to} className={`flex flex-col items-center gap-0.5 py-2 text-[10px] shrink-0 min-w-[64px] flex-1 ${active ? "text-primary" : "text-muted-foreground"}`}>
                 <Icon className="w-4 h-4" />
                 <span>{t.label}</span>
               </Link>
