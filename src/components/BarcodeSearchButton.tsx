@@ -43,7 +43,7 @@ export function BarcodeSearchButton({ storeId, onFound }: BarcodeSearchButtonPro
       <button
         type="button"
         onClick={() => setScanOpen(true)}
-        className="relative p-2 rounded-full hover:bg-accent/50 text-primary-foreground"
+        className="h-11 w-11 rounded-lg bg-primary text-primary-foreground shadow-sm flex items-center justify-center shrink-0"
         aria-label="مسح الباركود للبحث عن منتج"
       >
         <ScanBarcode className="w-5 h-5" />
