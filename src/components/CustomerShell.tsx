@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/NotificationBell";
+import { BarcodeSearchButton } from "@/components/BarcodeSearchButton";
 import { toast } from "sonner";
 import type { ReactNode } from "react";
 
