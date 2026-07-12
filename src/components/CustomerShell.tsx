@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/NotificationBell";
-import { BarcodeSearchButton } from "@/components/BarcodeSearchButton";
 import { toast } from "sonner";
 import type { ReactNode } from "react";
 
@@ -34,7 +33,6 @@ export function CustomerShell({ title, children, action }: { title: string; chil
           <ShoppingBasket className="w-6 h-6" />
           <h1 className="text-lg font-bold flex-1">{title}</h1>
           {action}
-          <BarcodeSearchButton />
           <NotificationBell />
           <Button size="sm" variant="ghost" onClick={signOut} className="text-primary-foreground hover:bg-primary-foreground/10">
             <LogOut className="w-5 h-5" />

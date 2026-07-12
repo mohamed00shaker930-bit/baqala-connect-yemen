@@ -13,6 +13,7 @@ import { fmtRial } from "@/lib/format";
 import { Plus, Minus, ShoppingCart, Search, MessageSquarePlus, Package, ArrowRight } from "lucide-react";
 import { CustomRequestDialog } from "@/components/CustomRequestDialog";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { BarcodeSearchButton } from "@/components/BarcodeSearchButton";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -193,9 +194,12 @@ function StorePage() {
           <FavoriteButton type="store" id={storeId} />
           <p className="text-xs text-muted-foreground">{store?.area}</p>
         </div>
-        <div className="relative">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="ابحث عن منتج..." value={q} onChange={(e) => { setQ(e.target.value); if (e.target.value.length > 0) setSelectedCategory(null); }} className="pr-9" />
+        <div className="relative flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input placeholder="ابحث عن منتج..." value={q} onChange={(e) => { setQ(e.target.value); if (e.target.value.length > 0) setSelectedCategory(null); }} className="pr-9" />
+          </div>
+          <BarcodeSearchButton storeId={storeId} onFound={(name) => { setQ(name); setSelectedCategory(null); }} />
         </div>
 
         {searching ? (
