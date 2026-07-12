@@ -1,4 +1,6 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CustomerShell } from "@/components/CustomerShell";
@@ -18,6 +20,7 @@ const FALLBACK_SECTION = "أخرى";
 
 export const Route = createFileRoute("/store/$storeId")({
   ssr: false,
+  validateSearch: zodValidator(z.object({ q: fallback(z.string(), "").default("") })),
   beforeLoad: async () => {
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/auth" });
@@ -27,8 +30,9 @@ export const Route = createFileRoute("/store/$storeId")({
 
 function StorePage() {
   const { storeId } = Route.useParams();
+  const { q: initialQ } = Route.useSearch();
   const navigate = useNavigate();
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(initialQ || "");
   const [customOpen, setCustomOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
