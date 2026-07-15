@@ -84,29 +84,48 @@ function POS() {
     queryFn: async () => {
       const local = await getCustomersByStore(store!.id);
       try {
-        // Registered customers seen in prior orders + pending customers for this store
-        const [ordersRes, pendingRes] = await Promise.all([
-          supabase.from("orders").select("customer_id, profiles:profiles!orders_customer_id_fkey(id,name,phone)")
-            .eq("store_id", store!.id).limit(200),
+        const [accountsRes, pendingRes] = await Promise.all([
+          supabase.from("credit_accounts").select("id, customer_id").eq("store_id", store!.id).limit(100),
           supabase.from("pending_customers").select("id,name,phone").eq("store_id", store!.id).limit(200),
         ]);
+        if (accountsRes.error && pendingRes.error) return local;
+
         const merged: { id: string; store_id: string; kind: "registered" | "pending"; name: string; phone: string }[] = [];
-        for (const r of (ordersRes.data ?? []) as any[]) {
-          const p = r.profiles;
-          if (p?.id && p?.name) merged.push({ id: p.id, store_id: store!.id, kind: "registered", name: p.name, phone: p.phone ?? "" });
+
+        const accounts = (accountsRes.data ?? []) as { id: string; customer_id: string }[];
+        for (let i = 0; i < accounts.length; i += 20) {
+          const batch = accounts.slice(i, i + 20);
+          const results = await Promise.all(
+            batch.map(async (acc) => {
+              try {
+                const { data, error } = await supabase.rpc("get_credit_customer", { _account_id: acc.id });
+                if (error) return null;
+                const row = Array.isArray(data) ? data[0] : data;
+                if (!row?.name) return null;
+                return { id: acc.customer_id, store_id: store!.id, kind: "registered" as const, name: row.name as string, phone: (row.phone as string) ?? "" };
+              } catch {
+                return null;
+              }
+            })
+          );
+          for (const r of results) if (r) merged.push(r);
         }
+
         for (const r of (pendingRes.data ?? []) as any[]) {
           if (r?.id) merged.push({ id: r.id, store_id: store!.id, kind: "pending", name: r.name ?? "", phone: r.phone ?? "" });
         }
-        // dedupe by id
+
         const seen = new Set<string>();
         const uniq = merged.filter((c) => (seen.has(c.id) ? false : (seen.add(c.id), true)));
-        if (uniq.length) await putCustomers(uniq);
-        return uniq;
+        if (uniq.length) {
+          try { await putCustomers(uniq); } catch {}
+        }
+        return uniq.length ? uniq : local;
       } catch {
         return local;
       }
     },
+
   });
 
   const [lines, setLines] = useState<Line[]>([]);

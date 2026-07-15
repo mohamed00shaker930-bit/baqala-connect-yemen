@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { putCustomers } from "@/lib/offline-db";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Search, UserPlus, X } from "lucide-react";
 import { toast } from "sonner";
+
 
 export type PickedCustomer = {
   kind: "registered" | "pending";
@@ -34,7 +36,7 @@ export function CustomerPicker({
   offlineFallback?: { id: string; name: string; phone: string; kind: "registered" | "pending" }[];
 }) {
   const [q, setQ] = useState("");
-  const [results, setResults] = useState<{ id: string; name: string | null; phone: string | null }[]>([]);
+  const [results, setResults] = useState<{ id: string; name: string | null; phone: string | null; kind?: "registered" | "pending" }[]>([]);
   const [searching, setSearching] = useState(false);
   const [openNew, setOpenNew] = useState(false);
   const [newName, setNewName] = useState("");
@@ -50,7 +52,7 @@ export function CustomerPicker({
         (digits.length >= 3 && (c.phone || "").replace(/\D/g, "").includes(digits))
       )
       .slice(0, 10)
-      .map((c) => ({ id: c.id, name: c.name, phone: c.phone }));
+      .map((c) => ({ id: c.id, name: c.name, phone: c.phone, kind: c.kind }));
   };
 
   const doSearch = async (text: string) => {
@@ -65,7 +67,21 @@ export function CustomerPicker({
     try {
       const { data, error } = await supabase.rpc("search_customers_by_name", { _q: text.trim() });
       if (error) throw error;
-      setResults((data ?? []) as any);
+      const rows = (data ?? []) as { id: string; name: string | null; phone: string | null }[];
+      setResults(rows.map((r) => ({ ...r, kind: "registered" as const })));
+      try {
+        await putCustomers(
+          rows
+            .filter((r) => r.id)
+            .map((r) => ({
+              id: r.id,
+              store_id: storeId,
+              kind: "registered" as const,
+              name: r.name ?? "",
+              phone: r.phone ?? "",
+            }))
+        );
+      } catch {}
     } catch {
       setResults(searchLocal(text) as any);
     } finally {
@@ -81,16 +97,20 @@ export function CustomerPicker({
     if (!newName.trim()) { toast.error("اكتب اسم العميل"); return; }
     const phone = normalizeYemenPhone(newPhone);
     if (!phone) { toast.error("رقم جوال غير صحيح"); return; }
-    const { data: userData } = await supabase.auth.getUser();
-    const uid = userData.user?.id;
+    const { data: sess } = await supabase.auth.getSession();
+    const uid = sess.session?.user?.id;
     if (!uid) return;
     const { data, error } = await supabase.from("pending_customers")
       .insert({ store_id: storeId, name: newName.trim(), phone, created_by: uid })
       .select().single();
     if (error) { toast.error(error.message); return; }
+    try {
+      await putCustomers([{ id: data.id, store_id: storeId, kind: "pending", name: data.name, phone: data.phone }]);
+    } catch {}
     onChange({ kind: "pending", id: data.id, name: data.name, phone: data.phone });
     setOpenNew(false); setNewName(""); setNewPhone("");
   };
+
 
   if (value) {
     return (
@@ -116,17 +136,28 @@ export function CustomerPicker({
       {searching && <p className="text-xs text-muted-foreground">جاري البحث...</p>}
       {results.length > 0 && (
         <div className="border rounded divide-y max-h-48 overflow-y-auto">
-          {results.map((r) => (
-            <button
-              key={r.id}
-              type="button"
-              onClick={() => onChange({ kind: "registered", id: r.id, name: r.name || "—", phone: r.phone || "" })}
-              className="w-full text-right p-2 hover:bg-accent flex justify-between items-center"
-            >
-              <span className="text-sm">{r.name || "—"}</span>
-              <span className="text-xs text-muted-foreground" dir="ltr">{r.phone}</span>
-            </button>
-          ))}
+          {results.map((r) => {
+            const kind = r.kind ?? "registered";
+            const picked: PickedCustomer = { kind, id: r.id, name: r.name || "—", phone: r.phone || "" };
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => {
+                  onChange(picked);
+                  try { void putCustomers([{ id: picked.id, store_id: storeId, kind, name: picked.name, phone: picked.phone }]); } catch {}
+                }}
+                className="w-full text-right p-2 hover:bg-accent flex justify-between items-center"
+              >
+                <span className="text-sm">
+                  {r.name || "—"}
+                  {kind === "pending" && <span className="text-[10px] text-amber-600 mr-1">(غير مسجل)</span>}
+                </span>
+                <span className="text-xs text-muted-foreground" dir="ltr">{r.phone}</span>
+              </button>
+            );
+          })}
+
         </div>
       )}
       <Button type="button" variant="outline" className="w-full" onClick={() => setOpenNew(true)}>
