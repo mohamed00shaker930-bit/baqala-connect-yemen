@@ -11,9 +11,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { fmtRial } from "@/lib/format";
 import { ScanBarcode, Plus, Minus, Trash2, Search, CheckCircle2, Wallet, Banknote, BookOpen } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CustomerPicker, type PickedCustomer } from "@/components/CustomerPicker";
 import { toast } from "sonner";
+import {
+  getProductsByStore,
+  putProduct,
+  putProducts,
+  getCustomersByStore,
+  putCustomers,
+  type LocalProduct,
+} from "@/lib/offline-db";
+import { enqueue, flush, bindQueryClient } from "@/lib/pos-outbox";
+import { SyncStatusChip } from "@/components/SyncStatusChip";
 
 export const Route = createFileRoute("/merchant/pos")({
   ssr: false,
@@ -30,15 +40,73 @@ const WALLETS: { id: PayMethod; name: string; short: string }[] = [
   { id: "onecash", name: "ون كاش", short: "1" },
 ];
 
+function newUuid() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  // fallback
+  return "xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 function POS() {
   const qc = useQueryClient();
+  useEffect(() => { bindQueryClient(qc); }, [qc]);
+
   const { data: store } = useQuery({
     queryKey: ["my-store"],
     queryFn: fetchMyStore,
   });
+
   const { data: products } = useQuery({
-    queryKey: ["pos-products", store?.id], enabled: !!store?.id,
-    queryFn: async () => (await supabase.from("products").select("*").eq("store_id", store!.id).order("name")).data ?? [],
+    queryKey: ["pos-products", store?.id],
+    enabled: !!store?.id,
+    placeholderData: [],
+    queryFn: async () => {
+      const local = await getProductsByStore(store!.id);
+      try {
+        const { data, error } = await supabase.from("products").select("*").eq("store_id", store!.id).order("name");
+        if (error) throw error;
+        const rows = (data ?? []) as LocalProduct[];
+        if (rows.length) await putProducts(rows);
+        return rows;
+      } catch {
+        return local;
+      }
+    },
+  });
+
+  // load offline customer fallback list
+  const { data: offlineCustomers = [] } = useQuery({
+    queryKey: ["pos-offline-customers", store?.id],
+    enabled: !!store?.id,
+    queryFn: async () => {
+      const local = await getCustomersByStore(store!.id);
+      try {
+        // Registered customers seen in prior orders + pending customers for this store
+        const [ordersRes, pendingRes] = await Promise.all([
+          supabase.from("orders").select("customer_id, profiles:profiles!orders_customer_id_fkey(id,name,phone)")
+            .eq("store_id", store!.id).limit(200),
+          supabase.from("pending_customers").select("id,name,phone").eq("store_id", store!.id).limit(200),
+        ]);
+        const merged: { id: string; store_id: string; kind: "registered" | "pending"; name: string; phone: string }[] = [];
+        for (const r of (ordersRes.data ?? []) as any[]) {
+          const p = r.profiles;
+          if (p?.id && p?.name) merged.push({ id: p.id, store_id: store!.id, kind: "registered", name: p.name, phone: p.phone ?? "" });
+        }
+        for (const r of (pendingRes.data ?? []) as any[]) {
+          if (r?.id) merged.push({ id: r.id, store_id: store!.id, kind: "pending", name: r.name ?? "", phone: r.phone ?? "" });
+        }
+        // dedupe by id
+        const seen = new Set<string>();
+        const uniq = merged.filter((c) => (seen.has(c.id) ? false : (seen.add(c.id), true)));
+        if (uniq.length) await putCustomers(uniq);
+        return uniq;
+      } catch {
+        return local;
+      }
+    },
   });
 
   const [lines, setLines] = useState<Line[]>([]);
@@ -51,6 +119,11 @@ function POS() {
   const [receipt, setReceipt] = useState<{ id: string; lines: Line[]; total: number; payment: PayMethod } | null>(null);
   const [saving, setSaving] = useState(false);
   const [customer, setCustomer] = useState<PickedCustomer | null>(null);
+
+  // flush on mount
+  useEffect(() => {
+    void flush();
+  }, []);
 
   const total = useMemo(() => lines.reduce((s, l) => s + l.price * l.qty, 0), [lines]);
   const filtered = useMemo(() => {
@@ -85,15 +158,27 @@ function POS() {
   const saveUnknown = async () => {
     if (!unknownCode || !store) return;
     if (!newProd.name.trim() || !newProd.price) { toast.error("اكتب الاسم والسعر"); return; }
-    const { data, error } = await supabase.from("products").insert({
-      store_id: store.id, name: newProd.name.trim(), price: Number(newProd.price), barcode: unknownCode,
-    }).select().single();
-    if (error) { toast.error(error.message); return; }
-    addProduct({ id: data.id, name: data.name, price: Number(data.price) });
-    setUnknownCode(null); setNewProd({ name: "", price: "" });
+    const id = newUuid();
+    const row: LocalProduct = {
+      id,
+      store_id: store.id,
+      name: newProd.name.trim(),
+      price: Number(newProd.price),
+      barcode: unknownCode,
+    };
+    await putProduct(row);
+    await enqueue({
+      id: newUuid(),
+      kind: "new_product",
+      createdAt: new Date().toISOString(),
+      payload: row,
+    });
     qc.invalidateQueries({ queryKey: ["pos-products"] });
     qc.invalidateQueries({ queryKey: ["my-products"] });
+    addProduct({ id, name: row.name, price: row.price });
+    setUnknownCode(null); setNewProd({ name: "", price: "" });
     toast.success("أُضيف المنتج وبيع");
+    void flush();
   };
 
   const changeQty = (id: string, delta: number) => {
@@ -111,76 +196,79 @@ function POS() {
     if (payment === "credit" && !customer) { toast.error("اختر العميل لبيع الأجل"); return; }
     setSaving(true);
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      const uid = userData.user?.id;
+      const { data: sess } = await supabase.auth.getSession();
+      const uid = sess.session?.user?.id;
       if (!uid) { toast.error("غير مسجل"); return; }
-      const isWallet = payment !== "cash" && payment !== "credit";
 
-      // Credit sale for a pending (non-registered) customer: store details for later linking.
+      const isWallet = payment !== "cash" && payment !== "credit";
+      const orderId = newUuid();
+      const createdAt = new Date().toISOString();
+
+      let note: string | null = null;
+      let orderCustomerId = uid;
+      let creditStatus: string | null = null;
+      let orderStatus: string = "delivered";
+
       if (payment === "credit" && customer?.kind === "pending") {
-        // pending_customers row already exists; just record the order under the merchant as placeholder.
-        const note = `أجل لعميل غير مسجل: ${customer.name} (${customer.phone}). سيتم تفعيله عند تسجيله.`;
-        const { data: order, error } = await supabase.from("orders").insert({
-          store_id: store.id,
-          customer_id: uid, // placeholder — appears in merchant view only
-          total,
-          payment_method: "credit",
-          status: "sent",
-          channel: "in_store",
-          credit_status: "pending",
-          note,
-        }).select().single();
-        if (error) throw error;
-        const items = lines.map((l) => ({
-          order_id: order.id, product_id: l.product_id, name: l.name, price: l.price, qty: l.qty,
-        }));
-        const { error: itemsErr } = await supabase.from("order_items").insert(items);
-        if (itemsErr) throw itemsErr;
-        setReceipt({ id: order.id, lines, total, payment });
-        setLines([]); setWalletRef(""); setPayment("cash"); setCustomer(null);
-        toast.success("سجّلنا البيع — سيُربط بالعميل عند تسجيله");
-        return;
+        note = `أجل لعميل غير مسجل: ${customer.name} (${customer.phone}). سيتم تفعيله عند تسجيله.`;
+        orderCustomerId = uid;
+        creditStatus = "pending";
+        orderStatus = "sent";
+      } else if (payment === "credit" && customer?.kind === "registered") {
+        orderCustomerId = customer.id;
+        creditStatus = "pending";
+        orderStatus = "sent";
+      } else if (isWallet && walletRef) {
+        note = `محفظة ${payment} - مرجع: ${walletRef}`;
       }
 
-      const orderCustomer = payment === "credit" && customer?.kind === "registered" ? customer.id : uid;
-
-      const { data: order, error } = await supabase.from("orders").insert({
+      const order = {
+        id: orderId,
         store_id: store.id,
-        customer_id: orderCustomer,
+        customer_id: orderCustomerId,
         total,
         payment_method: payment,
-        status: payment === "credit" ? "sent" : "delivered",
+        status: orderStatus,
         channel: "in_store",
-        credit_status: payment === "credit" ? "pending" : null,
-        note: isWallet && walletRef ? `محفظة ${payment} - مرجع: ${walletRef}` : null,
-      }).select().single();
-      if (error) throw error;
-
+        credit_status: creditStatus,
+        note,
+        created_at: createdAt,
+      };
       const items = lines.map((l) => ({
-        order_id: order.id, product_id: l.product_id, name: l.name, price: l.price, qty: l.qty,
+        id: newUuid(),
+        order_id: orderId,
+        product_id: l.product_id,
+        name: l.name,
+        price: l.price,
+        qty: l.qty,
       }));
-      const { error: itemsErr } = await supabase.from("order_items").insert(items);
-      if (itemsErr) throw itemsErr;
 
-      // Credit account for a registered customer — pending until they approve
-      if (payment === "credit" && customer?.kind === "registered") {
-        let { data: acc } = await supabase.from("credit_accounts").select("id")
-          .eq("customer_id", customer.id).eq("store_id", store.id).maybeSingle();
-        if (!acc) {
-          const { data: created } = await supabase.from("credit_accounts")
-            .insert({ customer_id: customer.id, store_id: store.id, balance: 0 })
-            .select().single();
-          acc = created;
-        }
-        if (acc) await supabase.from("credit_transactions").insert({
-          account_id: acc.id, type: "charge", amount: total, order_id: order.id,
-          note: "بيع داخل المحل - أجل", status: "pending",
-        });
-      }
+      const credit =
+        payment === "credit" && customer
+          ? {
+              customerKind: customer.kind,
+              customerId: customer.id,
+              txId: newUuid(),
+              amount: total,
+              note: customer.kind === "pending"
+                ? "بيع داخل المحل - أجل (عميل غير مسجل)"
+                : "بيع داخل المحل - أجل",
+            }
+          : undefined;
 
-      setReceipt({ id: order.id, lines, total, payment });
+      await enqueue({
+        id: newUuid(),
+        kind: "sale",
+        createdAt,
+        payload: { order, items, credit },
+      });
+
+      setReceipt({ id: orderId, lines, total, payment });
       setLines([]); setWalletRef(""); setPayment("cash"); setCustomer(null);
-      toast.success(payment === "credit" ? "أُرسل للعميل للموافقة" : "تم إتمام البيع");
+      toast.success(
+        payment === "credit" ? "سُجّل — سيُرسل للعميل عند المزامنة" : "تم إتمام البيع"
+      );
+      void flush();
     } catch (e: any) {
       toast.error(e.message ?? "فشل الحفظ");
     } finally {
@@ -189,7 +277,7 @@ function POS() {
   };
 
   return (
-    <MerchantShell title="نقطة البيع">
+    <MerchantShell title="نقطة البيع" action={<SyncStatusChip />}>
       <div className="space-y-3">
         <div className="grid grid-cols-2 gap-2">
           <Button size="lg" className="h-16 text-base" onClick={() => setScanOpen(true)}>
@@ -264,7 +352,12 @@ function POS() {
             )}
             {payment === "credit" && store && (
               <div className="border-t pt-3">
-                <CustomerPicker storeId={store.id} value={customer} onChange={setCustomer} />
+                <CustomerPicker
+                  storeId={store.id}
+                  value={customer}
+                  onChange={setCustomer}
+                  offlineFallback={offlineCustomers}
+                />
                 <p className="text-[11px] text-muted-foreground mt-2">سيُرسل للعميل إشعار لقبول الفاتورة قبل إضافتها لذمته.</p>
               </div>
             )}

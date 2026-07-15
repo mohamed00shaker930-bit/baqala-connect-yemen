@@ -6,8 +6,9 @@ import { MerchantShell } from "@/components/MerchantShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { fmtRial } from "@/lib/format";
-import { Download, Store as StoreIcon, ShoppingBag } from "lucide-react";
+import { Download, Store as StoreIcon, ShoppingBag, Clock } from "lucide-react";
 import { useMemo, useState } from "react";
+import { usePosSync } from "@/lib/pos-outbox";
 
 export const Route = createFileRoute("/merchant/reports")({
   ssr: false,
@@ -42,6 +43,7 @@ function rangeBounds(r: Range): { from: Date; to: Date } {
 
 function Reports() {
   const [range, setRange] = useState<Range>("today");
+  const { pendingCount } = usePosSync();
 
   const { data: store } = useQuery({
     queryKey: ["my-store"],
@@ -115,6 +117,12 @@ function Reports() {
     <MerchantShell title="التقارير" action={
       <Button size="sm" variant="secondary" onClick={exportCSV}><Download className="w-4 h-4 ml-1" /> CSV</Button>
     }>
+      {pendingCount > 0 && (
+        <div className="mb-3 flex items-center gap-2 rounded-lg border border-amber-400/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 px-3 py-2 text-sm">
+          <Clock className="w-4 h-4 shrink-0" />
+          <span>يوجد {pendingCount} فاتورة بانتظار المزامنة ولن تظهر في التقرير حتى اكتمالها.</span>
+        </div>
+      )}
       <div className="flex gap-2 mb-3 overflow-x-auto">
         {RANGES.map((r) => (
           <Button key={r.id} size="sm" variant={range === r.id ? "default" : "outline"} onClick={() => setRange(r.id)}>
