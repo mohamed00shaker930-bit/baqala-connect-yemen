@@ -6,8 +6,9 @@ import { MerchantShell } from "@/components/MerchantShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { fmtRial } from "@/lib/format";
-import { Download, Store as StoreIcon, ShoppingBag } from "lucide-react";
+import { Download, Store as StoreIcon, ShoppingBag, Clock } from "lucide-react";
 import { useMemo, useState } from "react";
+import { usePosSync } from "@/lib/pos-outbox";
 
 export const Route = createFileRoute("/merchant/reports")({
   ssr: false,
