@@ -117,6 +117,12 @@ function Reports() {
     <MerchantShell title="التقارير" action={
       <Button size="sm" variant="secondary" onClick={exportCSV}><Download className="w-4 h-4 ml-1" /> CSV</Button>
     }>
+      {pendingCount > 0 && (
+        <div className="mb-3 flex items-center gap-2 rounded-lg border border-amber-400/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 px-3 py-2 text-sm">
+          <Clock className="w-4 h-4 shrink-0" />
+          <span>يوجد {pendingCount} فاتورة بانتظار المزامنة ولن تظهر في التقرير حتى اكتمالها.</span>
+        </div>
+      )}
       <div className="flex gap-2 mb-3 overflow-x-auto">
         {RANGES.map((r) => (
           <Button key={r.id} size="sm" variant={range === r.id ? "default" : "outline"} onClick={() => setRange(r.id)}>
