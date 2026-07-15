@@ -43,6 +43,7 @@ function rangeBounds(r: Range): { from: Date; to: Date } {
 
 function Reports() {
   const [range, setRange] = useState<Range>("today");
+  const { pendingCount } = usePosSync();
 
   const { data: store } = useQuery({
     queryKey: ["my-store"],
