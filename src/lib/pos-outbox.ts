@@ -157,11 +157,11 @@ async function processSale(op: OutboxOp): Promise<{ ok: boolean; retry?: boolean
       const tx = {
         id: credit.txId,
         account_id: acc.id,
-        type: "charge",
+        type: "charge" as const,
         amount: credit.amount,
         order_id: order.id,
         note: credit.note ?? "بيع داخل المحل - أجل",
-        status: "pending",
+        status: "pending" as const,
       };
       const { error: txErr } = await supabase
         .from("credit_transactions")
