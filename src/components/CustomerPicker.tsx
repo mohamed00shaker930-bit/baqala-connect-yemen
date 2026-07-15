@@ -136,17 +136,28 @@ export function CustomerPicker({
       {searching && <p className="text-xs text-muted-foreground">جاري البحث...</p>}
       {results.length > 0 && (
         <div className="border rounded divide-y max-h-48 overflow-y-auto">
-          {results.map((r) => (
-            <button
-              key={r.id}
-              type="button"
-              onClick={() => onChange({ kind: "registered", id: r.id, name: r.name || "—", phone: r.phone || "" })}
-              className="w-full text-right p-2 hover:bg-accent flex justify-between items-center"
-            >
-              <span className="text-sm">{r.name || "—"}</span>
-              <span className="text-xs text-muted-foreground" dir="ltr">{r.phone}</span>
-            </button>
-          ))}
+          {results.map((r) => {
+            const kind = r.kind ?? "registered";
+            const picked: PickedCustomer = { kind, id: r.id, name: r.name || "—", phone: r.phone || "" };
+            return (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => {
+                  onChange(picked);
+                  try { void putCustomers([{ id: picked.id, store_id: storeId, kind, name: picked.name, phone: picked.phone }]); } catch {}
+                }}
+                className="w-full text-right p-2 hover:bg-accent flex justify-between items-center"
+              >
+                <span className="text-sm">
+                  {r.name || "—"}
+                  {kind === "pending" && <span className="text-[10px] text-amber-600 mr-1">(غير مسجل)</span>}
+                </span>
+                <span className="text-xs text-muted-foreground" dir="ltr">{r.phone}</span>
+              </button>
+            );
+          })}
+
         </div>
       )}
       <Button type="button" variant="outline" className="w-full" onClick={() => setOpenNew(true)}>
