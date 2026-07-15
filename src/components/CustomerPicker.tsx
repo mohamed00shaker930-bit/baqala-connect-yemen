@@ -26,10 +26,12 @@ export function CustomerPicker({
   storeId,
   value,
   onChange,
+  offlineFallback,
 }: {
   storeId: string;
   value: PickedCustomer | null;
   onChange: (c: PickedCustomer | null) => void;
+  offlineFallback?: { id: string; name: string; phone: string; kind: "registered" | "pending" }[];
 }) {
   const [q, setQ] = useState("");
   const [results, setResults] = useState<{ id: string; name: string | null; phone: string | null }[]>([]);
@@ -38,13 +40,37 @@ export function CustomerPicker({
   const [newName, setNewName] = useState("");
   const [newPhone, setNewPhone] = useState("");
 
+  const searchLocal = (text: string) => {
+    const list = offlineFallback ?? [];
+    const t = text.trim().toLowerCase();
+    const digits = t.replace(/\D/g, "");
+    return list
+      .filter((c) =>
+        (c.name && c.name.toLowerCase().includes(t)) ||
+        (digits.length >= 3 && (c.phone || "").replace(/\D/g, "").includes(digits))
+      )
+      .slice(0, 10)
+      .map((c) => ({ id: c.id, name: c.name, phone: c.phone }));
+  };
+
   const doSearch = async (text: string) => {
     setQ(text);
     if (text.trim().length < 2) { setResults([]); return; }
+    const online = typeof navigator === "undefined" ? true : navigator.onLine;
+    if (!online) {
+      setResults(searchLocal(text) as any);
+      return;
+    }
     setSearching(true);
-    const { data, error } = await supabase.rpc("search_customers_by_name", { _q: text.trim() });
-    setSearching(false);
-    if (!error) setResults((data ?? []) as any);
+    try {
+      const { data, error } = await supabase.rpc("search_customers_by_name", { _q: text.trim() });
+      if (error) throw error;
+      setResults((data ?? []) as any);
+    } catch {
+      setResults(searchLocal(text) as any);
+    } finally {
+      setSearching(false);
+    }
   };
 
   const createPending = async () => {
