@@ -74,6 +74,10 @@ export function CustomerPicker({
   };
 
   const createPending = async () => {
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      toast.error("إضافة عميل جديد تتطلب اتصالاً بالإنترنت");
+      return;
+    }
     if (!newName.trim()) { toast.error("اكتب اسم العميل"); return; }
     const phone = normalizeYemenPhone(newPhone);
     if (!phone) { toast.error("رقم جوال غير صحيح"); return; }
