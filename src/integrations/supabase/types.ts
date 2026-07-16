@@ -1011,6 +1011,10 @@ export type Database = {
         Returns: number
       }
       admin_grant_admin: { Args: { _uid: string }; Returns: undefined }
+      admin_kpis: {
+        Args: { p_from: string; p_grain?: string; p_to: string }
+        Returns: Json
+      }
       admin_respond_wallet_tx: {
         Args: { _approve: boolean; _tx: string }
         Returns: undefined

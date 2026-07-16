@@ -40,6 +40,7 @@ import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminMerchantsRouteImport } from './routes/admin.merchants'
 import { Route as AdminLibraryRouteImport } from './routes/admin.library'
+import { Route as AdminKpisRouteImport } from './routes/admin.kpis'
 import { Route as AdminBroadcastRouteImport } from './routes/admin.broadcast'
 import { Route as AdminBannersRouteImport } from './routes/admin.banners'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
@@ -199,6 +200,11 @@ const AdminLibraryRoute = AdminLibraryRouteImport.update({
   path: '/library',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminKpisRoute = AdminKpisRouteImport.update({
+  id: '/kpis',
+  path: '/kpis',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminBroadcastRoute = AdminBroadcastRouteImport.update({
   id: '/broadcast',
   path: '/broadcast',
@@ -234,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
+  '/admin/kpis': typeof AdminKpisRoute
   '/admin/library': typeof AdminLibraryRoute
   '/admin/merchants': typeof AdminMerchantsRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -268,6 +275,7 @@ export interface FileRoutesByTo {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
+  '/admin/kpis': typeof AdminKpisRoute
   '/admin/library': typeof AdminLibraryRoute
   '/admin/merchants': typeof AdminMerchantsRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -305,6 +313,7 @@ export interface FileRoutesById {
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
+  '/admin/kpis': typeof AdminKpisRoute
   '/admin/library': typeof AdminLibraryRoute
   '/admin/merchants': typeof AdminMerchantsRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -343,6 +352,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/banners'
     | '/admin/broadcast'
+    | '/admin/kpis'
     | '/admin/library'
     | '/admin/merchants'
     | '/admin/orders'
@@ -377,6 +387,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/banners'
     | '/admin/broadcast'
+    | '/admin/kpis'
     | '/admin/library'
     | '/admin/merchants'
     | '/admin/orders'
@@ -413,6 +424,7 @@ export interface FileRouteTypes {
     | '/admin/analytics'
     | '/admin/banners'
     | '/admin/broadcast'
+    | '/admin/kpis'
     | '/admin/library'
     | '/admin/merchants'
     | '/admin/orders'
@@ -669,6 +681,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLibraryRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/kpis': {
+      id: '/admin/kpis'
+      path: '/kpis'
+      fullPath: '/admin/kpis'
+      preLoaderRoute: typeof AdminKpisRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/broadcast': {
       id: '/admin/broadcast'
       path: '/broadcast'
@@ -697,6 +716,7 @@ interface AdminRouteChildren {
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminBannersRoute: typeof AdminBannersRoute
   AdminBroadcastRoute: typeof AdminBroadcastRoute
+  AdminKpisRoute: typeof AdminKpisRoute
   AdminLibraryRoute: typeof AdminLibraryRoute
   AdminMerchantsRoute: typeof AdminMerchantsRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
@@ -710,6 +730,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminBannersRoute: AdminBannersRoute,
   AdminBroadcastRoute: AdminBroadcastRoute,
+  AdminKpisRoute: AdminKpisRoute,
   AdminLibraryRoute: AdminLibraryRoute,
   AdminMerchantsRoute: AdminMerchantsRoute,
   AdminOrdersRoute: AdminOrdersRoute,
