@@ -26,8 +26,7 @@ function Page() {
   const [from, setFrom] = useState<string>("");
   const [to, setTo] = useState<string>("");
 
-  // debounce name
-  useMemo(() => {
+  useEffect(() => {
     const t = setTimeout(() => setDebouncedName(userName.trim()), 400);
     return () => clearTimeout(t);
   }, [userName]);
