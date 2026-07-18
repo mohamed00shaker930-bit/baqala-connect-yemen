@@ -161,7 +161,7 @@ function Page() {
                       </div>
                     )}
                   </div>
-                  <Button size="sm" variant="outline" onClick={() => setEditing(u)}>
+                  <Button size="sm" variant="outline" onClick={() => setEditing({ user_id: u.user_id, name: u.name, phone: u.phone, roles: u.roles })}>
                     إدارة الصلاحيات
                   </Button>
                 </div>
