@@ -72,7 +72,7 @@ function Page() {
   const load = async () => {
     setLoading(true);
     const params: any = {
-      p_kind: filter.kind === "all" ? null : filter.kind,
+      p_kind: filter.kind === "all" ? "non_staff" : filter.kind,
       p_category_slug: filter.kind === "merchant" ? filter.slug ?? null : null,
       p_role: null,
       p_search: debounced.length >= 2 ? debounced : null,
