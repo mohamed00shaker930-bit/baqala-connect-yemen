@@ -75,7 +75,7 @@ export function AuditLogList({
       let q: any = (supabase as any)
         .from("audit_logs")
         .select("*", { count: "exact" })
-        .order("created_at", { ascending: false })
+        .order("seq", { ascending: false })
         .range(page * pageSize, page * pageSize + pageSize - 1);
       if (filter.userId) q = q.eq("user_id", filter.userId);
       if (filter.userName && filter.userName.trim().length >= 2) q = q.ilike("user_name", `%${filter.userName.trim()}%`);
