@@ -1216,6 +1216,10 @@ export type Database = {
         Args: { _body: string; _link: string; _segment: string; _title: string }
         Returns: number
       }
+      admin_bulk_update_catalog_items: {
+        Args: { p_items: Json }
+        Returns: Json
+      }
       admin_grant_admin: { Args: { _uid: string }; Returns: undefined }
       admin_kpis: {
         Args: { p_from: string; p_grain?: string; p_to: string }
