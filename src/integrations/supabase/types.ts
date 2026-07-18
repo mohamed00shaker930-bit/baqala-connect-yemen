@@ -1405,6 +1405,36 @@ export type Database = {
           user_phone: string
         }[]
       }
+      admin_list_audit_logs: {
+        Args: {
+          p_action?: string
+          p_from?: string
+          p_limit?: number
+          p_offset?: number
+          p_role_group?: string
+          p_search?: string
+          p_table?: string
+          p_to?: string
+          p_user_id?: string
+        }
+        Returns: {
+          action: string
+          changed_fields: string[]
+          created_at: string
+          id: string
+          new_data: Json
+          old_data: Json
+          record_id: string
+          record_label: string
+          seq: number
+          table_name: string
+          total_count: number
+          user_id: string
+          user_name: string
+          user_phone: string
+          user_role: string
+        }[]
+      }
       admin_list_login_sessions: {
         Args: {
           p_limit?: number
