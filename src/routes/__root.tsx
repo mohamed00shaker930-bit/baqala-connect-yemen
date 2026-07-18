@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LockScreen } from "@/components/LockScreen";
 import { initLang } from "@/lib/i18n";
 import { registerBaqalatiPwa } from "@/lib/pwa";
+import { initAppUsageTracking } from "@/lib/appUsage";
 
 function NotFoundComponent() {
   return (
@@ -112,6 +113,7 @@ function RootComponent() {
   useEffect(() => {
     initLang();
     registerBaqalatiPwa();
+    initAppUsageTracking();
   }, []);
 
   useEffect(() => {

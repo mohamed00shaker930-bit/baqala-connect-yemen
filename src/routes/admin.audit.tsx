@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AuditLogList } from "@/components/admin/AuditLogList";
 import { LoginSessionsList } from "@/components/admin/LoginSessionsList";
+import { AppUsageList } from "@/components/admin/AppUsageList";
 import { TABLE_LABELS_AR } from "@/lib/audit-dict";
 import { X } from "lucide-react";
 
@@ -26,6 +27,12 @@ const SESSION_FILTERS = [
   { v: "ended", l: "منتهية" },
 ] as const;
 
+const USAGE_FILTERS = [
+  { v: "all", l: "الكل" },
+  { v: "open", l: "مفتوح الآن" },
+  { v: "closed", l: "مغلق" },
+] as const;
+
 function Page() {
   const [userName, setUserName] = useState("");
   const [debouncedName, setDebouncedName] = useState("");
@@ -36,6 +43,9 @@ function Page() {
 
   const [sessionStatus, setSessionStatus] = useState<"all" | "active" | "ended">("all");
   const [sessionTotal, setSessionTotal] = useState(0);
+
+  const [usageStatus, setUsageStatus] = useState<"all" | "open" | "closed">("all");
+  const [usageTotal, setUsageTotal] = useState(0);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedName(userName.trim()), 400);
@@ -61,9 +71,10 @@ function Page() {
   return (
     <AdminShell title="سجل العمليات">
       <Tabs defaultValue="audit" className="w-full">
-        <TabsList className="grid grid-cols-2 w-full mb-4">
-          <TabsTrigger value="audit">سجل العمليات</TabsTrigger>
-          <TabsTrigger value="sessions">تسجيلات الدخول والخروج</TabsTrigger>
+        <TabsList className="grid grid-cols-3 w-full mb-4">
+          <TabsTrigger value="audit" className="text-xs">سجل العمليات</TabsTrigger>
+          <TabsTrigger value="sessions" className="text-xs">تسجيلات الدخول والخروج</TabsTrigger>
+          <TabsTrigger value="usage" className="text-xs">فتح وإغلاق التطبيق</TabsTrigger>
         </TabsList>
 
         <TabsContent value="audit">
@@ -136,6 +147,31 @@ function Page() {
             pageSize={50}
             showUser
             onTotal={setSessionTotal}
+          />
+        </TabsContent>
+
+        <TabsContent value="usage">
+          <Card className="p-3 mb-4">
+            <div className="flex items-center gap-2 flex-wrap">
+              {USAGE_FILTERS.map((f) => (
+                <Button
+                  key={f.v}
+                  size="sm"
+                  variant={usageStatus === f.v ? "default" : "outline"}
+                  onClick={() => setUsageStatus(f.v)}
+                >
+                  {f.l}
+                </Button>
+              ))}
+              <span className="text-xs text-muted-foreground ms-auto">{usageTotal} سجل</span>
+            </div>
+          </Card>
+          <AppUsageList
+            userId={null}
+            status={usageStatus === "all" ? null : usageStatus}
+            pageSize={50}
+            showUser
+            onTotal={setUsageTotal}
           />
         </TabsContent>
       </Tabs>
