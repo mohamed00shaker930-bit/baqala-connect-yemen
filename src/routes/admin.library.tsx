@@ -419,35 +419,48 @@ function ItemsTab() {
   const [q, setQ] = useState("");
   const [qInput, setQInput] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("__all");
+  const [sortBy, setSortBy] = useState<string>("newest");
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState<Item | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Item | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   useEffect(() => {
     (supabase as any).from("catalog_categories").select("id,name,image_url,icon,sort_order,main_section").order("sort_order")
       .then(({ data }: any) => setCats(data || []));
   }, []);
 
+  const applySort = (query: any) => {
+    switch (sortBy) {
+      case "price_desc": return query.order("default_price", { ascending: false, nullsFirst: false });
+      case "price_asc": return query.order("default_price", { ascending: true, nullsFirst: false });
+      case "name_asc": return query.order("name", { ascending: true });
+      case "name_desc": return query.order("name", { ascending: false });
+      case "newest":
+      default: return query.order("created_at", { ascending: false });
+    }
+  };
+
   const load = async () => {
     setLoading(true);
     let query = (supabase as any).from("catalog_items")
-      .select("id,name,image_url,barcode,default_price,description,category_id,category_name,main_section,sort_order", { count: "exact" })
-      .order("sort_order", { ascending: true })
-      .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+      .select("id,name,image_url,barcode,default_price,description,category_id,category_name,main_section,sort_order", { count: "exact" });
     if (q.trim()) {
       const term = q.trim().replace(/[%,]/g, "");
       query = query.or(`name.ilike.%${term}%,barcode.ilike.%${term}%`);
     }
     if (categoryFilter !== "__all") query = query.eq("category_id", categoryFilter);
+    query = applySort(query).range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
     const { data, count } = await query;
     setItems((data as Item[]) || []);
     setTotal(count || 0);
     setLoading(false);
   };
-  useEffect(() => { load(); }, [page, q, categoryFilter]);
+  useEffect(() => { load(); }, [page, q, categoryFilter, sortBy]);
 
-  useEffect(() => { setPage(0); }, [q, categoryFilter]);
+  useEffect(() => { setPage(0); }, [q, categoryFilter, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -457,7 +470,6 @@ function ItemsTab() {
     if (!deleteTarget) return;
     const { error } = await (supabase as any).from("catalog_items").delete().eq("id", deleteTarget.id);
     if (error) { toast.error(error.message); return; }
-    // best-effort delete image
     if (deleteTarget.image_url) {
       const marker = `/${BUCKET}/`;
       const idx = deleteTarget.image_url.indexOf(marker);
@@ -471,6 +483,75 @@ function ItemsTab() {
     load();
   };
 
+  const exportExcel = async () => {
+    setExporting(true);
+    try {
+      const all: any[] = [];
+      const size = 1000;
+      let from = 0;
+      while (true) {
+        const { data, error } = await (supabase as any).from("catalog_items")
+          .select("id,name,barcode,default_price,description,main_section,category_path,subcategory,category_name,image_url,usage_count,sort_order,source,created_at")
+          .order("main_section", { ascending: true, nullsFirst: false })
+          .order("category_path", { ascending: true, nullsFirst: false })
+          .order("name", { ascending: true })
+          .range(from, from + size - 1);
+        if (error) throw error;
+        const rows = (data || []) as any[];
+        all.push(...rows);
+        if (rows.length < size) break;
+        from += size;
+      }
+      const headers = [
+        "المعرف (لا تعدّله)", "اسم المنتج", "الباركود", "السعر", "الوصف",
+        "القسم الرئيسي", "الفئة", "الفئة الفرعية", "اسم الفئة",
+        "رابط الصورة", "عدد الاستخدام", "الترتيب", "المصدر", "تاريخ الإضافة",
+      ];
+      const aoa: any[][] = [headers];
+      for (const r of all) {
+        aoa.push([
+          r.id ?? "",
+          r.name ?? "",
+          r.barcode ?? "",
+          r.default_price ?? "",
+          r.description ?? "",
+          r.main_section ?? "",
+          r.category_path ?? "",
+          r.subcategory ?? "",
+          r.category_name ?? "",
+          r.image_url ?? "",
+          r.usage_count ?? "",
+          r.sort_order ?? "",
+          r.source ?? "",
+          r.created_at ?? "",
+        ]);
+      }
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      // Force id (col A) and barcode (col C) to text
+      const range = XLSX.utils.decode_range(ws["!ref"]!);
+      for (let R = 1; R <= range.e.r; R++) {
+        for (const C of [0, 2]) {
+          const addr = XLSX.utils.encode_cell({ r: R, c: C });
+          const cell = ws[addr];
+          if (cell && cell.v != null && cell.v !== "") {
+            cell.t = "s";
+            cell.v = String(cell.v);
+            cell.z = "@";
+          }
+        }
+      }
+      ws["!cols"] = headers.map((h) => ({ wch: Math.max(12, Math.min(40, h.length + 6)) }));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "المنتجات");
+      XLSX.writeFile(wb, "wasl-library.xlsx");
+      toast.success(`تم تصدير ${all.length} منتج`);
+    } catch (e: any) {
+      toast.error(e.message || "فشل التصدير");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col md:flex-row gap-2">
@@ -478,6 +559,16 @@ function ItemsTab() {
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="بحث بالاسم أو الباركود..." value={qInput} onChange={(e) => setQInput(e.target.value)} className="pr-9" />
         </form>
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="md:w-48"><SelectValue placeholder="الفرز" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="newest">الأحدث</SelectItem>
+            <SelectItem value="price_desc">السعر: من الأعلى إلى الأدنى</SelectItem>
+            <SelectItem value="price_asc">السعر: من الأدنى إلى الأعلى</SelectItem>
+            <SelectItem value="name_asc">الاسم: أ → ي</SelectItem>
+            <SelectItem value="name_desc">الاسم: ي → أ</SelectItem>
+          </SelectContent>
+        </Select>
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
           <SelectTrigger className="md:w-56"><SelectValue placeholder="الفئة" /></SelectTrigger>
           <SelectContent>
@@ -485,8 +576,17 @@ function ItemsTab() {
             {cats.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
           </SelectContent>
         </Select>
+        <Button variant="outline" onClick={exportExcel} disabled={exporting}>
+          {exporting ? <Loader2 className="w-4 h-4 ml-1 animate-spin" /> : <Download className="w-4 h-4 ml-1" />}
+          تصدير Excel
+        </Button>
+        <Button variant="outline" onClick={() => setImportOpen(true)}>
+          <Upload className="w-4 h-4 ml-1" />استيراد Excel
+        </Button>
         <Button onClick={() => setAddOpen(true)}><Plus className="w-4 h-4 ml-1" />إضافة منتج</Button>
       </div>
+
+      <ImportDialog open={importOpen} onClose={() => setImportOpen(false)} onDone={load} />
 
       <Card className="overflow-x-auto">
         <Table>
