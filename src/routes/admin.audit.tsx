@@ -71,9 +71,10 @@ function Page() {
   return (
     <AdminShell title="سجل العمليات">
       <Tabs defaultValue="audit" className="w-full">
-        <TabsList className="grid grid-cols-2 w-full mb-4">
-          <TabsTrigger value="audit">سجل العمليات</TabsTrigger>
-          <TabsTrigger value="sessions">تسجيلات الدخول والخروج</TabsTrigger>
+        <TabsList className="grid grid-cols-3 w-full mb-4">
+          <TabsTrigger value="audit" className="text-xs">سجل العمليات</TabsTrigger>
+          <TabsTrigger value="sessions" className="text-xs">تسجيلات الدخول والخروج</TabsTrigger>
+          <TabsTrigger value="usage" className="text-xs">فتح وإغلاق التطبيق</TabsTrigger>
         </TabsList>
 
         <TabsContent value="audit">
