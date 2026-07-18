@@ -13,6 +13,7 @@ const tabs = [
   { to: "/admin/analytics", label: "تحليلات", icon: BarChart3 },
   { to: "/admin/merchants", label: "المتاجر", icon: Store },
   { to: "/admin/users", label: "المستخدمون", icon: Users },
+  { to: "/admin/team", label: "فريق الإدارة", icon: ShieldCheck },
   { to: "/admin/orders", label: "الطلبات", icon: ShoppingBag },
   { to: "/admin/wallets", label: "المحافظ", icon: Wallet },
   { to: "/admin/broadcast", label: "إشعارات", icon: Megaphone },
