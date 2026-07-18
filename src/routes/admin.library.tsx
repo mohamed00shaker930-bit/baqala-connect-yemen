@@ -24,8 +24,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Pencil, Trash2, Plus, ArrowUp, ArrowDown, Image as ImageIcon,
-  ChevronLeft, ChevronRight, Package, Search,
+  ChevronLeft, ChevronRight, Package, Search, Download, Upload, Loader2,
 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import * as XLSX from "xlsx";
 
 export const Route = createFileRoute("/admin/library")({ component: LibraryPage });
 
