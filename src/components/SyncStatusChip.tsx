@@ -79,7 +79,7 @@ export function SyncStatusChip() {
                 <div key={op.id} className="border rounded p-2 text-sm">
                   <div className="flex justify-between items-center">
                     <span className="font-medium">
-                      {isProduct ? `منتج جديد: ${op.payload?.name ?? "—"}` : `فاتورة ${new Date(op.createdAt).toLocaleString("ar-EG")}`}
+                      {isProduct ? `منتج جديد: ${op.payload?.name ?? "—"}` : `فاتورة ${formatDateTime(op.createdAt)}`}
                     </span>
                     <span className={`text-[10px] px-2 py-0.5 rounded ${op.status === "failed" ? "bg-destructive/20 text-destructive" : "bg-muted"}`}>
                       {op.status === "failed" ? "فشلت" : "معلّقة"}
