@@ -147,7 +147,7 @@ function Page() {
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {u.phone || "—"} • مسجّل {fmtDate(u.created_at)}
+                      {u.phone || "—"} • مسجّل {formatDateTimeFull(u.created_at)}
                     </p>
                     {u.user_kind === "merchant" && (u.stores?.length ?? 0) > 0 && (
                       <div className="mt-2 space-y-1">
