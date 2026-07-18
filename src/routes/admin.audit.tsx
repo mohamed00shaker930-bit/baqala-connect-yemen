@@ -44,12 +44,19 @@ const USAGE_FILTERS = [
 ] as const;
 
 function Page() {
+  const [userName, setUserName] = useState<string>("");
+  const [debouncedName, setDebouncedName] = useState<string>("");
   const [roleGroup, setRoleGroup] = useState<string>("all");
   const [pickedUser, setPickedUser] = useState<PickedUser | null>(null);
   const [action, setAction] = useState<string>("all");
   const [tableName, setTableName] = useState<string>("all");
   const [from, setFrom] = useState<string>("");
   const [to, setTo] = useState<string>("");
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedName(userName.trim()), 400);
+    return () => clearTimeout(t);
+  }, [userName]);
 
   const [sessionStatus, setSessionStatus] = useState<"all" | "active" | "ended">("all");
   const [sessionTotal, setSessionTotal] = useState(0);
@@ -66,16 +73,17 @@ function Page() {
   const pickerDisabled = roleGroup === "system";
 
   const filter = useMemo(() => ({
-    userName: null,
+    userName: debouncedName || null,
     userId: pickedUser?.user_id ?? null,
     roleGroup: roleGroup === "all" ? null : (roleGroup as any),
     action: action === "all" ? null : action,
     tableName: tableName === "all" ? null : tableName,
     from: from ? new Date(from).toISOString() : null,
     to: to ? new Date(to + "T23:59:59").toISOString() : null,
-  }), [pickedUser, roleGroup, action, tableName, from, to]);
+  }), [debouncedName, pickedUser, roleGroup, action, tableName, from, to]);
 
   const clear = () => {
+    setUserName(""); setDebouncedName("");
     setRoleGroup("all"); setPickedUser(null);
     setAction("all"); setTableName("all");
     setFrom(""); setTo("");
@@ -96,6 +104,15 @@ function Page() {
         <TabsContent value="audit">
           <Card className="p-3 mb-4 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="sm:col-span-2">
+                <Label className="text-xs">بحث بالاسم أو رقم الهاتف</Label>
+                <Input
+                  className="mt-1"
+                  placeholder="بحث بالاسم أو رقم الهاتف"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                />
+              </div>
               <div>
                 <Label className="text-xs">نوع النشاط</Label>
                 <Select
@@ -141,15 +158,13 @@ function Page() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-2 gap-2 sm:col-span-2">
-                <div>
-                  <Label className="text-xs">من</Label>
-                  <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="mt-1" />
-                </div>
-                <div>
-                  <Label className="text-xs">إلى</Label>
-                  <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="mt-1" />
-                </div>
+              <div>
+                <Label className="text-xs">من</Label>
+                <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs">إلى</Label>
+                <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="mt-1" />
               </div>
             </div>
             <div className="flex justify-end">
