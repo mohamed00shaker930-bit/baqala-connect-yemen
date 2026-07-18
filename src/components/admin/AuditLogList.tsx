@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { formatDateTime } from "@/lib/dateFormat";
+import { formatDateTimeFull } from "@/lib/dateFormat";
 import { tableLabel, roleLabel, fieldLabel, formatAuditValue } from "@/lib/audit-dict";
 
 export type AuditLog = {
