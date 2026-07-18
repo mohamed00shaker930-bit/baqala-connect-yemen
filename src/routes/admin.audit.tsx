@@ -10,8 +10,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AuditLogList } from "@/components/admin/AuditLogList";
 import { LoginSessionsList } from "@/components/admin/LoginSessionsList";
 import { AppUsageList } from "@/components/admin/AppUsageList";
+import { UserPicker, type PickedUser } from "@/components/admin/UserPicker";
 import { TABLE_LABELS_AR } from "@/lib/audit-dict";
 import { X } from "lucide-react";
+
 
 export const Route = createFileRoute("/admin/audit")({ component: Page });
 
@@ -20,6 +22,14 @@ const ACTIONS = [
   { v: "UPDATE", l: "تعديل" },
   { v: "DELETE", l: "حذف" },
 ];
+
+const ROLE_GROUPS = [
+  { v: "customer", l: "عميل" },
+  { v: "merchant", l: "تاجر" },
+  { v: "staff", l: "الإدارة" },
+  { v: "system", l: "النظام" },
+] as const;
+
 
 const SESSION_FILTERS = [
   { v: "all", l: "الكل" },
@@ -36,6 +46,8 @@ const USAGE_FILTERS = [
 function Page() {
   const [userName, setUserName] = useState("");
   const [debouncedName, setDebouncedName] = useState("");
+  const [roleGroup, setRoleGroup] = useState<string>("all");
+  const [pickedUser, setPickedUser] = useState<PickedUser | null>(null);
   const [action, setAction] = useState<string>("all");
   const [tableName, setTableName] = useState<string>("all");
   const [from, setFrom] = useState<string>("");
@@ -43,9 +55,11 @@ function Page() {
 
   const [sessionStatus, setSessionStatus] = useState<"all" | "active" | "ended">("all");
   const [sessionTotal, setSessionTotal] = useState(0);
+  const [sessionUser, setSessionUser] = useState<PickedUser | null>(null);
 
   const [usageStatus, setUsageStatus] = useState<"all" | "open" | "closed">("all");
   const [usageTotal, setUsageTotal] = useState(0);
+  const [usageUser, setUsageUser] = useState<PickedUser | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedName(userName.trim()), 400);
@@ -54,17 +68,21 @@ function Page() {
 
   const filter = useMemo(() => ({
     userName: debouncedName || null,
+    userId: pickedUser?.user_id ?? null,
+    roleGroup: roleGroup === "all" ? null : (roleGroup as any),
     action: action === "all" ? null : action,
     tableName: tableName === "all" ? null : tableName,
     from: from ? new Date(from).toISOString() : null,
     to: to ? new Date(to + "T23:59:59").toISOString() : null,
-  }), [debouncedName, action, tableName, from, to]);
+  }), [debouncedName, pickedUser, roleGroup, action, tableName, from, to]);
 
   const clear = () => {
     setUserName(""); setDebouncedName("");
+    setRoleGroup("all"); setPickedUser(null);
     setAction("all"); setTableName("all");
     setFrom(""); setTo("");
   };
+
 
   const tableOptions = Object.entries(TABLE_LABELS_AR).sort((a, b) => a[1].localeCompare(b[1], "ar"));
 
@@ -81,8 +99,18 @@ function Page() {
           <Card className="p-3 mb-4 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">اسم المستخدم</Label>
-                <Input placeholder="ابحث بالاسم" value={userName} onChange={(e) => setUserName(e.target.value)} className="mt-1" />
+                <Label className="text-xs">ابحث بالاسم أو رقم الجوال</Label>
+                <Input placeholder="ابحث بالاسم أو رقم الجوال" value={userName} onChange={(e) => setUserName(e.target.value)} className="mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs">نوع النشاط</Label>
+                <Select value={roleGroup} onValueChange={setRoleGroup}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">الكل</SelectItem>
+                    {ROLE_GROUPS.map((g) => <SelectItem key={g.v} value={g.v}>{g.l}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label className="text-xs">العملية</Label>
@@ -104,7 +132,11 @@ function Page() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="sm:col-span-2">
+                <Label className="text-xs">تحديد مستخدم</Label>
+                <div className="mt-1"><UserPicker value={pickedUser} onChange={setPickedUser} /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 sm:col-span-2">
                 <div>
                   <Label className="text-xs">من</Label>
                   <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="mt-1" />
@@ -122,11 +154,12 @@ function Page() {
             </div>
           </Card>
 
+
           <AuditLogList filter={filter} pageSize={50} showUser />
         </TabsContent>
 
         <TabsContent value="sessions">
-          <Card className="p-3 mb-4">
+          <Card className="p-3 mb-4 space-y-3">
             <div className="flex items-center gap-2 flex-wrap">
               {SESSION_FILTERS.map((f) => (
                 <Button
@@ -140,9 +173,13 @@ function Page() {
               ))}
               <span className="text-xs text-muted-foreground ms-auto">{sessionTotal} جلسة</span>
             </div>
+            <div>
+              <Label className="text-xs">تحديد مستخدم</Label>
+              <div className="mt-1"><UserPicker value={sessionUser} onChange={setSessionUser} /></div>
+            </div>
           </Card>
           <LoginSessionsList
-            userId={null}
+            userId={sessionUser?.user_id ?? null}
             status={sessionStatus === "all" ? null : sessionStatus}
             pageSize={50}
             showUser
@@ -151,7 +188,7 @@ function Page() {
         </TabsContent>
 
         <TabsContent value="usage">
-          <Card className="p-3 mb-4">
+          <Card className="p-3 mb-4 space-y-3">
             <div className="flex items-center gap-2 flex-wrap">
               {USAGE_FILTERS.map((f) => (
                 <Button
@@ -165,15 +202,20 @@ function Page() {
               ))}
               <span className="text-xs text-muted-foreground ms-auto">{usageTotal} سجل</span>
             </div>
+            <div>
+              <Label className="text-xs">تحديد مستخدم</Label>
+              <div className="mt-1"><UserPicker value={usageUser} onChange={setUsageUser} /></div>
+            </div>
           </Card>
           <AppUsageList
-            userId={null}
+            userId={usageUser?.user_id ?? null}
             status={usageStatus === "all" ? null : usageStatus}
             pageSize={50}
             showUser
             onTotal={setUsageTotal}
           />
         </TabsContent>
+
       </Tabs>
     </AdminShell>
   );

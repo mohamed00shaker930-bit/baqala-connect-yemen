@@ -9,8 +9,10 @@ import { tableLabel, roleLabel, fieldLabel, formatAuditValue } from "@/lib/audit
 
 export type AuditLog = {
   id: string;
+  seq?: number;
   user_id: string | null;
   user_name: string | null;
+  user_phone?: string | null;
   user_role: string | null;
   action: "INSERT" | "UPDATE" | "DELETE";
   table_name: string;
@@ -20,16 +22,19 @@ export type AuditLog = {
   new_data: any;
   changed_fields: string[] | null;
   created_at: string;
+  total_count?: number;
 };
 
 export type AuditFilter = {
   userId?: string | null;
   userName?: string | null;
+  roleGroup?: "customer" | "merchant" | "staff" | "system" | null;
   action?: string | null;
   tableName?: string | null;
   from?: string | null;
   to?: string | null;
 };
+
 
 const ACTION_META: Record<string, { label: string; cls: string }> = {
   INSERT: { label: "إضافة", cls: "bg-emerald-100 text-emerald-700 border-emerald-200" },
@@ -65,36 +70,38 @@ export function AuditLogList({
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   useEffect(() => { setPage(0); }, [
-    filter.userId, filter.userName, filter.action, filter.tableName, filter.from, filter.to,
+    filter.userId, filter.userName, filter.roleGroup, filter.action, filter.tableName, filter.from, filter.to,
   ]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      let q: any = (supabase as any)
-        .from("audit_logs")
-        .select("*", { count: "exact" })
-        .order("seq", { ascending: false })
-        .range(page * pageSize, page * pageSize + pageSize - 1);
-      if (filter.userId) q = q.eq("user_id", filter.userId);
-      if (filter.userName && filter.userName.trim().length >= 2) q = q.ilike("user_name", `%${filter.userName.trim()}%`);
-      if (filter.action) q = q.eq("action", filter.action);
-      if (filter.tableName) q = q.eq("table_name", filter.tableName);
-      if (filter.from) q = q.gte("created_at", filter.from);
-      if (filter.to) q = q.lte("created_at", filter.to);
-      const { data, error, count } = await q;
+      const search = filter.userName && filter.userName.trim().length >= 2 ? filter.userName.trim() : null;
+      const { data, error } = await (supabase as any).rpc("admin_list_audit_logs", {
+        p_search: search,
+        p_user_id: filter.userId ?? null,
+        p_role_group: filter.roleGroup ?? null,
+        p_action: filter.action ?? null,
+        p_table: filter.tableName ?? null,
+        p_from: filter.from ?? null,
+        p_to: filter.to ?? null,
+        p_limit: pageSize,
+        p_offset: page * pageSize,
+      });
       if (cancelled) return;
       if (error) {
         setRows([]); setTotal(0);
       } else {
-        setRows((data as AuditLog[]) || []);
-        setTotal(count || 0);
+        const list = (data as AuditLog[]) || [];
+        setRows(list);
+        setTotal(list[0]?.total_count ?? 0);
       }
       setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, [filter.userId, filter.userName, filter.action, filter.tableName, filter.from, filter.to, page, pageSize]);
+  }, [filter.userId, filter.userName, filter.roleGroup, filter.action, filter.tableName, filter.from, filter.to, page, pageSize]);
+
 
   const toggle = (id: string) => {
     setExpanded((s) => {
@@ -132,11 +139,13 @@ export function AuditLogList({
                 {showUser && (
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                     <span className="text-xs">{r.user_name || "—"}</span>
+                    {r.user_phone && <span className="text-[11px] text-muted-foreground">{r.user_phone}</span>}
                     <Badge variant="secondary" className={`text-[10px] ${ROLE_CLS[r.user_role || "unknown"] || ROLE_CLS.unknown}`}>
                       {roleLabel(r.user_role)}
                     </Badge>
                   </div>
                 )}
+
               </div>
               {r.action === "UPDATE" && fields.length > 0 && (
                 <Button size="sm" variant="ghost" onClick={() => toggle(r.id)} className="h-7 px-2">
