@@ -95,7 +95,6 @@ function Page() {
   const chips = useMemo(() => {
     const base: Array<{ key: string; label: string; active: boolean; onClick: () => void }> = [
       { key: "all", label: "الكل", active: filter.kind === "all", onClick: () => setFilter({ kind: "all" }) },
-      { key: "staff", label: "الإدارة", active: filter.kind === "staff", onClick: () => setFilter({ kind: "staff" }) },
       { key: "customer", label: "العملاء", active: filter.kind === "customer", onClick: () => setFilter({ kind: "customer" }) },
     ];
     cats.forEach((c) => {
