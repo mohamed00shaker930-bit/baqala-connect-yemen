@@ -54,29 +54,38 @@ export function RolesDialog({ user, onClose, onChanged }: { user: RolesDialogUse
 
   return (
     <Dialog open={!!user} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>إدارة الصلاحيات</DialogTitle>
+          <DialogTitle>تفاصيل المستخدم</DialogTitle>
           <DialogDescription>
             {user.name || "—"} • {user.phone || "—"}
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3 py-2">
-          {STAFF_ROLES.map((r) => {
-            const checked = roles.has(r.key);
-            return (
-              <div key={r.key} className="flex items-center justify-between border rounded-lg p-3">
-                <Label htmlFor={`role-${r.key}`} className="text-sm">{r.label}</Label>
-                <Switch
-                  id={`role-${r.key}`}
-                  checked={checked}
-                  disabled={busy === r.key}
-                  onCheckedChange={(v) => toggle(r.key, v)}
-                />
-              </div>
-            );
-          })}
-        </div>
+        <Tabs defaultValue="roles" className="mt-2">
+          <TabsList className="grid grid-cols-2 w-full">
+            <TabsTrigger value="roles">الصلاحيات</TabsTrigger>
+            <TabsTrigger value="activity">سجل النشاط</TabsTrigger>
+          </TabsList>
+          <TabsContent value="roles" className="space-y-3 py-2">
+            {STAFF_ROLES.map((r) => {
+              const checked = roles.has(r.key);
+              return (
+                <div key={r.key} className="flex items-center justify-between border rounded-lg p-3">
+                  <Label htmlFor={`role-${r.key}`} className="text-sm">{r.label}</Label>
+                  <Switch
+                    id={`role-${r.key}`}
+                    checked={checked}
+                    disabled={busy === r.key}
+                    onCheckedChange={(v) => toggle(r.key, v)}
+                  />
+                </div>
+              );
+            })}
+          </TabsContent>
+          <TabsContent value="activity" className="py-2">
+            <AuditLogList filter={{ userId: user.user_id }} pageSize={20} />
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
