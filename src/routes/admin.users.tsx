@@ -5,13 +5,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { fmtDate } from "@/lib/format";
-import { Shield, Store as StoreIcon, User as UserIcon } from "lucide-react";
+import { Store as StoreIcon, User as UserIcon } from "lucide-react";
+import { RolesDialog, type RolesDialogUser } from "@/components/admin/RolesDialog";
 
 export const Route = createFileRoute("/admin/users")({ component: Page });
 
@@ -28,18 +26,7 @@ type UserRow = {
 
 type BizCat = { id: string; slug: string; name_ar: string; sort_order: number; is_active: boolean };
 
-const STAFF_ROLES = [
-  { key: "super_admin", label: "مدير رئيسي" },
-  { key: "admin", label: "مدير" },
-  { key: "operations", label: "عمليات" },
-  { key: "support", label: "خدمة عملاء" },
-  { key: "finance", label: "مالية" },
-] as const;
-
-const ROLE_LABEL: Record<string, string> = Object.fromEntries(STAFF_ROLES.map((r) => [r.key, r.label]));
-
 const KIND_BADGE: Record<string, { label: string; cls: string; icon: any }> = {
-  staff: { label: "إدارة", cls: "bg-violet-100 text-violet-700", icon: Shield },
   merchant: { label: "تاجر", cls: "bg-emerald-100 text-emerald-700", icon: StoreIcon },
   customer: { label: "عميل", cls: "bg-sky-100 text-sky-700", icon: UserIcon },
 };
@@ -55,14 +42,14 @@ const PAGE_SIZE = 50;
 
 function Page() {
   const [cats, setCats] = useState<BizCat[]>([]);
-  const [filter, setFilter] = useState<{ kind: "all" | "staff" | "customer" | "merchant"; slug?: string | null }>({ kind: "all" });
+  const [filter, setFilter] = useState<{ kind: "all" | "customer" | "merchant"; slug?: string | null }>({ kind: "all" });
   const [search, setSearch] = useState("");
   const [debounced, setDebounced] = useState("");
   const [rows, setRows] = useState<UserRow[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [editing, setEditing] = useState<UserRow | null>(null);
+  const [editing, setEditing] = useState<RolesDialogUser | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -85,7 +72,7 @@ function Page() {
   const load = async () => {
     setLoading(true);
     const params: any = {
-      p_kind: filter.kind === "all" ? null : filter.kind,
+      p_kind: filter.kind === "all" ? "non_staff" : filter.kind,
       p_category_slug: filter.kind === "merchant" ? filter.slug ?? null : null,
       p_role: null,
       p_search: debounced.length >= 2 ? debounced : null,
@@ -108,7 +95,6 @@ function Page() {
   const chips = useMemo(() => {
     const base: Array<{ key: string; label: string; active: boolean; onClick: () => void }> = [
       { key: "all", label: "الكل", active: filter.kind === "all", onClick: () => setFilter({ kind: "all" }) },
-      { key: "staff", label: "الإدارة", active: filter.kind === "staff", onClick: () => setFilter({ kind: "staff" }) },
       { key: "customer", label: "العملاء", active: filter.kind === "customer", onClick: () => setFilter({ kind: "customer" }) },
     ];
     cats.forEach((c) => {
@@ -159,9 +145,6 @@ function Page() {
                       <Badge className={kind.cls}>
                         <KindIcon className="w-3 h-3 ms-1" />{kind.label}
                       </Badge>
-                      {u.user_kind === "staff" && (u.roles || []).map((r) => (
-                        <Badge key={r} variant="outline">{ROLE_LABEL[r] || r}</Badge>
-                      ))}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
                       {u.phone || "—"} • مسجّل {fmtDate(u.created_at)}
@@ -178,7 +161,7 @@ function Page() {
                       </div>
                     )}
                   </div>
-                  <Button size="sm" variant="outline" onClick={() => setEditing(u)}>
+                  <Button size="sm" variant="outline" onClick={() => setEditing({ user_id: u.user_id, name: u.name, phone: u.phone, roles: u.roles })}>
                     إدارة الصلاحيات
                   </Button>
                 </div>
@@ -207,60 +190,3 @@ function Page() {
   );
 }
 
-function RolesDialog({ user, onClose, onChanged }: { user: UserRow | null; onClose: () => void; onChanged: () => void }) {
-  const [roles, setRoles] = useState<Set<string>>(new Set());
-  const [busy, setBusy] = useState<string | null>(null);
-
-  useEffect(() => {
-    setRoles(new Set(user?.roles || []));
-  }, [user]);
-
-  if (!user) return null;
-
-  const toggle = async (role: string, next: boolean) => {
-    setBusy(role);
-    const { error } = await (supabase as any).rpc("admin_set_user_role", { _uid: user.user_id, _role: role, _grant: next });
-    setBusy(null);
-    if (error) {
-      const msg = error.message || "";
-      if (msg.includes("forbidden: super_admin only")) toast.error("هذه الصلاحية للمدير الرئيسي فقط");
-      else if (msg.includes("cannot remove the last super_admin")) toast.error("لا يمكن إزالة آخر مدير رئيسي");
-      else toast.error(msg);
-      return;
-    }
-    const nx = new Set(roles);
-    if (next) nx.add(role); else nx.delete(role);
-    setRoles(nx);
-    toast.success("تم التحديث");
-    onChanged();
-  };
-
-  return (
-    <Dialog open={!!user} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>إدارة الصلاحيات</DialogTitle>
-          <DialogDescription>
-            {user.name || "—"} • {user.phone || "—"}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-3 py-2">
-          {STAFF_ROLES.map((r) => {
-            const checked = roles.has(r.key);
-            return (
-              <div key={r.key} className="flex items-center justify-between border rounded-lg p-3">
-                <Label htmlFor={`role-${r.key}`} className="text-sm">{r.label}</Label>
-                <Switch
-                  id={`role-${r.key}`}
-                  checked={checked}
-                  disabled={busy === r.key}
-                  onCheckedChange={(v) => toggle(r.key, v)}
-                />
-              </div>
-            );
-          })}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}

@@ -36,6 +36,7 @@ import { Route as MerchantOrdersRouteImport } from './routes/merchant.orders'
 import { Route as MerchantCreditRouteImport } from './routes/merchant.credit'
 import { Route as AdminWalletsRouteImport } from './routes/admin.wallets'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminTeamRouteImport } from './routes/admin.team'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminMerchantsRouteImport } from './routes/admin.merchants'
@@ -181,6 +182,11 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminTeamRoute = AdminTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -251,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/admin/merchants': typeof AdminMerchantsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/team': typeof AdminTeamRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/wallets': typeof AdminWalletsRoute
   '/merchant/credit': typeof MerchantCreditRoute
@@ -287,6 +294,7 @@ export interface FileRoutesByTo {
   '/admin/merchants': typeof AdminMerchantsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/team': typeof AdminTeamRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/wallets': typeof AdminWalletsRoute
   '/merchant/credit': typeof MerchantCreditRoute
@@ -326,6 +334,7 @@ export interface FileRoutesById {
   '/admin/merchants': typeof AdminMerchantsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/team': typeof AdminTeamRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/wallets': typeof AdminWalletsRoute
   '/merchant/credit': typeof MerchantCreditRoute
@@ -366,6 +375,7 @@ export interface FileRouteTypes {
     | '/admin/merchants'
     | '/admin/orders'
     | '/admin/settings'
+    | '/admin/team'
     | '/admin/users'
     | '/admin/wallets'
     | '/merchant/credit'
@@ -402,6 +412,7 @@ export interface FileRouteTypes {
     | '/admin/merchants'
     | '/admin/orders'
     | '/admin/settings'
+    | '/admin/team'
     | '/admin/users'
     | '/admin/wallets'
     | '/merchant/credit'
@@ -440,6 +451,7 @@ export interface FileRouteTypes {
     | '/admin/merchants'
     | '/admin/orders'
     | '/admin/settings'
+    | '/admin/team'
     | '/admin/users'
     | '/admin/wallets'
     | '/merchant/credit'
@@ -666,6 +678,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/team': {
+      id: '/admin/team'
+      path: '/team'
+      fullPath: '/admin/team'
+      preLoaderRoute: typeof AdminTeamRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/settings': {
       id: '/admin/settings'
       path: '/settings'
@@ -741,6 +760,7 @@ interface AdminRouteChildren {
   AdminMerchantsRoute: typeof AdminMerchantsRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminTeamRoute: typeof AdminTeamRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminWalletsRoute: typeof AdminWalletsRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -755,6 +775,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminMerchantsRoute: AdminMerchantsRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminSettingsRoute: AdminSettingsRoute,
+  AdminTeamRoute: AdminTeamRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminWalletsRoute: AdminWalletsRoute,
   AdminIndexRoute: AdminIndexRoute,
