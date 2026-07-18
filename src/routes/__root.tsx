@@ -113,6 +113,7 @@ function RootComponent() {
   useEffect(() => {
     initLang();
     registerBaqalatiPwa();
+    initAppUsageTracking();
   }, []);
 
   useEffect(() => {
