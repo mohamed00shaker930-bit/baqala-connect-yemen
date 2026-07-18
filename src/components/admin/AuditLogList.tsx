@@ -70,36 +70,38 @@ export function AuditLogList({
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   useEffect(() => { setPage(0); }, [
-    filter.userId, filter.userName, filter.action, filter.tableName, filter.from, filter.to,
+    filter.userId, filter.userName, filter.roleGroup, filter.action, filter.tableName, filter.from, filter.to,
   ]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      let q: any = (supabase as any)
-        .from("audit_logs")
-        .select("*", { count: "exact" })
-        .order("seq", { ascending: false })
-        .range(page * pageSize, page * pageSize + pageSize - 1);
-      if (filter.userId) q = q.eq("user_id", filter.userId);
-      if (filter.userName && filter.userName.trim().length >= 2) q = q.ilike("user_name", `%${filter.userName.trim()}%`);
-      if (filter.action) q = q.eq("action", filter.action);
-      if (filter.tableName) q = q.eq("table_name", filter.tableName);
-      if (filter.from) q = q.gte("created_at", filter.from);
-      if (filter.to) q = q.lte("created_at", filter.to);
-      const { data, error, count } = await q;
+      const search = filter.userName && filter.userName.trim().length >= 2 ? filter.userName.trim() : null;
+      const { data, error } = await (supabase as any).rpc("admin_list_audit_logs", {
+        p_search: search,
+        p_user_id: filter.userId ?? null,
+        p_role_group: filter.roleGroup ?? null,
+        p_action: filter.action ?? null,
+        p_table: filter.tableName ?? null,
+        p_from: filter.from ?? null,
+        p_to: filter.to ?? null,
+        p_limit: pageSize,
+        p_offset: page * pageSize,
+      });
       if (cancelled) return;
       if (error) {
         setRows([]); setTotal(0);
       } else {
-        setRows((data as AuditLog[]) || []);
-        setTotal(count || 0);
+        const list = (data as AuditLog[]) || [];
+        setRows(list);
+        setTotal(list[0]?.total_count ?? 0);
       }
       setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, [filter.userId, filter.userName, filter.action, filter.tableName, filter.from, filter.to, page, pageSize]);
+  }, [filter.userId, filter.userName, filter.roleGroup, filter.action, filter.tableName, filter.from, filter.to, page, pageSize]);
+
 
   const toggle = (id: string) => {
     setExpanded((s) => {
