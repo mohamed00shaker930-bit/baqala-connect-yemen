@@ -149,6 +149,31 @@ function Page() {
             onTotal={setSessionTotal}
           />
         </TabsContent>
+
+        <TabsContent value="usage">
+          <Card className="p-3 mb-4">
+            <div className="flex items-center gap-2 flex-wrap">
+              {USAGE_FILTERS.map((f) => (
+                <Button
+                  key={f.v}
+                  size="sm"
+                  variant={usageStatus === f.v ? "default" : "outline"}
+                  onClick={() => setUsageStatus(f.v)}
+                >
+                  {f.l}
+                </Button>
+              ))}
+              <span className="text-xs text-muted-foreground ms-auto">{usageTotal} سجل</span>
+            </div>
+          </Card>
+          <AppUsageList
+            userId={null}
+            status={usageStatus === "all" ? null : usageStatus}
+            pageSize={50}
+            showUser
+            onTotal={setUsageTotal}
+          />
+        </TabsContent>
       </Tabs>
     </AdminShell>
   );
