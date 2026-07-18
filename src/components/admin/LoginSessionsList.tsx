@@ -20,7 +20,7 @@ export type LoginSession = {
   total_count: number;
 };
 
-function deviceLabel(ua: string | null): string {
+export function deviceLabel(ua: string | null): string {
   if (!ua) return "متصفح";
   if (/Android/i.test(ua)) return "جوال أندرويد";
   if (/iPhone|iPad|iPod/i.test(ua)) return "آيفون";
