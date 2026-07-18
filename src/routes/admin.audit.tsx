@@ -23,6 +23,14 @@ const ACTIONS = [
   { v: "DELETE", l: "حذف" },
 ];
 
+const ROLE_GROUPS = [
+  { v: "customer", l: "عميل" },
+  { v: "merchant", l: "تاجر" },
+  { v: "staff", l: "الإدارة" },
+  { v: "system", l: "النظام" },
+] as const;
+
+
 const SESSION_FILTERS = [
   { v: "all", l: "الكل" },
   { v: "active", l: "نشطة" },
