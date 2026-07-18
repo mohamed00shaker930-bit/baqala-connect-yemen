@@ -145,9 +145,6 @@ function Page() {
                       <Badge className={kind.cls}>
                         <KindIcon className="w-3 h-3 ms-1" />{kind.label}
                       </Badge>
-                      {u.user_kind === "staff" && (u.roles || []).map((r) => (
-                        <Badge key={r} variant="outline">{ROLE_LABEL[r] || r}</Badge>
-                      ))}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
                       {u.phone || "—"} • مسجّل {fmtDate(u.created_at)}
