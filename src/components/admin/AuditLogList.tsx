@@ -9,8 +9,10 @@ import { tableLabel, roleLabel, fieldLabel, formatAuditValue } from "@/lib/audit
 
 export type AuditLog = {
   id: string;
+  seq?: number;
   user_id: string | null;
   user_name: string | null;
+  user_phone?: string | null;
   user_role: string | null;
   action: "INSERT" | "UPDATE" | "DELETE";
   table_name: string;
@@ -20,16 +22,19 @@ export type AuditLog = {
   new_data: any;
   changed_fields: string[] | null;
   created_at: string;
+  total_count?: number;
 };
 
 export type AuditFilter = {
   userId?: string | null;
   userName?: string | null;
+  roleGroup?: "customer" | "merchant" | "staff" | "system" | null;
   action?: string | null;
   tableName?: string | null;
   from?: string | null;
   to?: string | null;
 };
+
 
 const ACTION_META: Record<string, { label: string; cls: string }> = {
   INSERT: { label: "إضافة", cls: "bg-emerald-100 text-emerald-700 border-emerald-200" },
