@@ -139,11 +139,13 @@ export function AuditLogList({
                 {showUser && (
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                     <span className="text-xs">{r.user_name || "—"}</span>
+                    {r.user_phone && <span className="text-[11px] text-muted-foreground">{r.user_phone}</span>}
                     <Badge variant="secondary" className={`text-[10px] ${ROLE_CLS[r.user_role || "unknown"] || ROLE_CLS.unknown}`}>
                       {roleLabel(r.user_role)}
                     </Badge>
                   </div>
                 )}
+
               </div>
               {r.action === "UPDATE" && fields.length > 0 && (
                 <Button size="sm" variant="ghost" onClick={() => toggle(r.id)} className="h-7 px-2">
