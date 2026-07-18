@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { formatDateTime } from "@/lib/dateFormat";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/wallets")({ component: Page });
