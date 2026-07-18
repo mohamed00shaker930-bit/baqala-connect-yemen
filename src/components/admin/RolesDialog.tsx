@@ -92,6 +92,9 @@ export function RolesDialog({ user, onClose, onChanged }: { user: RolesDialogUse
           <TabsContent value="sessions" className="py-2">
             <LoginSessionsList userId={user.user_id} pageSize={20} />
           </TabsContent>
+          <TabsContent value="usage" className="py-2">
+            <AppUsageList userId={user.user_id} pageSize={20} />
+          </TabsContent>
         </Tabs>
       </DialogContent>
     </Dialog>
