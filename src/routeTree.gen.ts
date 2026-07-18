@@ -44,6 +44,7 @@ import { Route as AdminLibraryRouteImport } from './routes/admin.library'
 import { Route as AdminKpisRouteImport } from './routes/admin.kpis'
 import { Route as AdminBroadcastRouteImport } from './routes/admin.broadcast'
 import { Route as AdminBannersRouteImport } from './routes/admin.banners'
+import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as ApiSbSplatRouteImport } from './routes/api/sb.$'
 
@@ -222,6 +223,11 @@ const AdminBannersRoute = AdminBannersRouteImport.update({
   path: '/banners',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAuditRoute = AdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
@@ -250,6 +256,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/wallet': typeof WalletRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/kpis': typeof AdminKpisRoute
@@ -287,6 +294,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/wallet': typeof WalletRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/kpis': typeof AdminKpisRoute
@@ -327,6 +335,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/wallet': typeof WalletRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
   '/admin/kpis': typeof AdminKpisRoute
@@ -368,6 +377,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/wallet'
     | '/admin/analytics'
+    | '/admin/audit'
     | '/admin/banners'
     | '/admin/broadcast'
     | '/admin/kpis'
@@ -405,6 +415,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/wallet'
     | '/admin/analytics'
+    | '/admin/audit'
     | '/admin/banners'
     | '/admin/broadcast'
     | '/admin/kpis'
@@ -444,6 +455,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/wallet'
     | '/admin/analytics'
+    | '/admin/audit'
     | '/admin/banners'
     | '/admin/broadcast'
     | '/admin/kpis'
@@ -734,6 +746,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBannersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/audit': {
+      id: '/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAuditRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/analytics': {
       id: '/admin/analytics'
       path: '/analytics'
@@ -753,6 +772,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminAuditRoute: typeof AdminAuditRoute
   AdminBannersRoute: typeof AdminBannersRoute
   AdminBroadcastRoute: typeof AdminBroadcastRoute
   AdminKpisRoute: typeof AdminKpisRoute
@@ -768,6 +788,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminAuditRoute: AdminAuditRoute,
   AdminBannersRoute: AdminBannersRoute,
   AdminBroadcastRoute: AdminBroadcastRoute,
   AdminKpisRoute: AdminKpisRoute,
