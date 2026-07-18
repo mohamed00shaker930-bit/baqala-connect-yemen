@@ -44,6 +44,9 @@ function Page() {
   const [sessionStatus, setSessionStatus] = useState<"all" | "active" | "ended">("all");
   const [sessionTotal, setSessionTotal] = useState(0);
 
+  const [usageStatus, setUsageStatus] = useState<"all" | "open" | "closed">("all");
+  const [usageTotal, setUsageTotal] = useState(0);
+
   useEffect(() => {
     const t = setTimeout(() => setDebouncedName(userName.trim()), 400);
     return () => clearTimeout(t);
