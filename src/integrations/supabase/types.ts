@@ -95,6 +95,45 @@ export type Database = {
         }
         Relationships: []
       }
+      auth_sessions_log: {
+        Row: {
+          id: string
+          ip: string | null
+          last_seen_at: string | null
+          login_at: string
+          logout_at: string | null
+          logout_type: string | null
+          seq: number
+          session_id: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          ip?: string | null
+          last_seen_at?: string | null
+          login_at: string
+          logout_at?: string | null
+          logout_type?: string | null
+          seq?: never
+          session_id: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          ip?: string | null
+          last_seen_at?: string | null
+          login_at?: string
+          logout_at?: string | null
+          logout_type?: string | null
+          seq?: never
+          session_id?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       banners: {
         Row: {
           bg_color: string | null
@@ -1310,6 +1349,28 @@ export type Database = {
       admin_kpis: {
         Args: { p_from: string; p_grain?: string; p_to: string }
         Returns: Json
+      }
+      admin_list_login_sessions: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_status?: string
+          p_user_id?: string
+        }
+        Returns: {
+          id: string
+          ip: string
+          is_active: boolean
+          last_seen_at: string
+          login_at: string
+          logout_at: string
+          logout_type: string
+          total_count: number
+          user_agent: string
+          user_id: string
+          user_name: string
+          user_phone: string
+        }[]
       }
       admin_list_users: {
         Args: {
