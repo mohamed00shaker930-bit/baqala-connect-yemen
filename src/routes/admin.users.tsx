@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { fmtDate } from "@/lib/format";
+import { formatDateTimeFull } from "@/lib/dateFormat";
 import { Store as StoreIcon, User as UserIcon } from "lucide-react";
 import { RolesDialog, type RolesDialogUser } from "@/components/admin/RolesDialog";
 
@@ -147,7 +147,7 @@ function Page() {
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {u.phone || "—"} • مسجّل {fmtDate(u.created_at)}
+                      {u.phone || "—"} • مسجّل {formatDateTimeFull(u.created_at)}
                     </p>
                     {u.user_kind === "merchant" && (u.stores?.length ?? 0) > 0 && (
                       <div className="mt-2 space-y-1">

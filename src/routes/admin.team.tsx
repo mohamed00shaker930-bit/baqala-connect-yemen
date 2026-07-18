@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { fmtDate } from "@/lib/format";
+import { formatDateTimeFull } from "@/lib/dateFormat";
 import { Shield, UserPlus } from "lucide-react";
 import { RolesDialog, STAFF_ROLES, ROLE_LABEL, type RolesDialogUser } from "@/components/admin/RolesDialog";
 
@@ -130,7 +130,7 @@ function Page() {
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {u.phone || "—"} • مسجّل {fmtDate(u.created_at)}
+                    {u.phone || "—"} • مسجّل {formatDateTimeFull(u.created_at)}
                   </p>
                 </div>
                 <Button size="sm" variant="outline" onClick={() => setEditing({ user_id: u.user_id, name: u.name, phone: u.phone, roles: u.roles })}>

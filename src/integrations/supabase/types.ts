@@ -57,6 +57,7 @@ export type Database = {
           old_data: Json | null
           record_id: string | null
           record_label: string | null
+          seq: number
           table_name: string
           user_id: string | null
           user_name: string | null
@@ -71,6 +72,7 @@ export type Database = {
           old_data?: Json | null
           record_id?: string | null
           record_label?: string | null
+          seq?: never
           table_name: string
           user_id?: string | null
           user_name?: string | null
@@ -85,6 +87,7 @@ export type Database = {
           old_data?: Json | null
           record_id?: string | null
           record_label?: string | null
+          seq?: never
           table_name?: string
           user_id?: string | null
           user_name?: string | null

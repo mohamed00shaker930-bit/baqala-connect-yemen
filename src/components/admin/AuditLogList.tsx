@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { formatDateTime } from "@/lib/dateFormat";
+import { formatDateTimeFull } from "@/lib/dateFormat";
 import { tableLabel, roleLabel, fieldLabel, formatAuditValue } from "@/lib/audit-dict";
 
 export type AuditLog = {
@@ -75,7 +75,7 @@ export function AuditLogList({
       let q: any = (supabase as any)
         .from("audit_logs")
         .select("*", { count: "exact" })
-        .order("created_at", { ascending: false })
+        .order("seq", { ascending: false })
         .range(page * pageSize, page * pageSize + pageSize - 1);
       if (filter.userId) q = q.eq("user_id", filter.userId);
       if (filter.userName && filter.userName.trim().length >= 2) q = q.ilike("user_name", `%${filter.userName.trim()}%`);
@@ -128,7 +128,7 @@ export function AuditLogList({
                   <span className="text-muted-foreground">{tableLabel(r.table_name)}</span>
                   {r.record_label ? <> — <span>{r.record_label}</span></> : null}
                 </p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">{formatDateTime(r.created_at)}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{formatDateTimeFull(r.created_at)}</p>
                 {showUser && (
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                     <span className="text-xs">{r.user_name || "—"}</span>
