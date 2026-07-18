@@ -114,7 +114,7 @@ function ProfilePage() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm">تفعيل قفل التطبيق برمز</p>
-            <p className="text-xs text-muted-foreground">رمز من {PIN_LENGTH} أرقام (مثل واتساب)</p>
+            <p className="text-xs text-muted-foreground">رمز من {PIN_LENGTH} أرقام</p>
           </div>
           <Switch checked={enabled} onCheckedChange={toggleLock} />
         </div>
