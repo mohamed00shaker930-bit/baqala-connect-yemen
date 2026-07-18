@@ -4,6 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AuditLogList } from "@/components/admin/AuditLogList";
+import { LoginSessionsList } from "@/components/admin/LoginSessionsList";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
