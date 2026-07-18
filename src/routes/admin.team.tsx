@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { fmtDate } from "@/lib/format";
+import { formatDateTimeFull } from "@/lib/dateFormat";
 import { Shield, UserPlus } from "lucide-react";
 import { RolesDialog, STAFF_ROLES, ROLE_LABEL, type RolesDialogUser } from "@/components/admin/RolesDialog";
 
