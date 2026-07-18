@@ -10,10 +10,14 @@ export function UserPicker({
   value,
   onChange,
   placeholder = "ابحث بالاسم أو رقم الجوال",
+  kind = null,
+  disabled = false,
 }: {
   value: PickedUser | null;
   onChange: (u: PickedUser | null) => void;
   placeholder?: string;
+  kind?: "customer" | "merchant" | "staff" | null;
+  disabled?: boolean;
 }) {
   const [q, setQ] = useState("");
   const [debounced, setDebounced] = useState("");
@@ -27,6 +31,14 @@ export function UserPicker({
     return () => clearTimeout(t);
   }, [q]);
 
+  // reset search state when kind changes
+  useEffect(() => {
+    setQ("");
+    setDebounced("");
+    setResults([]);
+    setOpen(false);
+  }, [kind]);
+
   useEffect(() => {
     if (value) return;
     if (debounced.length < 2) { setResults([]); return; }
@@ -34,7 +46,7 @@ export function UserPicker({
     (async () => {
       setLoading(true);
       const { data } = await (supabase as any).rpc("admin_list_users", {
-        p_kind: null,
+        p_kind: kind,
         p_category_slug: null,
         p_role: null,
         p_search: debounced,
@@ -47,7 +59,7 @@ export function UserPicker({
       setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, [debounced, value]);
+  }, [debounced, value, kind]);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -78,8 +90,9 @@ export function UserPicker({
         value={q}
         onChange={(e) => setQ(e.target.value)}
         onFocus={() => { if (results.length) setOpen(true); }}
+        disabled={disabled}
       />
-      {open && (loading || results.length > 0) && (
+      {!disabled && open && (loading || results.length > 0) && (
         <div className="absolute z-50 mt-1 w-full bg-popover border rounded-md shadow-md max-h-64 overflow-y-auto">
           {loading && <div className="px-3 py-2 text-xs text-muted-foreground">جاري البحث...</div>}
           {!loading && results.map((r) => (
@@ -93,7 +106,7 @@ export function UserPicker({
               <span className="text-xs text-muted-foreground">{r.phone || ""}</span>
             </button>
           ))}
-          {!loading && results.length === 0 && debounced.length >= 2 && (
+          {!disabled && !loading && results.length === 0 && debounced.length >= 2 && (
             <div className="px-3 py-2 text-xs text-muted-foreground">لا نتائج</div>
           )}
         </div>

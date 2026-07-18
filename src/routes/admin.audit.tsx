@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { AdminShell } from "@/components/AdminShell";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -44,8 +44,6 @@ const USAGE_FILTERS = [
 ] as const;
 
 function Page() {
-  const [userName, setUserName] = useState("");
-  const [debouncedName, setDebouncedName] = useState("");
   const [roleGroup, setRoleGroup] = useState<string>("all");
   const [pickedUser, setPickedUser] = useState<PickedUser | null>(null);
   const [action, setAction] = useState<string>("all");
@@ -61,23 +59,23 @@ function Page() {
   const [usageTotal, setUsageTotal] = useState(0);
   const [usageUser, setUsageUser] = useState<PickedUser | null>(null);
 
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedName(userName.trim()), 400);
-    return () => clearTimeout(t);
-  }, [userName]);
+  const pickerKind: "customer" | "merchant" | "staff" | null =
+    roleGroup === "customer" || roleGroup === "merchant" || roleGroup === "staff"
+      ? (roleGroup as any)
+      : null;
+  const pickerDisabled = roleGroup === "system";
 
   const filter = useMemo(() => ({
-    userName: debouncedName || null,
+    userName: null,
     userId: pickedUser?.user_id ?? null,
     roleGroup: roleGroup === "all" ? null : (roleGroup as any),
     action: action === "all" ? null : action,
     tableName: tableName === "all" ? null : tableName,
     from: from ? new Date(from).toISOString() : null,
     to: to ? new Date(to + "T23:59:59").toISOString() : null,
-  }), [debouncedName, pickedUser, roleGroup, action, tableName, from, to]);
+  }), [pickedUser, roleGroup, action, tableName, from, to]);
 
   const clear = () => {
-    setUserName(""); setDebouncedName("");
     setRoleGroup("all"); setPickedUser(null);
     setAction("all"); setTableName("all");
     setFrom(""); setTo("");
@@ -99,18 +97,29 @@ function Page() {
           <Card className="p-3 mb-4 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">ابحث بالاسم أو رقم الجوال</Label>
-                <Input placeholder="ابحث بالاسم أو رقم الجوال" value={userName} onChange={(e) => setUserName(e.target.value)} className="mt-1" />
-              </div>
-              <div>
                 <Label className="text-xs">نوع النشاط</Label>
-                <Select value={roleGroup} onValueChange={setRoleGroup}>
+                <Select
+                  value={roleGroup}
+                  onValueChange={(v) => { setRoleGroup(v); setPickedUser(null); }}
+                >
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">الكل</SelectItem>
                     {ROLE_GROUPS.map((g) => <SelectItem key={g.v} value={g.v}>{g.l}</SelectItem>)}
                   </SelectContent>
                 </Select>
+              </div>
+              <div>
+                <Label className="text-xs">تحديد مستخدم</Label>
+                <div className="mt-1">
+                  <UserPicker
+                    value={pickedUser}
+                    onChange={setPickedUser}
+                    kind={pickerKind}
+                    disabled={pickerDisabled}
+                    placeholder={pickerDisabled ? "لا ينطبق على عمليات النظام" : "ابحث بالاسم أو رقم الجوال"}
+                  />
+                </div>
               </div>
               <div>
                 <Label className="text-xs">العملية</Label>
@@ -131,10 +140,6 @@ function Page() {
                     {tableOptions.map(([k, l]) => <SelectItem key={k} value={k}>{l}</SelectItem>)}
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="sm:col-span-2">
-                <Label className="text-xs">تحديد مستخدم</Label>
-                <div className="mt-1"><UserPicker value={pickedUser} onChange={setPickedUser} /></div>
               </div>
               <div className="grid grid-cols-2 gap-2 sm:col-span-2">
                 <div>
