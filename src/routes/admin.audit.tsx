@@ -159,7 +159,7 @@ function Page() {
         </TabsContent>
 
         <TabsContent value="sessions">
-          <Card className="p-3 mb-4">
+          <Card className="p-3 mb-4 space-y-3">
             <div className="flex items-center gap-2 flex-wrap">
               {SESSION_FILTERS.map((f) => (
                 <Button
@@ -173,9 +173,13 @@ function Page() {
               ))}
               <span className="text-xs text-muted-foreground ms-auto">{sessionTotal} جلسة</span>
             </div>
+            <div>
+              <Label className="text-xs">تحديد مستخدم</Label>
+              <div className="mt-1"><UserPicker value={sessionUser} onChange={setSessionUser} /></div>
+            </div>
           </Card>
           <LoginSessionsList
-            userId={null}
+            userId={sessionUser?.user_id ?? null}
             status={sessionStatus === "all" ? null : sessionStatus}
             pageSize={50}
             showUser
@@ -184,7 +188,7 @@ function Page() {
         </TabsContent>
 
         <TabsContent value="usage">
-          <Card className="p-3 mb-4">
+          <Card className="p-3 mb-4 space-y-3">
             <div className="flex items-center gap-2 flex-wrap">
               {USAGE_FILTERS.map((f) => (
                 <Button
@@ -198,15 +202,20 @@ function Page() {
               ))}
               <span className="text-xs text-muted-foreground ms-auto">{usageTotal} سجل</span>
             </div>
+            <div>
+              <Label className="text-xs">تحديد مستخدم</Label>
+              <div className="mt-1"><UserPicker value={usageUser} onChange={setUsageUser} /></div>
+            </div>
           </Card>
           <AppUsageList
-            userId={null}
+            userId={usageUser?.user_id ?? null}
             status={usageStatus === "all" ? null : usageStatus}
             pageSize={50}
             showUser
             onTotal={setUsageTotal}
           />
         </TabsContent>
+
       </Tabs>
     </AdminShell>
   );
