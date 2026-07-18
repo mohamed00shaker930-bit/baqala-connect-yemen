@@ -63,9 +63,10 @@ export function RolesDialog({ user, onClose, onChanged }: { user: RolesDialogUse
           </DialogDescription>
         </DialogHeader>
         <Tabs defaultValue="roles" className="mt-2">
-          <TabsList className="grid grid-cols-2 w-full">
+          <TabsList className="grid grid-cols-3 w-full">
             <TabsTrigger value="roles">الصلاحيات</TabsTrigger>
             <TabsTrigger value="activity">سجل النشاط</TabsTrigger>
+            <TabsTrigger value="sessions">تسجيلات الدخول</TabsTrigger>
           </TabsList>
           <TabsContent value="roles" className="space-y-3 py-2">
             {STAFF_ROLES.map((r) => {
@@ -85,6 +86,9 @@ export function RolesDialog({ user, onClose, onChanged }: { user: RolesDialogUse
           </TabsContent>
           <TabsContent value="activity" className="py-2">
             <AuditLogList filter={{ userId: user.user_id }} pageSize={20} />
+          </TabsContent>
+          <TabsContent value="sessions" className="py-2">
+            <LoginSessionsList userId={user.user_id} pageSize={20} />
           </TabsContent>
         </Tabs>
       </DialogContent>
