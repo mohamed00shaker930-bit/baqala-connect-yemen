@@ -18,6 +18,7 @@ const tabs = [
   { to: "/admin/wallets", label: "المحافظ", icon: Wallet },
   { to: "/admin/broadcast", label: "إشعارات", icon: Megaphone },
   { to: "/admin/banners", label: "بانرات", icon: ImageIcon },
+  { to: "/admin/audit", label: "سجل العمليات", icon: History },
   { to: "/admin/settings", label: "إعدادات", icon: Settings },
 ];
 
