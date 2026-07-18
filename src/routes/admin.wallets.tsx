@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { formatDateTime } from "@/lib/dateFormat";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/wallets")({ component: Page });
@@ -45,7 +46,7 @@ function Page() {
                 <p className="font-bold">{Number(t.amount).toLocaleString()} ر.ي</p>
                 <p className="text-xs text-muted-foreground">{t.type} • {t.method || "—"}</p>
                 {t.note && <p className="text-xs">{t.note}</p>}
-                <p className="text-[10px] text-muted-foreground">{new Date(t.created_at).toLocaleString("ar")}</p>
+                <p className="text-[10px] text-muted-foreground">{formatDateTime(t.created_at)}</p>
               </div>
               <div className="flex flex-col items-end gap-2">
                 <Badge variant="outline">{t.status}</Badge>

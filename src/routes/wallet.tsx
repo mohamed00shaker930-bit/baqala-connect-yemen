@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import { formatDateTime } from "@/lib/dateFormat";
 import { toast } from "sonner";
 import { fmtRial } from "@/lib/format";
 import { Wallet, Plus, ArrowDownCircle, ArrowUpCircle, Clock, CheckCircle2, XCircle } from "lucide-react";
@@ -84,7 +85,7 @@ function WalletPage() {
                   {t.type === "topup" ? "شحن" : t.type === "payment" ? "دفع طلب" : t.type === "refund" ? "استرداد" : "تعديل"}
                   {t.method && <span className="text-xs text-muted-foreground"> • {t.method}</span>}
                 </p>
-                <p className="text-[11px] text-muted-foreground">{new Date(t.created_at).toLocaleString("ar")}</p>
+                <p className="text-[11px] text-muted-foreground">{formatDateTime(t.created_at)}</p>
               </div>
               <div className="text-left">
                 <p className={`font-bold ${isIn ? "text-success" : "text-destructive"}`}>{isIn ? "+" : "-"}{fmtRial(Number(t.amount))}</p>

@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { fmtRial } from "@/lib/format";
+import { formatDateTime } from "@/lib/dateFormat";
 import { ScanBarcode, Plus, Minus, Trash2, Search, CheckCircle2, Wallet, Banknote, BookOpen } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { CustomerPicker, type PickedCustomer } from "@/components/CustomerPicker";
@@ -411,7 +412,7 @@ function POS() {
               <div className="text-center text-xs text-muted-foreground">
                 <p className="font-bold text-base text-foreground">{store?.name}</p>
                 <p>فاتورة #{receipt.id.slice(0, 8)}</p>
-                <p>{new Date().toLocaleString("ar-EG")}</p>
+                <p>{formatDateTime(new Date())}</p>
               </div>
               <div className="border-t border-b py-2 space-y-1 text-sm">
                 {receipt.lines.map((l) => (

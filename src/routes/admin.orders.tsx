@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { formatDateTime } from "@/lib/dateFormat";
 
 export const Route = createFileRoute("/admin/orders")({ component: Page });
 
@@ -34,7 +35,7 @@ function Page() {
             <div className="flex items-center gap-2 justify-between">
               <div>
                 <p className="font-medium text-sm">{o.stores?.name || "متجر"}</p>
-                <p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString("ar")}</p>
+                <p className="text-xs text-muted-foreground">{formatDateTime(o.created_at)}</p>
               </div>
               <div className="text-left">
                 <p className="font-bold">{Number(o.total).toLocaleString()} ر.ي</p>
