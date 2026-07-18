@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BarcodeScanner } from "@/components/BarcodeScanner";
 import { fmtRial } from "@/lib/format";
+import { formatDateTime } from "@/lib/dateFormat";
 import { ScanBarcode, Plus, Minus, Trash2, Search, CheckCircle2, Wallet, Banknote, BookOpen } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { CustomerPicker, type PickedCustomer } from "@/components/CustomerPicker";
