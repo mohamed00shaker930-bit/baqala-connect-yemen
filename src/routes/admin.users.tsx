@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { fmtDate } from "@/lib/format";
+import { formatDateTimeFull } from "@/lib/dateFormat";
 import { Store as StoreIcon, User as UserIcon } from "lucide-react";
 import { RolesDialog, type RolesDialogUser } from "@/components/admin/RolesDialog";
 
