@@ -35,7 +35,7 @@ function Page() {
             <div className="flex items-center gap-2 justify-between">
               <div>
                 <p className="font-medium text-sm">{o.stores?.name || "متجر"}</p>
-                <p className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString("ar")}</p>
+                <p className="text-xs text-muted-foreground">{formatDateTime(o.created_at)}</p>
               </div>
               <div className="text-left">
                 <p className="font-bold">{Number(o.total).toLocaleString()} ر.ي</p>
