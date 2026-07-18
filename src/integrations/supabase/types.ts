@@ -94,6 +94,33 @@ export type Database = {
           },
         ]
       }
+      business_categories: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name_ar: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name_ar: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name_ar?: string
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       catalog_categories: {
         Row: {
           created_at: string
@@ -878,6 +905,7 @@ export type Database = {
       stores: {
         Row: {
           area: string | null
+          business_category_id: string | null
           commission_pct: number | null
           created_at: string
           delivery_info: string | null
@@ -895,6 +923,7 @@ export type Database = {
         }
         Insert: {
           area?: string | null
+          business_category_id?: string | null
           commission_pct?: number | null
           created_at?: string
           delivery_info?: string | null
@@ -912,6 +941,7 @@ export type Database = {
         }
         Update: {
           area?: string | null
+          business_category_id?: string | null
           commission_pct?: number | null
           created_at?: string
           delivery_info?: string | null
@@ -927,7 +957,15 @@ export type Database = {
           rating_count?: number
           status?: Database["public"]["Enums"]["store_status"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "stores_business_category_id_fkey"
+            columns: ["business_category_id"]
+            isOneToOne: false
+            referencedRelation: "business_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       uptime_checks: {
         Row: {
@@ -1225,6 +1263,26 @@ export type Database = {
         Args: { p_from: string; p_grain?: string; p_to: string }
         Returns: Json
       }
+      admin_list_users: {
+        Args: {
+          p_category_slug?: string
+          p_kind?: string
+          p_limit?: number
+          p_offset?: number
+          p_role?: string
+          p_search?: string
+        }
+        Returns: {
+          created_at: string
+          name: string
+          phone: string
+          roles: string[]
+          stores: Json
+          total_count: number
+          user_id: string
+          user_kind: string
+        }[]
+      }
       admin_respond_wallet_tx: {
         Args: { _approve: boolean; _tx: string }
         Returns: undefined
@@ -1240,6 +1298,14 @@ export type Database = {
       }
       admin_set_store_status: {
         Args: { _status: string; _store: string }
+        Returns: undefined
+      }
+      admin_set_user_role: {
+        Args: {
+          _grant: boolean
+          _role: Database["public"]["Enums"]["app_role"]
+          _uid: string
+        }
         Returns: undefined
       }
       assign_my_role: {
@@ -1284,6 +1350,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _uid?: string }; Returns: boolean }
+      is_staff: { Args: { _uid?: string }; Returns: boolean }
       pay_order_with_wallet: { Args: { _order_id: string }; Returns: undefined }
       push_notification: {
         Args: {
@@ -1309,7 +1376,14 @@ export type Database = {
       uptime_send_telegram: { Args: { p_text: string }; Returns: number }
     }
     Enums: {
-      app_role: "customer" | "merchant"
+      app_role:
+        | "customer"
+        | "merchant"
+        | "super_admin"
+        | "admin"
+        | "operations"
+        | "support"
+        | "finance"
       credit_status: "pending" | "approved" | "declined"
       credit_tx_status: "pending" | "approved" | "rejected"
       credit_tx_type: "charge" | "payment"
@@ -1466,7 +1540,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["customer", "merchant"],
+      app_role: [
+        "customer",
+        "merchant",
+        "super_admin",
+        "admin",
+        "operations",
+        "support",
+        "finance",
+      ],
       credit_status: ["pending", "approved", "declined"],
       credit_tx_status: ["pending", "approved", "rejected"],
       credit_tx_type: ["charge", "payment"],
