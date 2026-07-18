@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { formatDateTime } from "@/lib/dateFormat";
 
 export const Route = createFileRoute("/admin/orders")({ component: Page });
 
