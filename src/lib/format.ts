@@ -4,10 +4,11 @@ export function fmtRial(n: number | string): string {
   return `${v.toLocaleString("ar-EG", { maximumFractionDigits: 0 })} ر.ي`;
 }
 
+import { formatDateTime } from "./dateFormat";
 export function fmtDate(d: string | Date): string {
-  const dt = typeof d === "string" ? new Date(d) : d;
-  return dt.toLocaleString("ar-EG", { dateStyle: "medium", timeStyle: "short" });
+  return formatDateTime(d);
 }
+export { formatDate, formatDateTime, formatTime, formatTimeAgo } from "./dateFormat";
 
 export const STATUS_LABEL: Record<string, string> = {
   sent: "مُرسل",
