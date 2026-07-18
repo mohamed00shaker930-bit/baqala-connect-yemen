@@ -44,7 +44,7 @@ export function exportPdfPrint(opts: {
     <h1>${opts.title}</h1>
     ${opts.subtitle ? `<div class="sub">${opts.subtitle}</div>` : ""}
     ${sectionsHtml}
-    <div class="foot">وصل — ${new Date().toLocaleString("ar")}</div>
+    <div class="foot">وصل — ${formatDateTime(new Date())}</div>
     <script>window.onload=()=>{setTimeout(()=>window.print(),300);}<\/script>
   </body></html>`);
   w.document.close();
