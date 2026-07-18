@@ -64,10 +64,11 @@ export function RolesDialog({ user, onClose, onChanged }: { user: RolesDialogUse
           </DialogDescription>
         </DialogHeader>
         <Tabs defaultValue="roles" className="mt-2">
-          <TabsList className="grid grid-cols-3 w-full">
-            <TabsTrigger value="roles">الصلاحيات</TabsTrigger>
-            <TabsTrigger value="activity">سجل النشاط</TabsTrigger>
-            <TabsTrigger value="sessions">تسجيلات الدخول</TabsTrigger>
+          <TabsList className="grid grid-cols-4 w-full">
+            <TabsTrigger value="roles" className="text-xs">الصلاحيات</TabsTrigger>
+            <TabsTrigger value="activity" className="text-xs">سجل النشاط</TabsTrigger>
+            <TabsTrigger value="sessions" className="text-xs">تسجيلات الدخول</TabsTrigger>
+            <TabsTrigger value="usage" className="text-xs">فتح التطبيق</TabsTrigger>
           </TabsList>
           <TabsContent value="roles" className="space-y-3 py-2">
             {STAFF_ROLES.map((r) => {
