@@ -130,7 +130,7 @@ function Page() {
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {u.phone || "—"} • مسجّل {fmtDate(u.created_at)}
+                    {u.phone || "—"} • مسجّل {formatDateTimeFull(u.created_at)}
                   </p>
                 </div>
                 <Button size="sm" variant="outline" onClick={() => setEditing({ user_id: u.user_id, name: u.name, phone: u.phone, roles: u.roles })}>
