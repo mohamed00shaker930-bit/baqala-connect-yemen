@@ -5,13 +5,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { fmtDate } from "@/lib/format";
-import { Shield, Store as StoreIcon, User as UserIcon } from "lucide-react";
+import { Store as StoreIcon, User as UserIcon } from "lucide-react";
+import { RolesDialog, type RolesDialogUser } from "@/components/admin/RolesDialog";
 
 export const Route = createFileRoute("/admin/users")({ component: Page });
 
@@ -28,18 +26,7 @@ type UserRow = {
 
 type BizCat = { id: string; slug: string; name_ar: string; sort_order: number; is_active: boolean };
 
-const STAFF_ROLES = [
-  { key: "super_admin", label: "مدير رئيسي" },
-  { key: "admin", label: "مدير" },
-  { key: "operations", label: "عمليات" },
-  { key: "support", label: "خدمة عملاء" },
-  { key: "finance", label: "مالية" },
-] as const;
-
-const ROLE_LABEL: Record<string, string> = Object.fromEntries(STAFF_ROLES.map((r) => [r.key, r.label]));
-
 const KIND_BADGE: Record<string, { label: string; cls: string; icon: any }> = {
-  staff: { label: "إدارة", cls: "bg-violet-100 text-violet-700", icon: Shield },
   merchant: { label: "تاجر", cls: "bg-emerald-100 text-emerald-700", icon: StoreIcon },
   customer: { label: "عميل", cls: "bg-sky-100 text-sky-700", icon: UserIcon },
 };
