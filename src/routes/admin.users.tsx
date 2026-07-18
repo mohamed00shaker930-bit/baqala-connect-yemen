@@ -42,14 +42,14 @@ const PAGE_SIZE = 50;
 
 function Page() {
   const [cats, setCats] = useState<BizCat[]>([]);
-  const [filter, setFilter] = useState<{ kind: "all" | "staff" | "customer" | "merchant"; slug?: string | null }>({ kind: "all" });
+  const [filter, setFilter] = useState<{ kind: "all" | "customer" | "merchant"; slug?: string | null }>({ kind: "all" });
   const [search, setSearch] = useState("");
   const [debounced, setDebounced] = useState("");
   const [rows, setRows] = useState<UserRow[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [editing, setEditing] = useState<UserRow | null>(null);
+  const [editing, setEditing] = useState<RolesDialogUser | null>(null);
 
   useEffect(() => {
     (async () => {
