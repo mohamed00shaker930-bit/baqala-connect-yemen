@@ -5,19 +5,13 @@ import { Button } from "@/components/ui/button";
 import { useNotifications, markAllRead, markRead, type AppNotification } from "@/lib/notifications";
 import { useQueryClient } from "@tanstack/react-query";
 import { CheckCheck, ShoppingBag, Undo2, Wallet, Bell } from "lucide-react";
+import { formatTimeAgo } from "@/lib/dateFormat";
 
 export const Route = createFileRoute("/notifications")({ ssr: false, component: NotificationsPage });
 
 const ICONS: Record<string, any> = { order: ShoppingBag, return: Undo2, wallet: Wallet, info: Bell };
 
-function fmt(d: string) {
-  const dt = new Date(d);
-  const diffMin = Math.round((Date.now() - dt.getTime()) / 60000);
-  if (diffMin < 1) return "الآن";
-  if (diffMin < 60) return `قبل ${diffMin} د`;
-  if (diffMin < 1440) return `قبل ${Math.round(diffMin / 60)} س`;
-  return dt.toLocaleDateString("ar");
-}
+const fmt = (d: string) => formatTimeAgo(d);
 
 function NotificationsPage() {
   const { data } = useNotifications();
