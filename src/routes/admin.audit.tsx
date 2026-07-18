@@ -99,8 +99,18 @@ function Page() {
           <Card className="p-3 mb-4 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">اسم المستخدم</Label>
-                <Input placeholder="ابحث بالاسم" value={userName} onChange={(e) => setUserName(e.target.value)} className="mt-1" />
+                <Label className="text-xs">ابحث بالاسم أو رقم الجوال</Label>
+                <Input placeholder="ابحث بالاسم أو رقم الجوال" value={userName} onChange={(e) => setUserName(e.target.value)} className="mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs">نوع النشاط</Label>
+                <Select value={roleGroup} onValueChange={setRoleGroup}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">الكل</SelectItem>
+                    {ROLE_GROUPS.map((g) => <SelectItem key={g.v} value={g.v}>{g.l}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label className="text-xs">العملية</Label>
@@ -122,7 +132,11 @@ function Page() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="sm:col-span-2">
+                <Label className="text-xs">تحديد مستخدم</Label>
+                <div className="mt-1"><UserPicker value={pickedUser} onChange={setPickedUser} /></div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 sm:col-span-2">
                 <div>
                   <Label className="text-xs">من</Label>
                   <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="mt-1" />
@@ -139,6 +153,7 @@ function Page() {
               </Button>
             </div>
           </Card>
+
 
           <AuditLogList filter={filter} pageSize={50} showUser />
         </TabsContent>
