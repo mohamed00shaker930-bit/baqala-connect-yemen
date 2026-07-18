@@ -44,8 +44,6 @@ const USAGE_FILTERS = [
 ] as const;
 
 function Page() {
-  const [userName, setUserName] = useState("");
-  const [debouncedName, setDebouncedName] = useState("");
   const [roleGroup, setRoleGroup] = useState<string>("all");
   const [pickedUser, setPickedUser] = useState<PickedUser | null>(null);
   const [action, setAction] = useState<string>("all");
@@ -61,23 +59,23 @@ function Page() {
   const [usageTotal, setUsageTotal] = useState(0);
   const [usageUser, setUsageUser] = useState<PickedUser | null>(null);
 
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedName(userName.trim()), 400);
-    return () => clearTimeout(t);
-  }, [userName]);
+  const pickerKind: "customer" | "merchant" | "staff" | null =
+    roleGroup === "customer" || roleGroup === "merchant" || roleGroup === "staff"
+      ? (roleGroup as any)
+      : null;
+  const pickerDisabled = roleGroup === "system";
 
   const filter = useMemo(() => ({
-    userName: debouncedName || null,
+    userName: null,
     userId: pickedUser?.user_id ?? null,
     roleGroup: roleGroup === "all" ? null : (roleGroup as any),
     action: action === "all" ? null : action,
     tableName: tableName === "all" ? null : tableName,
     from: from ? new Date(from).toISOString() : null,
     to: to ? new Date(to + "T23:59:59").toISOString() : null,
-  }), [debouncedName, pickedUser, roleGroup, action, tableName, from, to]);
+  }), [pickedUser, roleGroup, action, tableName, from, to]);
 
   const clear = () => {
-    setUserName(""); setDebouncedName("");
     setRoleGroup("all"); setPickedUser(null);
     setAction("all"); setTableName("all");
     setFrom(""); setTo("");
