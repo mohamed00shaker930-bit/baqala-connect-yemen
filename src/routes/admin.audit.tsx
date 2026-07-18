@@ -27,6 +27,12 @@ const SESSION_FILTERS = [
   { v: "ended", l: "منتهية" },
 ] as const;
 
+const USAGE_FILTERS = [
+  { v: "all", l: "الكل" },
+  { v: "open", l: "مفتوح الآن" },
+  { v: "closed", l: "مغلق" },
+] as const;
+
 function Page() {
   const [userName, setUserName] = useState("");
   const [debouncedName, setDebouncedName] = useState("");
