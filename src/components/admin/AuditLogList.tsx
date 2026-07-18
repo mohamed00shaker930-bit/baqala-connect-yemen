@@ -128,7 +128,7 @@ export function AuditLogList({
                   <span className="text-muted-foreground">{tableLabel(r.table_name)}</span>
                   {r.record_label ? <> — <span>{r.record_label}</span></> : null}
                 </p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">{formatDateTime(r.created_at)}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{formatDateTimeFull(r.created_at)}</p>
                 {showUser && (
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                     <span className="text-xs">{r.user_name || "—"}</span>
