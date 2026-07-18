@@ -24,8 +24,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Pencil, Trash2, Plus, ArrowUp, ArrowDown, Image as ImageIcon,
-  ChevronLeft, ChevronRight, Package, Search,
+  ChevronLeft, ChevronRight, Package, Search, Download, Upload, Loader2,
 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import * as XLSX from "xlsx";
 
 export const Route = createFileRoute("/admin/library")({ component: LibraryPage });
 
@@ -417,35 +419,48 @@ function ItemsTab() {
   const [q, setQ] = useState("");
   const [qInput, setQInput] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("__all");
+  const [sortBy, setSortBy] = useState<string>("newest");
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState<Item | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Item | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   useEffect(() => {
     (supabase as any).from("catalog_categories").select("id,name,image_url,icon,sort_order,main_section").order("sort_order")
       .then(({ data }: any) => setCats(data || []));
   }, []);
 
+  const applySort = (query: any) => {
+    switch (sortBy) {
+      case "price_desc": return query.order("default_price", { ascending: false, nullsFirst: false });
+      case "price_asc": return query.order("default_price", { ascending: true, nullsFirst: false });
+      case "name_asc": return query.order("name", { ascending: true });
+      case "name_desc": return query.order("name", { ascending: false });
+      case "newest":
+      default: return query.order("created_at", { ascending: false });
+    }
+  };
+
   const load = async () => {
     setLoading(true);
     let query = (supabase as any).from("catalog_items")
-      .select("id,name,image_url,barcode,default_price,description,category_id,category_name,main_section,sort_order", { count: "exact" })
-      .order("sort_order", { ascending: true })
-      .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+      .select("id,name,image_url,barcode,default_price,description,category_id,category_name,main_section,sort_order", { count: "exact" });
     if (q.trim()) {
       const term = q.trim().replace(/[%,]/g, "");
       query = query.or(`name.ilike.%${term}%,barcode.ilike.%${term}%`);
     }
     if (categoryFilter !== "__all") query = query.eq("category_id", categoryFilter);
+    query = applySort(query).range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
     const { data, count } = await query;
     setItems((data as Item[]) || []);
     setTotal(count || 0);
     setLoading(false);
   };
-  useEffect(() => { load(); }, [page, q, categoryFilter]);
+  useEffect(() => { load(); }, [page, q, categoryFilter, sortBy]);
 
-  useEffect(() => { setPage(0); }, [q, categoryFilter]);
+  useEffect(() => { setPage(0); }, [q, categoryFilter, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -455,7 +470,6 @@ function ItemsTab() {
     if (!deleteTarget) return;
     const { error } = await (supabase as any).from("catalog_items").delete().eq("id", deleteTarget.id);
     if (error) { toast.error(error.message); return; }
-    // best-effort delete image
     if (deleteTarget.image_url) {
       const marker = `/${BUCKET}/`;
       const idx = deleteTarget.image_url.indexOf(marker);
@@ -469,6 +483,75 @@ function ItemsTab() {
     load();
   };
 
+  const exportExcel = async () => {
+    setExporting(true);
+    try {
+      const all: any[] = [];
+      const size = 1000;
+      let from = 0;
+      while (true) {
+        const { data, error } = await (supabase as any).from("catalog_items")
+          .select("id,name,barcode,default_price,description,main_section,category_path,subcategory,category_name,image_url,usage_count,sort_order,source,created_at")
+          .order("main_section", { ascending: true, nullsFirst: false })
+          .order("category_path", { ascending: true, nullsFirst: false })
+          .order("name", { ascending: true })
+          .range(from, from + size - 1);
+        if (error) throw error;
+        const rows = (data || []) as any[];
+        all.push(...rows);
+        if (rows.length < size) break;
+        from += size;
+      }
+      const headers = [
+        "المعرف (لا تعدّله)", "اسم المنتج", "الباركود", "السعر", "الوصف",
+        "القسم الرئيسي", "الفئة", "الفئة الفرعية", "اسم الفئة",
+        "رابط الصورة", "عدد الاستخدام", "الترتيب", "المصدر", "تاريخ الإضافة",
+      ];
+      const aoa: any[][] = [headers];
+      for (const r of all) {
+        aoa.push([
+          r.id ?? "",
+          r.name ?? "",
+          r.barcode ?? "",
+          r.default_price ?? "",
+          r.description ?? "",
+          r.main_section ?? "",
+          r.category_path ?? "",
+          r.subcategory ?? "",
+          r.category_name ?? "",
+          r.image_url ?? "",
+          r.usage_count ?? "",
+          r.sort_order ?? "",
+          r.source ?? "",
+          r.created_at ?? "",
+        ]);
+      }
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      // Force id (col A) and barcode (col C) to text
+      const range = XLSX.utils.decode_range(ws["!ref"]!);
+      for (let R = 1; R <= range.e.r; R++) {
+        for (const C of [0, 2]) {
+          const addr = XLSX.utils.encode_cell({ r: R, c: C });
+          const cell = ws[addr];
+          if (cell && cell.v != null && cell.v !== "") {
+            cell.t = "s";
+            cell.v = String(cell.v);
+            cell.z = "@";
+          }
+        }
+      }
+      ws["!cols"] = headers.map((h) => ({ wch: Math.max(12, Math.min(40, h.length + 6)) }));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "المنتجات");
+      XLSX.writeFile(wb, "wasl-library.xlsx");
+      toast.success(`تم تصدير ${all.length} منتج`);
+    } catch (e: any) {
+      toast.error(e.message || "فشل التصدير");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col md:flex-row gap-2">
@@ -476,6 +559,16 @@ function ItemsTab() {
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="بحث بالاسم أو الباركود..." value={qInput} onChange={(e) => setQInput(e.target.value)} className="pr-9" />
         </form>
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="md:w-48"><SelectValue placeholder="الفرز" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="newest">الأحدث</SelectItem>
+            <SelectItem value="price_desc">السعر: من الأعلى إلى الأدنى</SelectItem>
+            <SelectItem value="price_asc">السعر: من الأدنى إلى الأعلى</SelectItem>
+            <SelectItem value="name_asc">الاسم: أ → ي</SelectItem>
+            <SelectItem value="name_desc">الاسم: ي → أ</SelectItem>
+          </SelectContent>
+        </Select>
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
           <SelectTrigger className="md:w-56"><SelectValue placeholder="الفئة" /></SelectTrigger>
           <SelectContent>
@@ -483,8 +576,17 @@ function ItemsTab() {
             {cats.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
           </SelectContent>
         </Select>
+        <Button variant="outline" onClick={exportExcel} disabled={exporting}>
+          {exporting ? <Loader2 className="w-4 h-4 ml-1 animate-spin" /> : <Download className="w-4 h-4 ml-1" />}
+          تصدير Excel
+        </Button>
+        <Button variant="outline" onClick={() => setImportOpen(true)}>
+          <Upload className="w-4 h-4 ml-1" />استيراد Excel
+        </Button>
         <Button onClick={() => setAddOpen(true)}><Plus className="w-4 h-4 ml-1" />إضافة منتج</Button>
       </div>
+
+      <ImportDialog open={importOpen} onClose={() => setImportOpen(false)} onDone={load} />
 
       <Card className="overflow-x-auto">
         <Table>
@@ -672,6 +774,244 @@ function ItemDialog({
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>إلغاء</Button>
           <Button onClick={save} disabled={saving}>{saving ? "جاري..." : "حفظ"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ========== Bulk Import Dialog ==========
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const REASON_AR: Record<string, string> = {
+  not_found: "المنتج غير موجود",
+  duplicate: "الاسم/الباركود مكرر مع منتج آخر",
+  invalid_price: "سعر غير صالح",
+  missing_id: "المعرف مفقود",
+};
+
+type ImportError = { id?: string; name?: string; reason: string };
+
+function normalizeBarcode(v: any): string {
+  if (v == null) return "";
+  let s = String(v).trim();
+  if (/^\d+\.0+$/.test(s)) s = s.replace(/\.0+$/, "");
+  return s;
+}
+
+function ImportDialog({
+  open, onClose, onDone,
+}: { open: boolean; onClose: () => void; onDone: () => void }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [phase, setPhase] = useState<string>("");
+  const [summary, setSummary] = useState<{ updated: number; unchanged: number; errors: ImportError[] } | null>(null);
+
+  const reset = () => { setBusy(false); setProgress(0); setPhase(""); setSummary(null); };
+  const close = () => { if (busy) return; reset(); onClose(); };
+
+  const handleFile = async (file: File) => {
+    setBusy(true); setSummary(null); setProgress(0); setPhase("قراءة الملف...");
+    try {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      if (!ws) throw new Error("ورقة العمل فارغة");
+      const rows: any[] = XLSX.utils.sheet_to_json(ws, { raw: false, defval: null });
+
+      const errors: ImportError[] = [];
+      const dedupe = new Map<string, number>();
+      const parsed: { id: string; name?: string; barcode?: string | null; price?: number | null }[] = [];
+
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i];
+        const id = String(r["المعرف (لا تعدّله)"] ?? "").trim();
+        const nameRaw = r["اسم المنتج"];
+        const barcodeRaw = r["الباركود"];
+        const priceRaw = r["السعر"];
+        if (!id) { errors.push({ name: nameRaw ? String(nameRaw) : `صف ${i + 2}`, reason: "missing_id" }); continue; }
+        if (!UUID_RE.test(id)) { errors.push({ id, name: nameRaw ? String(nameRaw) : undefined, reason: "missing_id" }); continue; }
+
+        const name = nameRaw != null && String(nameRaw).trim() !== "" ? String(nameRaw).trim() : undefined;
+        const barcode = barcodeRaw != null && String(barcodeRaw).trim() !== "" ? normalizeBarcode(barcodeRaw) : undefined;
+        let price: number | undefined = undefined;
+        if (priceRaw != null && String(priceRaw).trim() !== "") {
+          const n = Number(String(priceRaw).replace(/,/g, ""));
+          if (isNaN(n) || n < 0) { errors.push({ id, name, reason: "invalid_price" }); continue; }
+          price = n;
+        }
+
+        // Dedupe inside file
+        const key = `${(name ?? "").toLowerCase()}|${barcode ?? ""}`;
+        if (name || barcode) {
+          const prev = dedupe.get(key);
+          if (prev != null) {
+            errors.push({ id, name, reason: "duplicate" });
+            continue;
+          }
+          dedupe.set(key, i);
+        }
+
+        parsed.push({ id, name, barcode: barcode ?? undefined, price });
+      }
+
+      if (parsed.length === 0) {
+        setSummary({ updated: 0, unchanged: 0, errors });
+        setBusy(false);
+        return;
+      }
+
+      // Fetch current values in batches
+      setPhase("جلب القيم الحالية...");
+      const currentMap = new Map<string, { name: string; barcode: string | null; default_price: number }>();
+      const ids = parsed.map((p) => p.id);
+      const CHUNK = 500;
+      for (let i = 0; i < ids.length; i += CHUNK) {
+        const slice = ids.slice(i, i + CHUNK);
+        const { data, error } = await (supabase as any).from("catalog_items")
+          .select("id,name,barcode,default_price").in("id", slice);
+        if (error) throw error;
+        (data || []).forEach((r: any) => currentMap.set(r.id, { name: r.name, barcode: r.barcode, default_price: Number(r.default_price) }));
+        setProgress(Math.round(((i + slice.length) / ids.length) * 30));
+      }
+
+      // Build change set: only rows where at least one field actually differs
+      const changed: { id: string; name?: string; barcode?: string | null; price?: number }[] = [];
+      let unchanged = 0;
+      for (const p of parsed) {
+        const cur = currentMap.get(p.id);
+        if (!cur) { errors.push({ id: p.id, name: p.name, reason: "not_found" }); continue; }
+        const patch: any = { id: p.id };
+        let diff = false;
+        if (p.name != null && p.name !== cur.name) { patch.name = p.name; diff = true; }
+        if (p.barcode !== undefined) {
+          const nb = p.barcode ?? null;
+          if ((cur.barcode ?? null) !== nb) { patch.barcode = nb; diff = true; }
+        }
+        if (p.price != null && Number(cur.default_price) !== p.price) { patch.price = p.price; diff = true; }
+        if (diff) changed.push(patch); else unchanged++;
+      }
+
+      // Send batches
+      setPhase("إرسال التعديلات...");
+      let updated = 0;
+      const BATCH = 500;
+      for (let i = 0; i < changed.length; i += BATCH) {
+        const batch = changed.slice(i, i + BATCH);
+        const { data, error } = await supabase.rpc("admin_bulk_update_catalog_items" as any, { p_items: batch as any });
+        if (error) throw error;
+        const res: any = data || {};
+        updated += Number(res.updated || 0);
+        if (Array.isArray(res.errors)) {
+          for (const e of res.errors) errors.push({ id: e.id, name: e.name, reason: e.reason });
+        }
+        setProgress(30 + Math.round(((i + batch.length) / changed.length) * 70));
+      }
+
+      setSummary({ updated, unchanged, errors });
+      toast.success(`تم تحديث ${updated} منتج`);
+      onDone();
+    } catch (e: any) {
+      toast.error(e.message || "فشل الاستيراد");
+    } finally {
+      setBusy(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  const downloadErrors = () => {
+    if (!summary) return;
+    const aoa: any[][] = [["اسم المنتج", "المعرف", "السبب"]];
+    for (const e of summary.errors) aoa.push([e.name || "", e.id || "", REASON_AR[e.reason] || e.reason]);
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "الأخطاء");
+    XLSX.writeFile(wb, "wasl-library-errors.xlsx");
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && close()}>
+      <DialogContent className="max-w-lg" dir="rtl">
+        <DialogHeader><DialogTitle>استيراد Excel (تعديل جماعي)</DialogTitle></DialogHeader>
+        <div className="space-y-3 text-sm">
+          <ol className="list-decimal pr-5 space-y-1 text-muted-foreground">
+            <li>صدّر الملف أولاً من زر "تصدير Excel".</li>
+            <li>عدّل فقط الأعمدة: <b>اسم المنتج</b>، <b>الباركود</b>، <b>السعر</b>.</li>
+            <li>لا تغيّر ولا تحذف عمود <b>"المعرف (لا تعدّله)"</b>.</li>
+            <li>الخلية الفارغة تعني إبقاء القيمة الحالية كما هي.</li>
+          </ol>
+
+          {!busy && !summary && (
+            <div>
+              <input
+                ref={fileRef}
+                type="file"
+                accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+              />
+              <Button onClick={() => fileRef.current?.click()} className="w-full">
+                <Upload className="w-4 h-4 ml-1" />اختر ملف Excel
+              </Button>
+            </div>
+          )}
+
+          {busy && (
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">{phase}</p>
+              <Progress value={progress} />
+              <p className="text-xs text-center">{progress}%</p>
+            </div>
+          )}
+
+          {summary && !busy && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <Card className="p-3">
+                  <p className="text-xs text-muted-foreground">محدّثة</p>
+                  <p className="text-lg font-bold text-primary">{summary.updated}</p>
+                </Card>
+                <Card className="p-3">
+                  <p className="text-xs text-muted-foreground">بدون تغيير</p>
+                  <p className="text-lg font-bold">{summary.unchanged}</p>
+                </Card>
+                <Card className="p-3">
+                  <p className="text-xs text-muted-foreground">أخطاء</p>
+                  <p className="text-lg font-bold text-destructive">{summary.errors.length}</p>
+                </Card>
+              </div>
+              {summary.errors.length > 0 && (
+                <>
+                  <div className="max-h-52 overflow-y-auto border rounded-md">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-right">المنتج</TableHead>
+                          <TableHead className="text-right">السبب</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {summary.errors.map((e, i) => (
+                          <TableRow key={i}>
+                            <TableCell className="text-xs">{e.name || e.id || "—"}</TableCell>
+                            <TableCell className="text-xs text-destructive">{REASON_AR[e.reason] || e.reason}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <Button variant="outline" onClick={downloadErrors} className="w-full">
+                    <Download className="w-4 h-4 ml-1" />تنزيل الأخطاء
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={close} disabled={busy}>
+            {summary ? "إغلاق" : "إلغاء"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
