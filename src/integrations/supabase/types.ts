@@ -47,6 +47,39 @@ export type Database = {
         }
         Relationships: []
       }
+      app_usage_log: {
+        Row: {
+          close_type: string | null
+          closed_at: string | null
+          id: string
+          last_ping_at: string
+          opened_at: string
+          seq: number
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          close_type?: string | null
+          closed_at?: string | null
+          id?: string
+          last_ping_at?: string
+          opened_at?: string
+          seq?: never
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          close_type?: string | null
+          closed_at?: string | null
+          id?: string
+          last_ping_at?: string
+          opened_at?: string
+          seq?: never
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -1350,6 +1383,28 @@ export type Database = {
         Args: { p_from: string; p_grain?: string; p_to: string }
         Returns: Json
       }
+      admin_list_app_usage: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_status?: string
+          p_user_id?: string
+        }
+        Returns: {
+          close_type: string
+          closed_at: string
+          duration_seconds: number
+          id: string
+          is_open: boolean
+          last_ping_at: string
+          opened_at: string
+          total_count: number
+          user_agent: string
+          user_id: string
+          user_name: string
+          user_phone: string
+        }[]
+      }
       admin_list_login_sessions: {
         Args: {
           p_limit?: number
@@ -1417,6 +1472,9 @@ export type Database = {
         }
         Returns: undefined
       }
+      app_session_close: { Args: { p_id: string }; Returns: undefined }
+      app_session_open: { Args: { p_user_agent?: string }; Returns: string }
+      app_session_ping: { Args: { p_id: string }; Returns: undefined }
       assign_my_role: {
         Args: { _role: Database["public"]["Enums"]["app_role"] }
         Returns: undefined
