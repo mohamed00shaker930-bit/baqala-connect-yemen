@@ -44,6 +44,7 @@ import { Route as AdminKpisRouteImport } from './routes/admin.kpis'
 import { Route as AdminBroadcastRouteImport } from './routes/admin.broadcast'
 import { Route as AdminBannersRouteImport } from './routes/admin.banners'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
+import { Route as ApiSbSplatRouteImport } from './routes/api/sb.$'
 
 const WalletRoute = WalletRouteImport.update({
   id: '/wallet',
@@ -220,6 +221,11 @@ const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiSbSplatRoute = ApiSbSplatRouteImport.update({
+  id: '/api/sb/$',
+  path: '/api/sb/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -257,6 +263,7 @@ export interface FileRoutesByFullPath {
   '/store/$storeId': typeof StoreStoreIdRoute
   '/admin/': typeof AdminIndexRoute
   '/merchant/': typeof MerchantIndexRoute
+  '/api/sb/$': typeof ApiSbSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -292,6 +299,7 @@ export interface FileRoutesByTo {
   '/store/$storeId': typeof StoreStoreIdRoute
   '/admin': typeof AdminIndexRoute
   '/merchant': typeof MerchantIndexRoute
+  '/api/sb/$': typeof ApiSbSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -330,6 +338,7 @@ export interface FileRoutesById {
   '/store/$storeId': typeof StoreStoreIdRoute
   '/admin/': typeof AdminIndexRoute
   '/merchant/': typeof MerchantIndexRoute
+  '/api/sb/$': typeof ApiSbSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -369,6 +378,7 @@ export interface FileRouteTypes {
     | '/store/$storeId'
     | '/admin/'
     | '/merchant/'
+    | '/api/sb/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -404,6 +414,7 @@ export interface FileRouteTypes {
     | '/store/$storeId'
     | '/admin'
     | '/merchant'
+    | '/api/sb/$'
   id:
     | '__root__'
     | '/'
@@ -441,6 +452,7 @@ export interface FileRouteTypes {
     | '/store/$storeId'
     | '/admin/'
     | '/merchant/'
+    | '/api/sb/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -460,6 +472,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   WalletRoute: typeof WalletRoute
   StoreStoreIdRoute: typeof StoreStoreIdRoute
+  ApiSbSplatRoute: typeof ApiSbSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -709,6 +722,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAnalyticsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/sb/$': {
+      id: '/api/sb/$'
+      path: '/api/sb/$'
+      fullPath: '/api/sb/$'
+      preLoaderRoute: typeof ApiSbSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -785,6 +805,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   WalletRoute: WalletRoute,
   StoreStoreIdRoute: StoreStoreIdRoute,
+  ApiSbSplatRoute: ApiSbSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

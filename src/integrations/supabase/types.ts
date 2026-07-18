@@ -469,6 +469,33 @@ export type Database = {
         }
         Relationships: []
       }
+      monitoring_settings: {
+        Row: {
+          fail_threshold: number
+          id: number
+          monitor_secret: string
+          telegram_bot_token: string | null
+          telegram_chat_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          fail_threshold?: number
+          id?: number
+          monitor_secret?: string
+          telegram_bot_token?: string | null
+          telegram_chat_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          fail_threshold?: number
+          id?: number
+          monitor_secret?: string
+          telegram_bot_token?: string | null
+          telegram_chat_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
@@ -902,6 +929,159 @@ export type Database = {
         }
         Relationships: []
       }
+      uptime_checks: {
+        Row: {
+          checked_at: string
+          error: string | null
+          http_status: number | null
+          id: number
+          is_up: boolean
+          response_time_ms: number | null
+          target_id: string
+        }
+        Insert: {
+          checked_at?: string
+          error?: string | null
+          http_status?: number | null
+          id?: never
+          is_up: boolean
+          response_time_ms?: number | null
+          target_id: string
+        }
+        Update: {
+          checked_at?: string
+          error?: string | null
+          http_status?: number | null
+          id?: never
+          is_up?: boolean
+          response_time_ms?: number | null
+          target_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uptime_checks_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "uptime_targets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uptime_incidents: {
+        Row: {
+          alert_sent: boolean
+          downtime_minutes: number | null
+          id: number
+          last_error: string | null
+          recovery_alert_sent: boolean
+          resolved_at: string | null
+          started_at: string
+          target_id: string
+        }
+        Insert: {
+          alert_sent?: boolean
+          downtime_minutes?: number | null
+          id?: never
+          last_error?: string | null
+          recovery_alert_sent?: boolean
+          resolved_at?: string | null
+          started_at?: string
+          target_id: string
+        }
+        Update: {
+          alert_sent?: boolean
+          downtime_minutes?: number | null
+          id?: never
+          last_error?: string | null
+          recovery_alert_sent?: boolean
+          resolved_at?: string | null
+          started_at?: string
+          target_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uptime_incidents_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "uptime_targets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uptime_pending: {
+        Row: {
+          issued_at: string
+          request_id: number
+          target_id: string
+        }
+        Insert: {
+          issued_at?: string
+          request_id: number
+          target_id: string
+        }
+        Update: {
+          issued_at?: string
+          request_id?: number
+          target_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uptime_pending_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "uptime_targets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uptime_targets: {
+        Row: {
+          consecutive_failures: number
+          created_at: string
+          expected_statuses: number[]
+          id: string
+          is_active: boolean
+          last_checked_at: string | null
+          last_response_ms: number | null
+          last_status: string | null
+          method: string
+          name: string
+          sort_order: number
+          timeout_ms: number
+          url: string
+        }
+        Insert: {
+          consecutive_failures?: number
+          created_at?: string
+          expected_statuses?: number[]
+          id?: string
+          is_active?: boolean
+          last_checked_at?: string | null
+          last_response_ms?: number | null
+          last_status?: string | null
+          method?: string
+          name: string
+          sort_order?: number
+          timeout_ms?: number
+          url: string
+        }
+        Update: {
+          consecutive_failures?: number
+          created_at?: string
+          expected_statuses?: number[]
+          id?: string
+          is_active?: boolean
+          last_checked_at?: string | null
+          last_response_ms?: number | null
+          last_status?: string | null
+          method?: string
+          name?: string
+          sort_order?: number
+          timeout_ms?: number
+          url?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1003,7 +1183,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      uptime_status: {
+        Row: {
+          consecutive_failures: number | null
+          last_checked_at: string | null
+          last_response_ms: number | null
+          last_status: string | null
+          name: string | null
+          uptime_24h_pct: number | null
+        }
+        Insert: {
+          consecutive_failures?: number | null
+          last_checked_at?: string | null
+          last_response_ms?: number | null
+          last_status?: string | null
+          name?: string | null
+          uptime_24h_pct?: never
+        }
+        Update: {
+          consecutive_failures?: number | null
+          last_checked_at?: string | null
+          last_response_ms?: number | null
+          last_status?: string | null
+          name?: string | null
+          uptime_24h_pct?: never
+        }
+        Relationships: []
+      }
     }
     Functions: {
       admin_broadcast_notification: {
@@ -1093,6 +1299,10 @@ export type Database = {
           phone: string
         }[]
       }
+      uptime_collect_results: { Args: never; Returns: undefined }
+      uptime_issue_checks: { Args: never; Returns: undefined }
+      uptime_run: { Args: never; Returns: undefined }
+      uptime_send_telegram: { Args: { p_text: string }; Returns: number }
     }
     Enums: {
       app_role: "customer" | "merchant"
