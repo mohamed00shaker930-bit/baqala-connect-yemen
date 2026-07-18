@@ -46,6 +46,8 @@ const USAGE_FILTERS = [
 function Page() {
   const [userName, setUserName] = useState("");
   const [debouncedName, setDebouncedName] = useState("");
+  const [roleGroup, setRoleGroup] = useState<string>("all");
+  const [pickedUser, setPickedUser] = useState<PickedUser | null>(null);
   const [action, setAction] = useState<string>("all");
   const [tableName, setTableName] = useState<string>("all");
   const [from, setFrom] = useState<string>("");
@@ -53,9 +55,11 @@ function Page() {
 
   const [sessionStatus, setSessionStatus] = useState<"all" | "active" | "ended">("all");
   const [sessionTotal, setSessionTotal] = useState(0);
+  const [sessionUser, setSessionUser] = useState<PickedUser | null>(null);
 
   const [usageStatus, setUsageStatus] = useState<"all" | "open" | "closed">("all");
   const [usageTotal, setUsageTotal] = useState(0);
+  const [usageUser, setUsageUser] = useState<PickedUser | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedName(userName.trim()), 400);
@@ -64,17 +68,21 @@ function Page() {
 
   const filter = useMemo(() => ({
     userName: debouncedName || null,
+    userId: pickedUser?.user_id ?? null,
+    roleGroup: roleGroup === "all" ? null : (roleGroup as any),
     action: action === "all" ? null : action,
     tableName: tableName === "all" ? null : tableName,
     from: from ? new Date(from).toISOString() : null,
     to: to ? new Date(to + "T23:59:59").toISOString() : null,
-  }), [debouncedName, action, tableName, from, to]);
+  }), [debouncedName, pickedUser, roleGroup, action, tableName, from, to]);
 
   const clear = () => {
     setUserName(""); setDebouncedName("");
+    setRoleGroup("all"); setPickedUser(null);
     setAction("all"); setTableName("all");
     setFrom(""); setTo("");
   };
+
 
   const tableOptions = Object.entries(TABLE_LABELS_AR).sort((a, b) => a[1].localeCompare(b[1], "ar"));
 
