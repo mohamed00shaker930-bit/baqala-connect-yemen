@@ -34,7 +34,7 @@ export function UserPicker({
     (async () => {
       setLoading(true);
       const { data } = await (supabase as any).rpc("admin_list_users", {
-        p_kind: "non_staff",
+        p_kind: null,
         p_category_slug: null,
         p_role: null,
         p_search: debounced,
