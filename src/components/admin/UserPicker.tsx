@@ -39,9 +39,24 @@ export function UserPicker({
     setOpen(false);
   }, [kind]);
 
+  const fetchList = async (search: string | null) => {
+    setLoading(true);
+    const { data } = await (supabase as any).rpc("admin_list_users", {
+      p_kind: kind,
+      p_category_slug: null,
+      p_role: null,
+      p_search: search,
+      p_limit: 20,
+      p_offset: 0,
+    });
+    setResults(((data as any[]) || []).map((r) => ({ user_id: r.user_id, name: r.name, phone: r.phone })));
+    setLoading(false);
+  };
+
+  // Search whenever debounced query changes (including empty → full list)
   useEffect(() => {
-    if (value) return;
-    if (debounced.length < 2) { setResults([]); return; }
+    if (value || disabled) return;
+    if (!open) return;
     let cancelled = false;
     (async () => {
       setLoading(true);
@@ -49,17 +64,16 @@ export function UserPicker({
         p_kind: kind,
         p_category_slug: null,
         p_role: null,
-        p_search: debounced,
-        p_limit: 8,
+        p_search: debounced.length >= 1 ? debounced : null,
+        p_limit: 20,
         p_offset: 0,
       });
       if (cancelled) return;
       setResults(((data as any[]) || []).map((r) => ({ user_id: r.user_id, name: r.name, phone: r.phone })));
-      setOpen(true);
       setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, [debounced, value, kind]);
+  }, [debounced, value, kind, open, disabled]);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -89,10 +103,10 @@ export function UserPicker({
         placeholder={placeholder}
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        onFocus={() => { if (results.length) setOpen(true); }}
+        onFocus={() => { setOpen(true); if (results.length === 0) fetchList(null); }}
         disabled={disabled}
       />
-      {!disabled && open && (loading || results.length > 0) && (
+      {!disabled && open && (
         <div className="absolute z-50 mt-1 w-full bg-popover border rounded-md shadow-md max-h-64 overflow-y-auto">
           {loading && <div className="px-3 py-2 text-xs text-muted-foreground">جاري البحث...</div>}
           {!loading && results.map((r) => (
@@ -106,7 +120,7 @@ export function UserPicker({
               <span className="text-xs text-muted-foreground">{r.phone || ""}</span>
             </button>
           ))}
-          {!disabled && !loading && results.length === 0 && debounced.length >= 2 && (
+          {!loading && results.length === 0 && (
             <div className="px-3 py-2 text-xs text-muted-foreground">لا نتائج</div>
           )}
         </div>
