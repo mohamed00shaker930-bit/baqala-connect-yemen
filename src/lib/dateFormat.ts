@@ -26,6 +26,27 @@ const timeFmt = new Intl.DateTimeFormat(LOCALE, {
   hour12: true,
 });
 
+const dateTimeFullDateFmt = new Intl.DateTimeFormat(LOCALE, {
+  timeZone: TZ,
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
+const dateTimeFullTimeFmt = new Intl.DateTimeFormat(LOCALE, {
+  timeZone: TZ,
+  hour: "numeric",
+  minute: "2-digit",
+  hour12: true,
+});
+
+export function formatDateTimeFull(d: string | number | Date): string {
+  const dt = toDate(d);
+  if (isNaN(dt.getTime())) return "";
+  return `${dateTimeFullDateFmt.format(dt)} - ${dateTimeFullTimeFmt.format(dt)}`;
+}
+
 function toDate(d: string | number | Date): Date {
   return d instanceof Date ? d : new Date(d);
 }
