@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AuditLogList } from "@/components/admin/AuditLogList";
 import { LoginSessionsList } from "@/components/admin/LoginSessionsList";
-import { AppUsageList } from "@/components/admin/AppUsageList";
+import { UserFilesList } from "@/components/admin/UserFilesList";
 import { UserPicker, type PickedUser } from "@/components/admin/UserPicker";
 import { TABLE_LABELS_AR } from "@/lib/audit-dict";
 import { X } from "lucide-react";
@@ -37,11 +37,6 @@ const SESSION_FILTERS = [
   { v: "ended", l: "منتهية" },
 ] as const;
 
-const USAGE_FILTERS = [
-  { v: "all", l: "الكل" },
-  { v: "open", l: "مفتوح الآن" },
-  { v: "closed", l: "مغلق" },
-] as const;
 
 function Page() {
   const [userName, setUserName] = useState<string>("");
@@ -62,9 +57,7 @@ function Page() {
   const [sessionTotal, setSessionTotal] = useState(0);
   const [sessionUser, setSessionUser] = useState<PickedUser | null>(null);
 
-  const [usageStatus, setUsageStatus] = useState<"all" | "open" | "closed">("all");
-  const [usageTotal, setUsageTotal] = useState(0);
-  const [usageUser, setUsageUser] = useState<PickedUser | null>(null);
+  
 
   const pickerKind: "customer" | "merchant" | "staff" | null =
     roleGroup === "customer" || roleGroup === "merchant" || roleGroup === "staff"
@@ -208,33 +201,9 @@ function Page() {
         </TabsContent>
 
         <TabsContent value="usage">
-          <Card className="p-3 mb-4 space-y-3">
-            <div className="flex items-center gap-2 flex-wrap">
-              {USAGE_FILTERS.map((f) => (
-                <Button
-                  key={f.v}
-                  size="sm"
-                  variant={usageStatus === f.v ? "default" : "outline"}
-                  onClick={() => setUsageStatus(f.v)}
-                >
-                  {f.l}
-                </Button>
-              ))}
-              <span className="text-xs text-muted-foreground ms-auto">{usageTotal} سجل</span>
-            </div>
-            <div>
-              <Label className="text-xs">تحديد مستخدم</Label>
-              <div className="mt-1"><UserPicker value={usageUser} onChange={setUsageUser} /></div>
-            </div>
-          </Card>
-          <AppUsageList
-            userId={usageUser?.user_id ?? null}
-            status={usageStatus === "all" ? null : usageStatus}
-            pageSize={50}
-            showUser
-            onTotal={setUsageTotal}
-          />
+          <UserFilesList />
         </TabsContent>
+
 
       </Tabs>
     </AdminShell>

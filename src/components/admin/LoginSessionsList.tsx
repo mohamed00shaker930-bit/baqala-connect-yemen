@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { User } from "lucide-react";
 import { formatDateTimeFull, formatTimeAgo } from "@/lib/dateFormat";
 
 export type LoginSession = {
@@ -88,8 +90,22 @@ export function LoginSessionsList({
           <Card key={r.id} className="p-3">
             {showUser && (
               <div className="flex items-center gap-2 flex-wrap mb-2 pb-2 border-b">
-                <span className="text-sm font-semibold">{r.user_name || "غير معروف"}</span>
-                {r.user_phone && <span className="text-xs text-muted-foreground">{r.user_phone}</span>}
+                {r.user_id ? (
+                  <Link
+                    to="/admin/user-file/$userId"
+                    params={{ userId: r.user_id }}
+                    className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
+                  >
+                    <User className="w-3.5 h-3.5" />
+                    <span>{r.user_name || "غير معروف"}</span>
+                    {r.user_phone && <span className="text-xs text-muted-foreground font-normal">{r.user_phone}</span>}
+                  </Link>
+                ) : (
+                  <>
+                    <span className="text-sm font-semibold">{r.user_name || "غير معروف"}</span>
+                    {r.user_phone && <span className="text-xs text-muted-foreground">{r.user_phone}</span>}
+                  </>
+                )}
               </div>
             )}
             <div className="flex items-start gap-2 flex-wrap">
