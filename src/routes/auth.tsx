@@ -6,12 +6,49 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { Store as StoreIcon, Phone, ShoppingBasket } from "lucide-react";
+import { Store as StoreIcon, Phone, ShoppingBasket, Copy, Check } from "lucide-react";
 import {
   generateOtp, verifyOtp, normalizePhone, clearOtp,
   signInOrSignUpWithPhone, getUserRole,
 } from "@/lib/auth-helpers";
 import { isCurrentUserAdmin } from "@/lib/admin";
+
+function CopyCodeButton({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(code);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = code;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("لم نتمكن من نسخ الرمز");
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      className="inline-flex items-center gap-1 rounded-md bg-white/20 px-2 py-1 text-xs font-medium text-white hover:bg-white/30 active:bg-white/40 transition-colors min-h-[28px] touch-manipulation"
+      aria-label={copied ? "تم النسخ" : "نسخ الرمز"}
+    >
+      {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+      {copied ? "تم النسخ" : "نسخ"}
+    </button>
+  );
+}
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -32,7 +69,13 @@ function AuthPage() {
     const p = normalizePhone(phoneInput);
     setPhone(p);
     const code = generateOtp(p);
-    toast.success(`رمز التحقق (تجريبي): ${code}`, { duration: 8000, description: "أدخله في الخانة التالية" });
+    toast.success(
+      <span className="inline-flex items-center gap-2 flex-wrap">
+        <span>رمز التحقق (تجريبي): {code}</span>
+        <CopyCodeButton code={code} />
+      </span>,
+      { duration: 8000, description: "أدخله في الخانة التالية" }
+    );
     setStep("otp");
   };
 
