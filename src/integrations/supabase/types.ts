@@ -1548,6 +1548,10 @@ export type Database = {
       }
       is_admin: { Args: { _uid?: string }; Returns: boolean }
       is_staff: { Args: { _uid?: string }; Returns: boolean }
+      merchant_cancel_credit_tx: {
+        Args: { _tx_id: string }
+        Returns: undefined
+      }
       pay_order_with_wallet: { Args: { _order_id: string }; Returns: undefined }
       push_notification: {
         Args: {
