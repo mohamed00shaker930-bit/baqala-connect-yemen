@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { User } from "lucide-react";
 import { formatDateTimeFull, formatTimeAgo } from "@/lib/dateFormat";
 
 export type LoginSession = {
