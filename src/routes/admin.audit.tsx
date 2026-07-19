@@ -205,33 +205,9 @@ function Page() {
         </TabsContent>
 
         <TabsContent value="usage">
-          <Card className="p-3 mb-4 space-y-3">
-            <div className="flex items-center gap-2 flex-wrap">
-              {USAGE_FILTERS.map((f) => (
-                <Button
-                  key={f.v}
-                  size="sm"
-                  variant={usageStatus === f.v ? "default" : "outline"}
-                  onClick={() => setUsageStatus(f.v)}
-                >
-                  {f.l}
-                </Button>
-              ))}
-              <span className="text-xs text-muted-foreground ms-auto">{usageTotal} سجل</span>
-            </div>
-            <div>
-              <Label className="text-xs">تحديد مستخدم</Label>
-              <div className="mt-1"><UserPicker value={usageUser} onChange={setUsageUser} /></div>
-            </div>
-          </Card>
-          <AppUsageList
-            userId={usageUser?.user_id ?? null}
-            status={usageStatus === "all" ? null : usageStatus}
-            pageSize={50}
-            showUser
-            onTotal={setUsageTotal}
-          />
+          <UserFilesList />
         </TabsContent>
+
 
       </Tabs>
     </AdminShell>
