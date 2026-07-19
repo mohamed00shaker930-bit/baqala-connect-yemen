@@ -57,7 +57,7 @@ function Page() {
   const [sessionTotal, setSessionTotal] = useState(0);
   const [sessionUser, setSessionUser] = useState<PickedUser | null>(null);
 
-  const [usageStatus, setUsageStatus] = useState<"all" | "open">("all");
+  
 
   const pickerKind: "customer" | "merchant" | "staff" | null =
     roleGroup === "customer" || roleGroup === "merchant" || roleGroup === "staff"
