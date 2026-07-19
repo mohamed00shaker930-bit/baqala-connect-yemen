@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { AuditLogList } from "@/components/admin/AuditLogList";
 import { LoginSessionsList } from "@/components/admin/LoginSessionsList";
-import { AppUsageList } from "@/components/admin/AppUsageList";
 import { UserFilesList } from "@/components/admin/UserFilesList";
 import { UserPicker, type PickedUser } from "@/components/admin/UserPicker";
 import { TABLE_LABELS_AR } from "@/lib/audit-dict";
