@@ -1457,6 +1457,32 @@ export type Database = {
           user_phone: string
         }[]
       }
+      admin_list_user_files: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+          p_status?: string
+          p_user_id?: string
+        }
+        Returns: {
+          active_sessions: number
+          is_open_now: boolean
+          last_action_at: string
+          last_activity_at: string
+          last_login_at: string
+          last_opened_at: string
+          registered_at: string
+          total_actions: number
+          total_count: number
+          total_logins: number
+          total_opens: number
+          user_id: string
+          user_name: string
+          user_phone: string
+          user_role: string
+        }[]
+      }
       admin_list_users: {
         Args: {
           p_category_slug?: string
