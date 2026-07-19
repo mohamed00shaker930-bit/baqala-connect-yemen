@@ -69,7 +69,13 @@ function AuthPage() {
     const p = normalizePhone(phoneInput);
     setPhone(p);
     const code = generateOtp(p);
-    toast.success(`رمز التحقق (تجريبي): ${code}`, { duration: 8000, description: "أدخله في الخانة التالية" });
+    toast.success(
+      <span className="inline-flex items-center gap-2 flex-wrap">
+        <span>رمز التحقق (تجريبي): {code}</span>
+        <CopyCodeButton code={code} />
+      </span>,
+      { duration: 8000, description: "أدخله في الخانة التالية" }
+    );
     setStep("otp");
   };
 
