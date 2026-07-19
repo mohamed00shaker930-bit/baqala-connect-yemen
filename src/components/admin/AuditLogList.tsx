@@ -139,13 +139,28 @@ export function AuditLogList({
                 <p className="text-[11px] text-muted-foreground mt-0.5">{formatDateTimeFull(r.created_at)}</p>
                 {showUser && (
                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                    <span className="text-xs">{r.user_name || "—"}</span>
-                    {r.user_phone && <span className="text-[11px] text-muted-foreground">{r.user_phone}</span>}
+                    {r.user_id ? (
+                      <Link
+                        to="/admin/user-file/$userId"
+                        params={{ userId: r.user_id }}
+                        className="inline-flex items-center gap-1 text-xs hover:underline text-primary"
+                      >
+                        <User className="w-3 h-3" />
+                        <span>{r.user_name || "—"}</span>
+                        {r.user_phone && <span className="text-[11px] text-muted-foreground">{r.user_phone}</span>}
+                      </Link>
+                    ) : (
+                      <>
+                        <span className="text-xs">{r.user_name || "—"}</span>
+                        {r.user_phone && <span className="text-[11px] text-muted-foreground">{r.user_phone}</span>}
+                      </>
+                    )}
                     <Badge variant="secondary" className={`text-[10px] ${ROLE_CLS[r.user_role || "unknown"] || ROLE_CLS.unknown}`}>
                       {roleLabel(r.user_role)}
                     </Badge>
                   </div>
                 )}
+
 
               </div>
               {r.action === "UPDATE" && fields.length > 0 && (
