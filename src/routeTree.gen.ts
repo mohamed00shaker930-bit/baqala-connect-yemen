@@ -47,6 +47,7 @@ import { Route as AdminBannersRouteImport } from './routes/admin.banners'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as ApiSbSplatRouteImport } from './routes/api/sb.$'
+import { Route as AdminUserFileUserIdRouteImport } from './routes/admin.user-file.$userId'
 
 const WalletRoute = WalletRouteImport.update({
   id: '/wallet',
@@ -238,6 +239,11 @@ const ApiSbSplatRoute = ApiSbSplatRouteImport.update({
   path: '/api/sb/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUserFileUserIdRoute = AdminUserFileUserIdRouteImport.update({
+  id: '/user-file/$userId',
+  path: '/user-file/$userId',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -277,6 +283,7 @@ export interface FileRoutesByFullPath {
   '/store/$storeId': typeof StoreStoreIdRoute
   '/admin/': typeof AdminIndexRoute
   '/merchant/': typeof MerchantIndexRoute
+  '/admin/user-file/$userId': typeof AdminUserFileUserIdRoute
   '/api/sb/$': typeof ApiSbSplatRoute
 }
 export interface FileRoutesByTo {
@@ -315,6 +322,7 @@ export interface FileRoutesByTo {
   '/store/$storeId': typeof StoreStoreIdRoute
   '/admin': typeof AdminIndexRoute
   '/merchant': typeof MerchantIndexRoute
+  '/admin/user-file/$userId': typeof AdminUserFileUserIdRoute
   '/api/sb/$': typeof ApiSbSplatRoute
 }
 export interface FileRoutesById {
@@ -356,6 +364,7 @@ export interface FileRoutesById {
   '/store/$storeId': typeof StoreStoreIdRoute
   '/admin/': typeof AdminIndexRoute
   '/merchant/': typeof MerchantIndexRoute
+  '/admin/user-file/$userId': typeof AdminUserFileUserIdRoute
   '/api/sb/$': typeof ApiSbSplatRoute
 }
 export interface FileRouteTypes {
@@ -398,6 +407,7 @@ export interface FileRouteTypes {
     | '/store/$storeId'
     | '/admin/'
     | '/merchant/'
+    | '/admin/user-file/$userId'
     | '/api/sb/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -436,6 +446,7 @@ export interface FileRouteTypes {
     | '/store/$storeId'
     | '/admin'
     | '/merchant'
+    | '/admin/user-file/$userId'
     | '/api/sb/$'
   id:
     | '__root__'
@@ -476,6 +487,7 @@ export interface FileRouteTypes {
     | '/store/$storeId'
     | '/admin/'
     | '/merchant/'
+    | '/admin/user-file/$userId'
     | '/api/sb/$'
   fileRoutesById: FileRoutesById
 }
@@ -767,6 +779,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSbSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/user-file/$userId': {
+      id: '/admin/user-file/$userId'
+      path: '/user-file/$userId'
+      fullPath: '/admin/user-file/$userId'
+      preLoaderRoute: typeof AdminUserFileUserIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
@@ -784,6 +803,7 @@ interface AdminRouteChildren {
   AdminUsersRoute: typeof AdminUsersRoute
   AdminWalletsRoute: typeof AdminWalletsRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminUserFileUserIdRoute: typeof AdminUserFileUserIdRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -800,6 +820,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminUsersRoute: AdminUsersRoute,
   AdminWalletsRoute: AdminWalletsRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminUserFileUserIdRoute: AdminUserFileUserIdRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
