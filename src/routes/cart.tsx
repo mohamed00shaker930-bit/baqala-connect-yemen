@@ -12,14 +12,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-
-type PayMethod = "cash" | "credit" | "wallet" | "jeeb" | "jawali" | "hasab" | "onecash";
-const WALLETS: { id: PayMethod; name: string; color: string; short: string }[] = [
-  { id: "jeeb",    name: "جيب",     color: "#7C3AED", short: "ج" },
-  { id: "jawali",  name: "جوالي",   color: "#EA580C", short: "ج" },
-  { id: "hasab",   name: "حساب",    color: "#0891B2", short: "ح" },
-  { id: "onecash", name: "ون كاش",  color: "#16A34A", short: "1" },
-];
+import { EXTERNAL_WALLETS as WALLETS, cartTotal, validateCheckout, buildOrderRow, buildOrderItems, type PayMethod } from "@/lib/checkout";
 
 export const Route = createFileRoute("/cart")({
   ssr: false,
@@ -40,7 +33,7 @@ function CartPage() {
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const total = c.items.reduce((s, i) => s + i.price * i.qty, 0);
+  const total = cartTotal(c.items);
 
   if (c.items.length === 0) {
     return (
@@ -62,40 +55,17 @@ function CartPage() {
   });
 
   const checkout = async () => {
-    if (!landmark.trim()) { toast.error("اكتب وصف موقع التوصيل"); return; }
-    if (!c.storeId) return;
-    if (payment === "wallet" && Number(wallet?.balance ?? 0) < total) {
-      toast.error("رصيد المحفظة غير كافٍ");
-      return;
-    }
+    const v = validateCheckout({ storeId: c.storeId, items: c.items, landmark, payment, walletBalance: wallet?.balance ?? 0 });
+    if (!v.ok) { toast.error(v.error); return; }
     setLoading(true);
     try {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) throw new Error("غير مسجل");
-      const isExternalWallet = payment !== "cash" && payment !== "credit" && payment !== "wallet";
-      const walletName = WALLETS.find((w) => w.id === payment)?.name;
-      const finalNote = [
-        isExternalWallet && walletRef ? `محفظة ${walletName} • رقم العملية: ${walletRef}` : isExternalWallet ? `دفع عبر ${walletName}` : null,
-        payment === "wallet" ? "دفع من محفظة التطبيق" : null,
-        note || null,
-      ].filter(Boolean).join(" — ") || null;
-      // payment_method enum doesn't include 'wallet' — store as 'cash' and pay via RPC
-      const dbPayment = payment === "wallet" ? "cash" : payment;
-      const { data: order, error } = await supabase.from("orders").insert({
-        customer_id: u.user.id,
-        store_id: c.storeId,
-        total,
-        payment_method: dbPayment as any,
-        credit_status: payment === "credit" ? "pending" : null,
-        status: payment === "wallet" ? "delivered" : "sent",
-        note: finalNote,
-        location_landmark: landmark,
-        location_phone: phone || null,
-      }).select().single();
+      const { data: order, error } = await supabase.from("orders").insert(
+        buildOrderRow({ customerId: u.user.id, storeId: c.storeId!, items: c.items, payment, landmark, phone, note, walletRef }) as any
+      ).select().single();
       if (error) throw error;
-      const items = c.items.map((i) => ({
-        order_id: order.id, product_id: i.productId, name: i.name, price: i.price, qty: i.qty, note: i.note || null,
-      }));
+      const items = buildOrderItems(order.id, c.items);
       const { error: ie } = await supabase.from("order_items").insert(items);
       if (ie) throw ie;
       if (payment === "wallet") {

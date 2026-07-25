@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { fmtRial, fmtDate } from "@/lib/format";
 import { Wallet } from "lucide-react";
 import { toast } from "sonner";
+import { totalDebt, pendingCharges } from "@/lib/credit-rules";
 
 export const Route = createFileRoute("/credit")({
   ssr: false,
@@ -30,11 +31,8 @@ function CreditPage() {
     },
   });
 
-  const totalDebt = accounts?.reduce((s, a) => s + Number(a.balance), 0) ?? 0;
-  const pendingTx = accounts?.flatMap((a: any) =>
-    (a.credit_transactions ?? []).filter((t: any) => t.status === "pending" && t.type === "charge")
-      .map((t: any) => ({ ...t, storeName: a.stores?.name }))
-  ) ?? [];
+  const debt = totalDebt((accounts ?? []) as any);
+  const pendingTx = pendingCharges((accounts ?? []) as any);
 
   const respond = async (tx: any, approve: boolean) => {
     const { error } = await supabase.rpc("customer_respond_credit", {
@@ -51,7 +49,7 @@ function CreditPage() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs opacity-80">إجمالي المستحق عليك</p>
-            <p className="text-2xl font-bold mt-1">{fmtRial(totalDebt)}</p>
+            <p className="text-2xl font-bold mt-1">{fmtRial(debt)}</p>
           </div>
           <Wallet className="w-10 h-10 opacity-50" />
         </div>
