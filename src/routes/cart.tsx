@@ -12,14 +12,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-
-type PayMethod = "cash" | "credit" | "wallet" | "jeeb" | "jawali" | "hasab" | "onecash";
-const WALLETS: { id: PayMethod; name: string; color: string; short: string }[] = [
-  { id: "jeeb",    name: "جيب",     color: "#7C3AED", short: "ج" },
-  { id: "jawali",  name: "جوالي",   color: "#EA580C", short: "ج" },
-  { id: "hasab",   name: "حساب",    color: "#0891B2", short: "ح" },
-  { id: "onecash", name: "ون كاش",  color: "#16A34A", short: "1" },
-];
+import { EXTERNAL_WALLETS as WALLETS, cartTotal, validateCheckout, buildOrderRow, buildOrderItems, type PayMethod } from "@/lib/checkout";
 
 export const Route = createFileRoute("/cart")({
   ssr: false,
