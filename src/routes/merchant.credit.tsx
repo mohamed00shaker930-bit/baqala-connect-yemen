@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { fmtRial, fmtDate } from "@/lib/format";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { totalDebt, pendingCount } from "@/lib/credit-rules";
 
 export const Route = createFileRoute("/merchant/credit")({
   ssr: false,
@@ -57,13 +58,13 @@ function MerchantCredit() {
     }
   };
 
-  const totalDebt = accounts?.reduce((s, a) => s + Number(a.balance), 0) ?? 0;
+  const debt = totalDebt((accounts ?? []) as any);
 
   return (
     <MerchantShell title="دفتر الأجل">
       <Card className="p-4 mb-4 bg-foreground text-background">
         <p className="text-xs opacity-70">إجمالي الديون المستحقة</p>
-        <p className="text-2xl font-bold mt-1">{fmtRial(totalDebt)}</p>
+        <p className="text-2xl font-bold mt-1">{fmtRial(debt)}</p>
         <p className="text-[11px] mt-1 opacity-70">بدون فوائد — قاعدة شرعية</p>
       </Card>
 
@@ -71,7 +72,7 @@ function MerchantCredit() {
         {accounts?.length === 0 && <Card className="p-8 text-center text-muted-foreground">لا توجد حسابات أجل.</Card>}
         {accounts?.map((a: any) => {
           const c = customers[a.id];
-          const pendingCount = a.credit_transactions?.filter((t: any) => t.status === "pending").length ?? 0;
+          const pendingCnt = pendingCount(a);
           return (
             <Card key={a.id} className="p-4">
               <div className="flex justify-between items-center mb-2">
@@ -81,7 +82,7 @@ function MerchantCredit() {
                 </div>
                 <span className="font-bold text-primary">{fmtRial(a.balance)}</span>
               </div>
-              {pendingCount > 0 && <Badge variant="outline" className="mb-2 text-amber-600">{pendingCount} بانتظار موافقة العميل</Badge>}
+              {pendingCnt > 0 && <Badge variant="outline" className="mb-2 text-amber-600">{pendingCnt} بانتظار موافقة العميل</Badge>}
               <div className="text-xs space-y-1 max-h-32 overflow-y-auto">
                 {a.credit_transactions?.slice(0, 6).map((t: any) => (
                   <div key={t.id} className="flex justify-between border-b last:border-0 py-1">
