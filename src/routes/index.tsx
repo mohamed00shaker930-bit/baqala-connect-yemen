@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getUserRole } from "@/lib/auth-helpers";
+import { getUserRole } from "@/lib/auth";
 import { isCurrentUserAdmin } from "@/lib/admin";
 
 export const Route = createFileRoute("/")({
@@ -16,8 +16,7 @@ function IndexRedirect() {
       if (!data.session) { navigate({ to: "/auth", replace: true }); return; }
       if (await isCurrentUserAdmin()) { navigate({ to: "/admin", replace: true }); return; }
       const role = await getUserRole(data.session.user.id);
-      if (!role) navigate({ to: "/choose-role", replace: true });
-      else if (role === "merchant") navigate({ to: "/merchant", replace: true });
+      if (role === "merchant") navigate({ to: "/merchant", replace: true });
       else navigate({ to: "/home", replace: true });
     })();
   }, [navigate]);

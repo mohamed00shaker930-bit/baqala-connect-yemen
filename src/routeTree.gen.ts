@@ -17,16 +17,20 @@ import { Route as MerchantRouteImport } from './routes/merchant'
 import { Route as LocationsRouteImport } from './routes/locations'
 import { Route as LibraryImportRouteImport } from './routes/library-import'
 import { Route as HomeRouteImport } from './routes/home'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as CreditRouteImport } from './routes/credit'
-import { Route as ChooseRoleRouteImport } from './routes/choose-role'
+import { Route as ChangePasswordRouteImport } from './routes/change-password'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RegisterIndexRouteImport } from './routes/register.index'
 import { Route as MerchantIndexRouteImport } from './routes/merchant.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as StoreStoreIdRouteImport } from './routes/store.$storeId'
+import { Route as RegisterMerchantRouteImport } from './routes/register.merchant'
+import { Route as RegisterCustomerRouteImport } from './routes/register.customer'
 import { Route as MerchantSettingsRouteImport } from './routes/merchant.settings'
 import { Route as MerchantReturnsRouteImport } from './routes/merchant.returns'
 import { Route as MerchantReportsRouteImport } from './routes/merchant.reports'
@@ -38,14 +42,17 @@ import { Route as AdminWalletsRouteImport } from './routes/admin.wallets'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminTeamRouteImport } from './routes/admin.team'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminPasswordResetsRouteImport } from './routes/admin.password-resets'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminMerchantsRouteImport } from './routes/admin.merchants'
 import { Route as AdminLibraryRouteImport } from './routes/admin.library'
 import { Route as AdminKpisRouteImport } from './routes/admin.kpis'
+import { Route as AdminBusinessTypesRouteImport } from './routes/admin.business-types'
 import { Route as AdminBroadcastRouteImport } from './routes/admin.broadcast'
 import { Route as AdminBannersRouteImport } from './routes/admin.banners'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
+import { Route as AdminAccountRequestsRouteImport } from './routes/admin.account-requests'
 import { Route as ApiSbSplatRouteImport } from './routes/api/sb.$'
 import { Route as AdminUserFileUserIdRouteImport } from './routes/admin.user-file.$userId'
 
@@ -89,6 +96,11 @@ const HomeRoute = HomeRouteImport.update({
   path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FavoritesRoute = FavoritesRouteImport.update({
   id: '/favorites',
   path: '/favorites',
@@ -99,9 +111,9 @@ const CreditRoute = CreditRouteImport.update({
   path: '/credit',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ChooseRoleRoute = ChooseRoleRouteImport.update({
-  id: '/choose-role',
-  path: '/choose-role',
+const ChangePasswordRoute = ChangePasswordRouteImport.update({
+  id: '/change-password',
+  path: '/change-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartRoute = CartRouteImport.update({
@@ -124,6 +136,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RegisterIndexRoute = RegisterIndexRouteImport.update({
+  id: '/register/',
+  path: '/register/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MerchantIndexRoute = MerchantIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -137,6 +154,16 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const StoreStoreIdRoute = StoreStoreIdRouteImport.update({
   id: '/store/$storeId',
   path: '/store/$storeId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterMerchantRoute = RegisterMerchantRouteImport.update({
+  id: '/register/merchant',
+  path: '/register/merchant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterCustomerRoute = RegisterCustomerRouteImport.update({
+  id: '/register/customer',
+  path: '/register/customer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MerchantSettingsRoute = MerchantSettingsRouteImport.update({
@@ -194,6 +221,11 @@ const AdminSettingsRoute = AdminSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPasswordResetsRoute = AdminPasswordResetsRouteImport.update({
+  id: '/password-resets',
+  path: '/password-resets',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminOrdersRoute = AdminOrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
@@ -212,6 +244,11 @@ const AdminLibraryRoute = AdminLibraryRouteImport.update({
 const AdminKpisRoute = AdminKpisRouteImport.update({
   id: '/kpis',
   path: '/kpis',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBusinessTypesRoute = AdminBusinessTypesRouteImport.update({
+  id: '/business-types',
+  path: '/business-types',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminBroadcastRoute = AdminBroadcastRouteImport.update({
@@ -234,6 +271,11 @@ const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAccountRequestsRoute = AdminAccountRequestsRouteImport.update({
+  id: '/account-requests',
+  path: '/account-requests',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ApiSbSplatRoute = ApiSbSplatRouteImport.update({
   id: '/api/sb/$',
   path: '/api/sb/$',
@@ -250,9 +292,10 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
-  '/choose-role': typeof ChooseRoleRoute
+  '/change-password': typeof ChangePasswordRoute
   '/credit': typeof CreditRoute
   '/favorites': typeof FavoritesRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/home': typeof HomeRoute
   '/library-import': typeof LibraryImportRoute
   '/locations': typeof LocationsRoute
@@ -261,14 +304,17 @@ export interface FileRoutesByFullPath {
   '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
   '/wallet': typeof WalletRoute
+  '/admin/account-requests': typeof AdminAccountRequestsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
+  '/admin/business-types': typeof AdminBusinessTypesRoute
   '/admin/kpis': typeof AdminKpisRoute
   '/admin/library': typeof AdminLibraryRoute
   '/admin/merchants': typeof AdminMerchantsRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/password-resets': typeof AdminPasswordResetsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/team': typeof AdminTeamRoute
   '/admin/users': typeof AdminUsersRoute
@@ -280,9 +326,12 @@ export interface FileRoutesByFullPath {
   '/merchant/reports': typeof MerchantReportsRoute
   '/merchant/returns': typeof MerchantReturnsRoute
   '/merchant/settings': typeof MerchantSettingsRoute
+  '/register/customer': typeof RegisterCustomerRoute
+  '/register/merchant': typeof RegisterMerchantRoute
   '/store/$storeId': typeof StoreStoreIdRoute
   '/admin/': typeof AdminIndexRoute
   '/merchant/': typeof MerchantIndexRoute
+  '/register/': typeof RegisterIndexRoute
   '/admin/user-file/$userId': typeof AdminUserFileUserIdRoute
   '/api/sb/$': typeof ApiSbSplatRoute
 }
@@ -290,9 +339,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
-  '/choose-role': typeof ChooseRoleRoute
+  '/change-password': typeof ChangePasswordRoute
   '/credit': typeof CreditRoute
   '/favorites': typeof FavoritesRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/home': typeof HomeRoute
   '/library-import': typeof LibraryImportRoute
   '/locations': typeof LocationsRoute
@@ -300,14 +350,17 @@ export interface FileRoutesByTo {
   '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
   '/wallet': typeof WalletRoute
+  '/admin/account-requests': typeof AdminAccountRequestsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
+  '/admin/business-types': typeof AdminBusinessTypesRoute
   '/admin/kpis': typeof AdminKpisRoute
   '/admin/library': typeof AdminLibraryRoute
   '/admin/merchants': typeof AdminMerchantsRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/password-resets': typeof AdminPasswordResetsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/team': typeof AdminTeamRoute
   '/admin/users': typeof AdminUsersRoute
@@ -319,9 +372,12 @@ export interface FileRoutesByTo {
   '/merchant/reports': typeof MerchantReportsRoute
   '/merchant/returns': typeof MerchantReturnsRoute
   '/merchant/settings': typeof MerchantSettingsRoute
+  '/register/customer': typeof RegisterCustomerRoute
+  '/register/merchant': typeof RegisterMerchantRoute
   '/store/$storeId': typeof StoreStoreIdRoute
   '/admin': typeof AdminIndexRoute
   '/merchant': typeof MerchantIndexRoute
+  '/register': typeof RegisterIndexRoute
   '/admin/user-file/$userId': typeof AdminUserFileUserIdRoute
   '/api/sb/$': typeof ApiSbSplatRoute
 }
@@ -331,9 +387,10 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
-  '/choose-role': typeof ChooseRoleRoute
+  '/change-password': typeof ChangePasswordRoute
   '/credit': typeof CreditRoute
   '/favorites': typeof FavoritesRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/home': typeof HomeRoute
   '/library-import': typeof LibraryImportRoute
   '/locations': typeof LocationsRoute
@@ -342,14 +399,17 @@ export interface FileRoutesById {
   '/orders': typeof OrdersRoute
   '/profile': typeof ProfileRoute
   '/wallet': typeof WalletRoute
+  '/admin/account-requests': typeof AdminAccountRequestsRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/broadcast': typeof AdminBroadcastRoute
+  '/admin/business-types': typeof AdminBusinessTypesRoute
   '/admin/kpis': typeof AdminKpisRoute
   '/admin/library': typeof AdminLibraryRoute
   '/admin/merchants': typeof AdminMerchantsRoute
   '/admin/orders': typeof AdminOrdersRoute
+  '/admin/password-resets': typeof AdminPasswordResetsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/team': typeof AdminTeamRoute
   '/admin/users': typeof AdminUsersRoute
@@ -361,9 +421,12 @@ export interface FileRoutesById {
   '/merchant/reports': typeof MerchantReportsRoute
   '/merchant/returns': typeof MerchantReturnsRoute
   '/merchant/settings': typeof MerchantSettingsRoute
+  '/register/customer': typeof RegisterCustomerRoute
+  '/register/merchant': typeof RegisterMerchantRoute
   '/store/$storeId': typeof StoreStoreIdRoute
   '/admin/': typeof AdminIndexRoute
   '/merchant/': typeof MerchantIndexRoute
+  '/register/': typeof RegisterIndexRoute
   '/admin/user-file/$userId': typeof AdminUserFileUserIdRoute
   '/api/sb/$': typeof ApiSbSplatRoute
 }
@@ -374,9 +437,10 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/cart'
-    | '/choose-role'
+    | '/change-password'
     | '/credit'
     | '/favorites'
+    | '/forgot-password'
     | '/home'
     | '/library-import'
     | '/locations'
@@ -385,14 +449,17 @@ export interface FileRouteTypes {
     | '/orders'
     | '/profile'
     | '/wallet'
+    | '/admin/account-requests'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/banners'
     | '/admin/broadcast'
+    | '/admin/business-types'
     | '/admin/kpis'
     | '/admin/library'
     | '/admin/merchants'
     | '/admin/orders'
+    | '/admin/password-resets'
     | '/admin/settings'
     | '/admin/team'
     | '/admin/users'
@@ -404,9 +471,12 @@ export interface FileRouteTypes {
     | '/merchant/reports'
     | '/merchant/returns'
     | '/merchant/settings'
+    | '/register/customer'
+    | '/register/merchant'
     | '/store/$storeId'
     | '/admin/'
     | '/merchant/'
+    | '/register/'
     | '/admin/user-file/$userId'
     | '/api/sb/$'
   fileRoutesByTo: FileRoutesByTo
@@ -414,9 +484,10 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/cart'
-    | '/choose-role'
+    | '/change-password'
     | '/credit'
     | '/favorites'
+    | '/forgot-password'
     | '/home'
     | '/library-import'
     | '/locations'
@@ -424,14 +495,17 @@ export interface FileRouteTypes {
     | '/orders'
     | '/profile'
     | '/wallet'
+    | '/admin/account-requests'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/banners'
     | '/admin/broadcast'
+    | '/admin/business-types'
     | '/admin/kpis'
     | '/admin/library'
     | '/admin/merchants'
     | '/admin/orders'
+    | '/admin/password-resets'
     | '/admin/settings'
     | '/admin/team'
     | '/admin/users'
@@ -443,9 +517,12 @@ export interface FileRouteTypes {
     | '/merchant/reports'
     | '/merchant/returns'
     | '/merchant/settings'
+    | '/register/customer'
+    | '/register/merchant'
     | '/store/$storeId'
     | '/admin'
     | '/merchant'
+    | '/register'
     | '/admin/user-file/$userId'
     | '/api/sb/$'
   id:
@@ -454,9 +531,10 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/cart'
-    | '/choose-role'
+    | '/change-password'
     | '/credit'
     | '/favorites'
+    | '/forgot-password'
     | '/home'
     | '/library-import'
     | '/locations'
@@ -465,14 +543,17 @@ export interface FileRouteTypes {
     | '/orders'
     | '/profile'
     | '/wallet'
+    | '/admin/account-requests'
     | '/admin/analytics'
     | '/admin/audit'
     | '/admin/banners'
     | '/admin/broadcast'
+    | '/admin/business-types'
     | '/admin/kpis'
     | '/admin/library'
     | '/admin/merchants'
     | '/admin/orders'
+    | '/admin/password-resets'
     | '/admin/settings'
     | '/admin/team'
     | '/admin/users'
@@ -484,9 +565,12 @@ export interface FileRouteTypes {
     | '/merchant/reports'
     | '/merchant/returns'
     | '/merchant/settings'
+    | '/register/customer'
+    | '/register/merchant'
     | '/store/$storeId'
     | '/admin/'
     | '/merchant/'
+    | '/register/'
     | '/admin/user-file/$userId'
     | '/api/sb/$'
   fileRoutesById: FileRoutesById
@@ -496,9 +580,10 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   CartRoute: typeof CartRoute
-  ChooseRoleRoute: typeof ChooseRoleRoute
+  ChangePasswordRoute: typeof ChangePasswordRoute
   CreditRoute: typeof CreditRoute
   FavoritesRoute: typeof FavoritesRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   HomeRoute: typeof HomeRoute
   LibraryImportRoute: typeof LibraryImportRoute
   LocationsRoute: typeof LocationsRoute
@@ -507,7 +592,10 @@ export interface RootRouteChildren {
   OrdersRoute: typeof OrdersRoute
   ProfileRoute: typeof ProfileRoute
   WalletRoute: typeof WalletRoute
+  RegisterCustomerRoute: typeof RegisterCustomerRoute
+  RegisterMerchantRoute: typeof RegisterMerchantRoute
   StoreStoreIdRoute: typeof StoreStoreIdRoute
+  RegisterIndexRoute: typeof RegisterIndexRoute
   ApiSbSplatRoute: typeof ApiSbSplatRoute
 }
 
@@ -569,6 +657,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/favorites': {
       id: '/favorites'
       path: '/favorites'
@@ -583,11 +678,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CreditRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/choose-role': {
-      id: '/choose-role'
-      path: '/choose-role'
-      fullPath: '/choose-role'
-      preLoaderRoute: typeof ChooseRoleRouteImport
+    '/change-password': {
+      id: '/change-password'
+      path: '/change-password'
+      fullPath: '/change-password'
+      preLoaderRoute: typeof ChangePasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cart': {
@@ -618,6 +713,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/register/': {
+      id: '/register/'
+      path: '/register'
+      fullPath: '/register/'
+      preLoaderRoute: typeof RegisterIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/merchant/': {
       id: '/merchant/'
       path: '/'
@@ -637,6 +739,20 @@ declare module '@tanstack/react-router' {
       path: '/store/$storeId'
       fullPath: '/store/$storeId'
       preLoaderRoute: typeof StoreStoreIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register/merchant': {
+      id: '/register/merchant'
+      path: '/register/merchant'
+      fullPath: '/register/merchant'
+      preLoaderRoute: typeof RegisterMerchantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register/customer': {
+      id: '/register/customer'
+      path: '/register/customer'
+      fullPath: '/register/customer'
+      preLoaderRoute: typeof RegisterCustomerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/merchant/settings': {
@@ -716,6 +832,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/password-resets': {
+      id: '/admin/password-resets'
+      path: '/password-resets'
+      fullPath: '/admin/password-resets'
+      preLoaderRoute: typeof AdminPasswordResetsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/orders': {
       id: '/admin/orders'
       path: '/orders'
@@ -742,6 +865,13 @@ declare module '@tanstack/react-router' {
       path: '/kpis'
       fullPath: '/admin/kpis'
       preLoaderRoute: typeof AdminKpisRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/business-types': {
+      id: '/admin/business-types'
+      path: '/business-types'
+      fullPath: '/admin/business-types'
+      preLoaderRoute: typeof AdminBusinessTypesRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/broadcast': {
@@ -772,6 +902,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAnalyticsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/account-requests': {
+      id: '/admin/account-requests'
+      path: '/account-requests'
+      fullPath: '/admin/account-requests'
+      preLoaderRoute: typeof AdminAccountRequestsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/api/sb/$': {
       id: '/api/sb/$'
       path: '/api/sb/$'
@@ -790,14 +927,17 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminAccountRequestsRoute: typeof AdminAccountRequestsRoute
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminAuditRoute: typeof AdminAuditRoute
   AdminBannersRoute: typeof AdminBannersRoute
   AdminBroadcastRoute: typeof AdminBroadcastRoute
+  AdminBusinessTypesRoute: typeof AdminBusinessTypesRoute
   AdminKpisRoute: typeof AdminKpisRoute
   AdminLibraryRoute: typeof AdminLibraryRoute
   AdminMerchantsRoute: typeof AdminMerchantsRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminPasswordResetsRoute: typeof AdminPasswordResetsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminTeamRoute: typeof AdminTeamRoute
   AdminUsersRoute: typeof AdminUsersRoute
@@ -807,14 +947,17 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAccountRequestsRoute: AdminAccountRequestsRoute,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminAuditRoute: AdminAuditRoute,
   AdminBannersRoute: AdminBannersRoute,
   AdminBroadcastRoute: AdminBroadcastRoute,
+  AdminBusinessTypesRoute: AdminBusinessTypesRoute,
   AdminKpisRoute: AdminKpisRoute,
   AdminLibraryRoute: AdminLibraryRoute,
   AdminMerchantsRoute: AdminMerchantsRoute,
   AdminOrdersRoute: AdminOrdersRoute,
+  AdminPasswordResetsRoute: AdminPasswordResetsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminTeamRoute: AdminTeamRoute,
   AdminUsersRoute: AdminUsersRoute,
@@ -856,9 +999,10 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   CartRoute: CartRoute,
-  ChooseRoleRoute: ChooseRoleRoute,
+  ChangePasswordRoute: ChangePasswordRoute,
   CreditRoute: CreditRoute,
   FavoritesRoute: FavoritesRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   HomeRoute: HomeRoute,
   LibraryImportRoute: LibraryImportRoute,
   LocationsRoute: LocationsRoute,
@@ -867,7 +1011,10 @@ const rootRouteChildren: RootRouteChildren = {
   OrdersRoute: OrdersRoute,
   ProfileRoute: ProfileRoute,
   WalletRoute: WalletRoute,
+  RegisterCustomerRoute: RegisterCustomerRoute,
+  RegisterMerchantRoute: RegisterMerchantRoute,
   StoreStoreIdRoute: StoreStoreIdRoute,
+  RegisterIndexRoute: RegisterIndexRoute,
   ApiSbSplatRoute: ApiSbSplatRoute,
 }
 export const routeTree = rootRouteImport

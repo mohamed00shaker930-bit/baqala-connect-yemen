@@ -1,7 +1,7 @@
 import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { getUserRole } from "@/lib/auth-helpers";
+import { getUserRole } from "@/lib/auth";
 import { CustomerShell } from "@/components/CustomerShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,6 @@ export const Route = createFileRoute("/home")({
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/auth" });
     const role = await getUserRole(data.session.user.id);
-    if (!role) throw redirect({ to: "/choose-role" });
     if (role === "merchant") throw redirect({ to: "/merchant" });
   },
   component: HomePage,
