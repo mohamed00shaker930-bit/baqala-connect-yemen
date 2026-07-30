@@ -36,7 +36,7 @@ function ForgotPasswordPage() {
     if (loading || !phone.trim() || phoneError) return;
     setLoading(true);
     try {
-      await supabase.rpc("request_password_reset", { p_phone: phone.trim(), p_reason: reason.trim() || null });
+      await supabase.rpc("request_password_reset", { p_phone: phone.trim(), p_reason: reason.trim() || undefined });
     } catch {
       /* لا نكشف أي تفاصيل */
     } finally {
