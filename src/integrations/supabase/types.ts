@@ -804,6 +804,45 @@ export type Database = {
           },
         ]
       }
+      password_reset_requests: {
+        Row: {
+          applicant_name: string | null
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          phone: string
+          reason: string | null
+          requested_at: string
+          status: string
+          user_id: string | null
+          user_type: string | null
+        }
+        Insert: {
+          applicant_name?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          phone: string
+          reason?: string | null
+          requested_at?: string
+          status?: string
+          user_id?: string | null
+          user_type?: string | null
+        }
+        Update: {
+          applicant_name?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          phone?: string
+          reason?: string | null
+          requested_at?: string
+          status?: string
+          user_id?: string | null
+          user_type?: string | null
+        }
+        Relationships: []
+      }
       pending_customers: {
         Row: {
           claimed_by_user_id: string | null
@@ -958,24 +997,62 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: string
+          address: string | null
+          approved_at: string | null
+          approved_by: string | null
+          business_category_id: string | null
+          business_name: string | null
+          city: string | null
           created_at: string
+          district: string | null
           id: string
           name: string | null
           phone: string
+          status_reason: string | null
+          user_type: string | null
         }
         Insert: {
+          account_status?: string
+          address?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          business_category_id?: string | null
+          business_name?: string | null
+          city?: string | null
           created_at?: string
+          district?: string | null
           id: string
           name?: string | null
           phone: string
+          status_reason?: string | null
+          user_type?: string | null
         }
         Update: {
+          account_status?: string
+          address?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          business_category_id?: string | null
+          business_name?: string | null
+          city?: string | null
           created_at?: string
+          district?: string | null
           id?: string
           name?: string | null
           phone?: string
+          status_reason?: string | null
+          user_type?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_business_category_id_fkey"
+            columns: ["business_category_id"]
+            isOneToOne: false
+            referencedRelation: "business_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ratings: {
         Row: {
@@ -1378,6 +1455,18 @@ export type Database = {
         Args: { p_items: Json }
         Returns: Json
       }
+      admin_decide_account_request: {
+        Args: { p_approve: boolean; p_reason?: string; p_user_id: string }
+        Returns: undefined
+      }
+      admin_decide_password_reset: {
+        Args: {
+          p_approve: boolean
+          p_request_id: string
+          p_temp_password?: string
+        }
+        Returns: undefined
+      }
       admin_grant_admin: { Args: { _uid: string }; Returns: undefined }
       admin_kpis: {
         Args: { p_from: string; p_grain?: string; p_to: string }
@@ -1542,6 +1631,7 @@ export type Database = {
           items_count: number
         }[]
       }
+      clear_my_force_password_change: { Args: never; Returns: undefined }
       customer_request_return: {
         Args: { _order_id: string; _reason: string }
         Returns: undefined
@@ -1587,6 +1677,10 @@ export type Database = {
           _type: string
           _user_id: string
         }
+        Returns: undefined
+      }
+      request_password_reset: {
+        Args: { p_phone: string; p_reason?: string }
         Returns: undefined
       }
       search_customers_by_name: {
