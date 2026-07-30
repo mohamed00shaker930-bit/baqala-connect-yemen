@@ -17,9 +17,11 @@ import { Route as MerchantRouteImport } from './routes/merchant'
 import { Route as LocationsRouteImport } from './routes/locations'
 import { Route as LibraryImportRouteImport } from './routes/library-import'
 import { Route as HomeRouteImport } from './routes/home'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as CreditRouteImport } from './routes/credit'
 import { Route as ChooseRoleRouteImport } from './routes/choose-role'
+import { Route as ChangePasswordRouteImport } from './routes/change-password'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -28,6 +30,8 @@ import { Route as RegisterIndexRouteImport } from './routes/register.index'
 import { Route as MerchantIndexRouteImport } from './routes/merchant.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as StoreStoreIdRouteImport } from './routes/store.$storeId'
+import { Route as RegisterMerchantRouteImport } from './routes/register.merchant'
+import { Route as RegisterCustomerRouteImport } from './routes/register.customer'
 import { Route as MerchantSettingsRouteImport } from './routes/merchant.settings'
 import { Route as MerchantReturnsRouteImport } from './routes/merchant.returns'
 import { Route as MerchantReportsRouteImport } from './routes/merchant.reports'
@@ -90,6 +94,11 @@ const HomeRoute = HomeRouteImport.update({
   path: '/home',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FavoritesRoute = FavoritesRouteImport.update({
   id: '/favorites',
   path: '/favorites',
@@ -103,6 +112,11 @@ const CreditRoute = CreditRouteImport.update({
 const ChooseRoleRoute = ChooseRoleRouteImport.update({
   id: '/choose-role',
   path: '/choose-role',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChangePasswordRoute = ChangePasswordRouteImport.update({
+  id: '/change-password',
+  path: '/change-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartRoute = CartRouteImport.update({
@@ -143,6 +157,16 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const StoreStoreIdRoute = StoreStoreIdRouteImport.update({
   id: '/store/$storeId',
   path: '/store/$storeId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterMerchantRoute = RegisterMerchantRouteImport.update({
+  id: '/register/merchant',
+  path: '/register/merchant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterCustomerRoute = RegisterCustomerRouteImport.update({
+  id: '/register/customer',
+  path: '/register/customer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MerchantSettingsRoute = MerchantSettingsRouteImport.update({
@@ -256,9 +280,11 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
+  '/change-password': typeof ChangePasswordRoute
   '/choose-role': typeof ChooseRoleRoute
   '/credit': typeof CreditRoute
   '/favorites': typeof FavoritesRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/home': typeof HomeRoute
   '/library-import': typeof LibraryImportRoute
   '/locations': typeof LocationsRoute
@@ -286,6 +312,8 @@ export interface FileRoutesByFullPath {
   '/merchant/reports': typeof MerchantReportsRoute
   '/merchant/returns': typeof MerchantReturnsRoute
   '/merchant/settings': typeof MerchantSettingsRoute
+  '/register/customer': typeof RegisterCustomerRoute
+  '/register/merchant': typeof RegisterMerchantRoute
   '/store/$storeId': typeof StoreStoreIdRoute
   '/admin/': typeof AdminIndexRoute
   '/merchant/': typeof MerchantIndexRoute
@@ -297,9 +325,11 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
+  '/change-password': typeof ChangePasswordRoute
   '/choose-role': typeof ChooseRoleRoute
   '/credit': typeof CreditRoute
   '/favorites': typeof FavoritesRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/home': typeof HomeRoute
   '/library-import': typeof LibraryImportRoute
   '/locations': typeof LocationsRoute
@@ -326,6 +356,8 @@ export interface FileRoutesByTo {
   '/merchant/reports': typeof MerchantReportsRoute
   '/merchant/returns': typeof MerchantReturnsRoute
   '/merchant/settings': typeof MerchantSettingsRoute
+  '/register/customer': typeof RegisterCustomerRoute
+  '/register/merchant': typeof RegisterMerchantRoute
   '/store/$storeId': typeof StoreStoreIdRoute
   '/admin': typeof AdminIndexRoute
   '/merchant': typeof MerchantIndexRoute
@@ -339,9 +371,11 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
+  '/change-password': typeof ChangePasswordRoute
   '/choose-role': typeof ChooseRoleRoute
   '/credit': typeof CreditRoute
   '/favorites': typeof FavoritesRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/home': typeof HomeRoute
   '/library-import': typeof LibraryImportRoute
   '/locations': typeof LocationsRoute
@@ -369,6 +403,8 @@ export interface FileRoutesById {
   '/merchant/reports': typeof MerchantReportsRoute
   '/merchant/returns': typeof MerchantReturnsRoute
   '/merchant/settings': typeof MerchantSettingsRoute
+  '/register/customer': typeof RegisterCustomerRoute
+  '/register/merchant': typeof RegisterMerchantRoute
   '/store/$storeId': typeof StoreStoreIdRoute
   '/admin/': typeof AdminIndexRoute
   '/merchant/': typeof MerchantIndexRoute
@@ -383,9 +419,11 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/cart'
+    | '/change-password'
     | '/choose-role'
     | '/credit'
     | '/favorites'
+    | '/forgot-password'
     | '/home'
     | '/library-import'
     | '/locations'
@@ -413,6 +451,8 @@ export interface FileRouteTypes {
     | '/merchant/reports'
     | '/merchant/returns'
     | '/merchant/settings'
+    | '/register/customer'
+    | '/register/merchant'
     | '/store/$storeId'
     | '/admin/'
     | '/merchant/'
@@ -424,9 +464,11 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/cart'
+    | '/change-password'
     | '/choose-role'
     | '/credit'
     | '/favorites'
+    | '/forgot-password'
     | '/home'
     | '/library-import'
     | '/locations'
@@ -453,6 +495,8 @@ export interface FileRouteTypes {
     | '/merchant/reports'
     | '/merchant/returns'
     | '/merchant/settings'
+    | '/register/customer'
+    | '/register/merchant'
     | '/store/$storeId'
     | '/admin'
     | '/merchant'
@@ -465,9 +509,11 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/cart'
+    | '/change-password'
     | '/choose-role'
     | '/credit'
     | '/favorites'
+    | '/forgot-password'
     | '/home'
     | '/library-import'
     | '/locations'
@@ -495,6 +541,8 @@ export interface FileRouteTypes {
     | '/merchant/reports'
     | '/merchant/returns'
     | '/merchant/settings'
+    | '/register/customer'
+    | '/register/merchant'
     | '/store/$storeId'
     | '/admin/'
     | '/merchant/'
@@ -508,9 +556,11 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   CartRoute: typeof CartRoute
+  ChangePasswordRoute: typeof ChangePasswordRoute
   ChooseRoleRoute: typeof ChooseRoleRoute
   CreditRoute: typeof CreditRoute
   FavoritesRoute: typeof FavoritesRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   HomeRoute: typeof HomeRoute
   LibraryImportRoute: typeof LibraryImportRoute
   LocationsRoute: typeof LocationsRoute
@@ -519,6 +569,8 @@ export interface RootRouteChildren {
   OrdersRoute: typeof OrdersRoute
   ProfileRoute: typeof ProfileRoute
   WalletRoute: typeof WalletRoute
+  RegisterCustomerRoute: typeof RegisterCustomerRoute
+  RegisterMerchantRoute: typeof RegisterMerchantRoute
   StoreStoreIdRoute: typeof StoreStoreIdRoute
   RegisterIndexRoute: typeof RegisterIndexRoute
   ApiSbSplatRoute: typeof ApiSbSplatRoute
@@ -582,6 +634,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HomeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/favorites': {
       id: '/favorites'
       path: '/favorites'
@@ -601,6 +660,13 @@ declare module '@tanstack/react-router' {
       path: '/choose-role'
       fullPath: '/choose-role'
       preLoaderRoute: typeof ChooseRoleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/change-password': {
+      id: '/change-password'
+      path: '/change-password'
+      fullPath: '/change-password'
+      preLoaderRoute: typeof ChangePasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cart': {
@@ -657,6 +723,20 @@ declare module '@tanstack/react-router' {
       path: '/store/$storeId'
       fullPath: '/store/$storeId'
       preLoaderRoute: typeof StoreStoreIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register/merchant': {
+      id: '/register/merchant'
+      path: '/register/merchant'
+      fullPath: '/register/merchant'
+      preLoaderRoute: typeof RegisterMerchantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register/customer': {
+      id: '/register/customer'
+      path: '/register/customer'
+      fullPath: '/register/customer'
+      preLoaderRoute: typeof RegisterCustomerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/merchant/settings': {
@@ -876,9 +956,11 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   CartRoute: CartRoute,
+  ChangePasswordRoute: ChangePasswordRoute,
   ChooseRoleRoute: ChooseRoleRoute,
   CreditRoute: CreditRoute,
   FavoritesRoute: FavoritesRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   HomeRoute: HomeRoute,
   LibraryImportRoute: LibraryImportRoute,
   LocationsRoute: LocationsRoute,
@@ -887,6 +969,8 @@ const rootRouteChildren: RootRouteChildren = {
   OrdersRoute: OrdersRoute,
   ProfileRoute: ProfileRoute,
   WalletRoute: WalletRoute,
+  RegisterCustomerRoute: RegisterCustomerRoute,
+  RegisterMerchantRoute: RegisterMerchantRoute,
   StoreStoreIdRoute: StoreStoreIdRoute,
   RegisterIndexRoute: RegisterIndexRoute,
   ApiSbSplatRoute: ApiSbSplatRoute,
