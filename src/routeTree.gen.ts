@@ -24,6 +24,7 @@ import { Route as CartRouteImport } from './routes/cart'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RegisterIndexRouteImport } from './routes/register.index'
 import { Route as MerchantIndexRouteImport } from './routes/merchant.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as StoreStoreIdRouteImport } from './routes/store.$storeId'
@@ -122,6 +123,11 @@ const AdminRoute = AdminRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterIndexRoute = RegisterIndexRouteImport.update({
+  id: '/register/',
+  path: '/register/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MerchantIndexRoute = MerchantIndexRouteImport.update({
@@ -283,6 +289,7 @@ export interface FileRoutesByFullPath {
   '/store/$storeId': typeof StoreStoreIdRoute
   '/admin/': typeof AdminIndexRoute
   '/merchant/': typeof MerchantIndexRoute
+  '/register/': typeof RegisterIndexRoute
   '/admin/user-file/$userId': typeof AdminUserFileUserIdRoute
   '/api/sb/$': typeof ApiSbSplatRoute
 }
@@ -322,6 +329,7 @@ export interface FileRoutesByTo {
   '/store/$storeId': typeof StoreStoreIdRoute
   '/admin': typeof AdminIndexRoute
   '/merchant': typeof MerchantIndexRoute
+  '/register': typeof RegisterIndexRoute
   '/admin/user-file/$userId': typeof AdminUserFileUserIdRoute
   '/api/sb/$': typeof ApiSbSplatRoute
 }
@@ -364,6 +372,7 @@ export interface FileRoutesById {
   '/store/$storeId': typeof StoreStoreIdRoute
   '/admin/': typeof AdminIndexRoute
   '/merchant/': typeof MerchantIndexRoute
+  '/register/': typeof RegisterIndexRoute
   '/admin/user-file/$userId': typeof AdminUserFileUserIdRoute
   '/api/sb/$': typeof ApiSbSplatRoute
 }
@@ -407,6 +416,7 @@ export interface FileRouteTypes {
     | '/store/$storeId'
     | '/admin/'
     | '/merchant/'
+    | '/register/'
     | '/admin/user-file/$userId'
     | '/api/sb/$'
   fileRoutesByTo: FileRoutesByTo
@@ -446,6 +456,7 @@ export interface FileRouteTypes {
     | '/store/$storeId'
     | '/admin'
     | '/merchant'
+    | '/register'
     | '/admin/user-file/$userId'
     | '/api/sb/$'
   id:
@@ -487,6 +498,7 @@ export interface FileRouteTypes {
     | '/store/$storeId'
     | '/admin/'
     | '/merchant/'
+    | '/register/'
     | '/admin/user-file/$userId'
     | '/api/sb/$'
   fileRoutesById: FileRoutesById
@@ -508,6 +520,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   WalletRoute: typeof WalletRoute
   StoreStoreIdRoute: typeof StoreStoreIdRoute
+  RegisterIndexRoute: typeof RegisterIndexRoute
   ApiSbSplatRoute: typeof ApiSbSplatRoute
 }
 
@@ -616,6 +629,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register/': {
+      id: '/register/'
+      path: '/register'
+      fullPath: '/register/'
+      preLoaderRoute: typeof RegisterIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/merchant/': {
@@ -868,18 +888,9 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   WalletRoute: WalletRoute,
   StoreStoreIdRoute: StoreStoreIdRoute,
+  RegisterIndexRoute: RegisterIndexRoute,
   ApiSbSplatRoute: ApiSbSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
