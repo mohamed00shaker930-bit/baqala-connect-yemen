@@ -1,101 +1,83 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { Store as StoreIcon, Phone, ShoppingBasket, Copy, Check } from "lucide-react";
-import {
-  generateOtp, verifyOtp, normalizePhone, clearOtp,
-  signInOrSignUpWithPhone, getUserRole,
-} from "@/lib/auth-helpers";
+import { ShoppingBasket, Phone, Lock } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { signIn, getUserRole } from "@/lib/auth";
 import { isCurrentUserAdmin } from "@/lib/admin";
-
-function CopyCodeButton({ code }: { code: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(code);
-      } else {
-        const textarea = document.createElement("textarea");
-        textarea.value = code;
-        textarea.style.position = "fixed";
-        textarea.style.opacity = "0";
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textarea);
-      }
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error("لم نتمكن من نسخ الرمز");
-    }
-  };
-
-  return (
-    <button
-      type="button"
-      onClick={handleCopy}
-      className="inline-flex items-center gap-1 rounded-md bg-white/20 px-2 py-1 text-xs font-medium text-white hover:bg-white/30 active:bg-white/40 transition-colors min-h-[28px] touch-manipulation"
-      aria-label={copied ? "تم النسخ" : "نسخ الرمز"}
-    >
-      {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-      {copied ? "تم النسخ" : "نسخ"}
-    </button>
-  );
-}
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
   component: AuthPage,
+  head: () => ({
+    meta: [
+      { title: "تسجيل الدخول | وصل" },
+      { name: "description", content: "سجّل الدخول إلى تطبيق وصل لطلب احتياجاتك من بقالة الحي أو إدارة متجرك." },
+      { property: "og:title", content: "تسجيل الدخول | وصل" },
+      { property: "og:description", content: "سجّل الدخول إلى تطبيق وصل لطلب احتياجاتك من بقالة الحي أو إدارة متجرك." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
 });
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [step, setStep] = useState<"phone" | "otp">("phone");
-  const [phoneInput, setPhoneInput] = useState("");
   const [phone, setPhone] = useState("");
-  const [name, setName] = useState("");
-  const [otp, setOtp] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const sendOtp = () => {
-    if (!phoneInput.trim()) { toast.error("الرجاء إدخال رقم الجوال"); return; }
-    const p = normalizePhone(phoneInput);
-    setPhone(p);
-    const code = generateOtp(p);
-    toast.success(
-      <span className="inline-flex items-center gap-2 flex-wrap">
-        <span>رمز التحقق (تجريبي): {code}</span>
-        <CopyCodeButton code={code} />
-      </span>,
-      { duration: 8000, description: "أدخله في الخانة التالية" }
-    );
-    setStep("otp");
-  };
-
-  const verify = async () => {
-    if (otp.length !== 6) return;
-    if (!verifyOtp(phone, otp)) { toast.error("الرمز غير صحيح أو منتهي"); return; }
+  const submit = async () => {
+    if (loading) return;
+    if (!phone.trim() || !password) { toast.error("أدخل رقم الجوال وكلمة المرور"); return; }
     setLoading(true);
     try {
-      const user = await signInOrSignUpWithPhone(phone, name || undefined);
-      clearOtp();
-      toast.dismiss();
+      const { data, error } = await signIn(phone.trim(), password);
+      if (error || !data.user) { toast.error("بيانات الدخول غير صحيحة"); return; }
+
+      const user = data.user;
+      if ((user.app_metadata as any)?.force_password_change === true) {
+        navigate({ to: "/change-password" });
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("account_status, user_type")
+        .eq("id", user.id)
+        .single();
+
+      const status = profile?.account_status;
+      if (status === "pending") {
+        toast.info("حسابك قيد مراجعة الإدارة.");
+        await supabase.auth.signOut();
+        return;
+      }
+      if (status === "rejected") {
+        toast.error("تم رفض طلب إنشاء الحساب، يرجى التواصل مع الإدارة.");
+        await supabase.auth.signOut();
+        return;
+      }
+      if (status === "suspended") {
+        toast.error("تم إيقاف هذا الحساب، يرجى التواصل مع الإدارة.");
+        await supabase.auth.signOut();
+        return;
+      }
+
       toast.success("تم تسجيل الدخول", { duration: 1500 });
       if (await isCurrentUserAdmin()) { navigate({ to: "/admin" }); return; }
       const role = await getUserRole(user.id);
-      if (!role) navigate({ to: "/choose-role" });
-      else if (role === "merchant") navigate({ to: "/merchant" });
+      if (role === "merchant" || profile?.user_type === "merchant") navigate({ to: "/merchant" });
       else navigate({ to: "/home" });
     } catch (e: any) {
       toast.error(e?.message || "فشل تسجيل الدخول");
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -109,48 +91,33 @@ function AuthPage() {
           <p className="text-sm text-muted-foreground mt-1">بقالة الحي في جوالك</p>
         </div>
 
-        {step === "phone" && (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>الاسم (اختياري)</Label>
-              <Input placeholder="اسمك" value={name} onChange={(e) => setName(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2"><Phone className="w-4 h-4" /> رقم الجوال</Label>
-              <Input
-                inputMode="tel" dir="ltr"
-                placeholder="7XXXXXXXX"
-                value={phoneInput}
-                onChange={(e) => setPhoneInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && sendOtp()}
-              />
-              <p className="text-xs text-muted-foreground">سيتم إرسال رمز تحقق (تجريبي يظهر على الشاشة الآن).</p>
-            </div>
-            <Button onClick={sendOtp} className="w-full h-12 text-base">إرسال الرمز</Button>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2"><Phone className="w-4 h-4" /> اسم المستخدم (رقم الجوال)</Label>
+            <Input
+              inputMode="tel" dir="ltr" placeholder="7XXXXXXXX" maxLength={9}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
+              onKeyDown={(e) => e.key === "Enter" && submit()}
+            />
           </div>
-        )}
-
-        {step === "otp" && (
-          <div className="space-y-4">
-            <p className="text-sm text-center">أرسلنا رمزاً لـ <span dir="ltr" className="font-bold">{phone}</span></p>
-            <div className="flex justify-center" dir="ltr">
-              <InputOTP maxLength={6} value={otp} onChange={setOtp}>
-                <InputOTPGroup>
-                  {Array.from({ length: 6 }).map((_, i) => <InputOTPSlot key={i} index={i} />)}
-                </InputOTPGroup>
-              </InputOTP>
-            </div>
-            <Button onClick={verify} disabled={otp.length !== 6 || loading} className="w-full h-12 text-base">
-              {loading ? "جاري التحقق..." : "تأكيد"}
-            </Button>
-            <Button variant="ghost" onClick={() => { setStep("phone"); setOtp(""); }} className="w-full">
-              تغيير الرقم
-            </Button>
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2"><Lock className="w-4 h-4" /> كلمة المرور</Label>
+            <Input
+              type="password" dir="ltr" value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && submit()}
+            />
           </div>
-        )}
-
-        <div className="text-center text-xs text-muted-foreground border-t pt-4">
-          <StoreIcon className="inline w-3 h-3 ml-1" /> عميل أو تاجر؟ ستختار دورك بعد التسجيل.
+          <Button onClick={submit} disabled={loading} className="w-full h-12 text-base">
+            {loading ? "جاري الدخول..." : "تسجيل الدخول"}
+          </Button>
+          <Button asChild variant="outline" className="w-full h-11">
+            <Link to="/register">إنشاء حساب</Link>
+          </Button>
+          <div className="text-center">
+            <Link to="/forgot-password" className="text-sm text-primary underline">نسيت كلمة المرور</Link>
+          </div>
         </div>
       </Card>
     </div>
