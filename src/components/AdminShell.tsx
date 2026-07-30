@@ -1,6 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { LayoutDashboard, Users, Store, ShoppingBag, Wallet, Megaphone, Image as ImageIcon, Settings, LogOut, ShieldCheck, BarChart3, Library, History, UserPlus, KeyRound, Tags } from "lucide-react";
-import { LayoutDashboard, Users, Store, ShoppingBag, Wallet, Megaphone, Image as ImageIcon, Settings, LogOut, ShieldCheck, BarChart3, Library, History, UserPlus, KeyRound, Tags } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/NotificationBell";
