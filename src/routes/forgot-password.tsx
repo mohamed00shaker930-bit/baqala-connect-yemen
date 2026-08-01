@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle2, KeyRound } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { requestPasswordReset } from "@/lib/password-reset.functions";
 import { isValidYemeniPhone } from "@/lib/auth";
+
 
 export const Route = createFileRoute("/forgot-password")({
   ssr: false,
@@ -36,7 +37,7 @@ function ForgotPasswordPage() {
     if (loading || !phone.trim() || phoneError) return;
     setLoading(true);
     try {
-      await supabase.rpc("request_password_reset", { p_phone: phone.trim(), p_reason: reason.trim() || undefined });
+      await requestPasswordReset({ data: { phone: phone.trim(), reason: reason.trim() || undefined } });
     } catch {
       /* لا نكشف أي تفاصيل */
     } finally {

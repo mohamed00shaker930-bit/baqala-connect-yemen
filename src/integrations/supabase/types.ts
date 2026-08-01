@@ -1010,6 +1010,7 @@ export type Database = {
           name: string | null
           phone: string
           status_reason: string | null
+          suspended_until: string | null
           user_type: string | null
         }
         Insert: {
@@ -1026,6 +1027,7 @@ export type Database = {
           name?: string | null
           phone: string
           status_reason?: string | null
+          suspended_until?: string | null
           user_type?: string | null
         }
         Update: {
@@ -1042,6 +1044,7 @@ export type Database = {
           name?: string | null
           phone?: string
           status_reason?: string | null
+          suspended_until?: string | null
           user_type?: string | null
         }
         Relationships: [
@@ -1468,6 +1471,10 @@ export type Database = {
         Returns: undefined
       }
       admin_grant_admin: { Args: { _uid: string }; Returns: undefined }
+      admin_grant_wallet_credit: {
+        Args: { p_amount: number; p_note?: string; p_uid: string }
+        Returns: undefined
+      }
       admin_kpis: {
         Args: { p_from: string; p_grain?: string; p_to: string }
         Returns: Json
@@ -1597,6 +1604,25 @@ export type Database = {
         Returns: undefined
       }
       admin_revoke_admin: { Args: { _uid: string }; Returns: undefined }
+      admin_send_notification: {
+        Args: {
+          p_body: string
+          p_link?: string
+          p_title: string
+          p_type?: string
+          p_uid: string
+        }
+        Returns: undefined
+      }
+      admin_set_account_status: {
+        Args: {
+          p_reason?: string
+          p_status: string
+          p_uid: string
+          p_until?: string
+        }
+        Returns: undefined
+      }
       admin_set_setting: {
         Args: { _key: string; _value: Json }
         Returns: undefined
@@ -1614,6 +1640,17 @@ export type Database = {
           _grant: boolean
           _role: Database["public"]["Enums"]["app_role"]
           _uid: string
+        }
+        Returns: undefined
+      }
+      admin_update_profile: {
+        Args: {
+          p_address?: string
+          p_business_name?: string
+          p_city?: string
+          p_district?: string
+          p_name?: string
+          p_uid: string
         }
         Returns: undefined
       }
@@ -1662,6 +1699,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_account_active: { Args: { _uid?: string }; Returns: boolean }
       is_admin: { Args: { _uid?: string }; Returns: boolean }
       is_staff: { Args: { _uid?: string }; Returns: boolean }
       merchant_cancel_credit_tx: {
