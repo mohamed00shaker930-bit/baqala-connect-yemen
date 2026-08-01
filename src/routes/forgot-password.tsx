@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle2, KeyRound } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { requestPasswordReset } from "@/lib/password-reset.functions";
 import { isValidYemeniPhone } from "@/lib/auth";
+
 
 export const Route = createFileRoute("/forgot-password")({
   ssr: false,
