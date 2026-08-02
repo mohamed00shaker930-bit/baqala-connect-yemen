@@ -5,7 +5,7 @@ import { CustomerShell } from "@/components/CustomerShell";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Phone, MessageCircle, Lock, Clock, EyeOff, Timer, Languages, Wallet, MapPin, Heart } from "lucide-react";
+import { Phone, MessageCircle, Lock, Clock, EyeOff, Timer, Languages, Wallet, MapPin, Heart, KeyRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -106,6 +106,13 @@ function ProfilePage() {
       <Card className="p-4 mb-4">
         <h3 className="font-bold flex items-center gap-2 mb-3"><Languages className="w-4 h-4 text-primary" /> اللغة / Language</h3>
         <LanguageSwitcher />
+      </Card>
+
+      <Card className="p-4 mb-4">
+        <h3 className="font-bold flex items-center gap-2 mb-3"><KeyRound className="w-4 h-4 text-primary" /> كلمة المرور</h3>
+        <Button asChild variant="outline" className="w-full">
+          <Link to="/change-password">تغيير كلمة المرور</Link>
+        </Button>
       </Card>
 
       <Card className="p-4 mb-4 space-y-3">
@@ -220,4 +227,3 @@ function LanguageSwitcher() {
     </div>
   );
 }
-

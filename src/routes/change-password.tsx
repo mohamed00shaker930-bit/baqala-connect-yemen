@@ -35,7 +35,7 @@ function ChangePasswordPage() {
 
   const errors = useMemo(() => {
     const e: Record<string, string> = {};
-    if (password.length < 6 || password.length > 50) e.password = "كلمة المرور من 6 إلى 50 حرفاً.";
+    if (password.length < 6 || password.length > 10) e.password = "كلمة المرور من 6 إلى 10 (أرقام أو أحرف).";
     if (confirm !== password) e.confirm = "كلمتا المرور غير متطابقتين";
     return e;
   }, [password, confirm]);
@@ -67,12 +67,12 @@ function ChangePasswordPage() {
         </div>
         <div className="space-y-2">
           <Label>كلمة المرور الجديدة</Label>
-          <PasswordInput dir="ltr" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <PasswordInput dir="ltr" maxLength={10} value={password} onChange={(e) => setPassword(e.target.value)} />
           {password && errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
         </div>
         <div className="space-y-2">
           <Label>تأكيد كلمة المرور</Label>
-          <PasswordInput dir="ltr" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+          <PasswordInput dir="ltr" maxLength={10} value={confirm} onChange={(e) => setConfirm(e.target.value)} />
           {confirm && errors.confirm && <p className="text-xs text-destructive">{errors.confirm}</p>}
         </div>
         <Button onClick={submit} disabled={!valid || loading} className="w-full h-12 text-base">

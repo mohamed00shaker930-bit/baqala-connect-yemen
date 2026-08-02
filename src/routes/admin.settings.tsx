@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AdminShell } from "@/components/AdminShell";
 import { Card } from "@/components/ui/card";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { KeyRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -65,6 +66,13 @@ function Page() {
             <Switch checked={!!vals[k]} onCheckedChange={(v) => save(k, v)} />
           </Card>
         ))}
+
+        <Card className="p-4">
+          <h3 className="font-bold flex items-center gap-2 mb-3"><KeyRound className="w-4 h-4 text-primary" /> الحساب</h3>
+          <Button asChild variant="outline" className="w-full">
+            <Link to="/change-password">تغيير كلمة المرور</Link>
+          </Button>
+        </Card>
       </div>
     </AdminShell>
   );
