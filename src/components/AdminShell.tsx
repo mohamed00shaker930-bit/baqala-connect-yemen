@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, Users, Store, ShoppingBag, Wallet, Megaphone, Image as ImageIcon, Settings, LogOut, ShieldCheck, BarChart3, Library, History, UserPlus, KeyRound, Tags } from "lucide-react";
+import { LayoutDashboard, Users, Store, ShoppingBag, Wallet, Megaphone, Image as ImageIcon, Settings, LogOut, ShieldCheck, BarChart3, Library, History, UserPlus, KeyRound, Tags, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -20,6 +20,7 @@ const allTabs = [
   { to: "/admin/business-types", label: "أنواع الأنشطة", icon: Tags },
   { to: "/admin/users", label: "المستخدمون", icon: Users },
   { to: "/admin/team", label: "فريق الإدارة", icon: ShieldCheck, superOnly: true },
+  { to: "/admin/permissions", label: "إدارة الصلاحيات", icon: Lock, superOnly: true },
   { to: "/admin/orders", label: "الطلبات", icon: ShoppingBag },
   { to: "/admin/wallets", label: "المحافظ", icon: Wallet },
   { to: "/admin/broadcast", label: "إشعارات", icon: Megaphone },
