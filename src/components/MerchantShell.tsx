@@ -1,9 +1,7 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, Package, ShoppingBag, Wallet, Settings, LogOut, Store, ScanBarcode, BarChart3, Undo2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { LayoutDashboard, Package, ShoppingBag, Wallet, Settings, Store, ScanBarcode, BarChart3, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/NotificationBell";
-import { toast } from "sonner";
 import type { ReactNode } from "react";
 
 const tabs = [
@@ -21,12 +19,6 @@ export function MerchantShell({ title, children, action }: { title: string; chil
   const path = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    toast.success("تم تسجيل الخروج");
-    navigate({ to: "/auth" });
-  };
-
   return (
     <div className="min-h-screen pb-20 bg-gradient-to-b from-accent/20 to-background">
       <header className="sticky top-0 z-30 bg-foreground text-background shadow">
@@ -38,8 +30,14 @@ export function MerchantShell({ title, children, action }: { title: string; chil
           </div>
           {action}
           <NotificationBell />
-          <Button size="sm" variant="ghost" onClick={signOut} className="text-background hover:bg-background/10">
-            <LogOut className="w-5 h-5" />
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => navigate({ to: "/merchant/pos" })}
+            className="text-background hover:bg-background/10"
+            aria-label="نقطة البيع - مسح باركود"
+          >
+            <ScanBarcode className="w-5 h-5" />
           </Button>
         </div>
       </header>
