@@ -4,9 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/NotificationBell";
 import { toast } from "sonner";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
-const tabs = [
+type Me = { super: boolean; is_staff: boolean; perms: string[] };
+
+const allTabs = [
   { to: "/admin", label: "الرئيسية", icon: LayoutDashboard, exact: true },
   { to: "/admin/kpis", label: "المؤشرات", icon: BarChart3 },
   { to: "/admin/library", label: "المكتبة", icon: Library },
@@ -16,7 +19,7 @@ const tabs = [
   { to: "/admin/password-resets", label: "كلمات المرور", icon: KeyRound },
   { to: "/admin/business-types", label: "أنواع الأنشطة", icon: Tags },
   { to: "/admin/users", label: "المستخدمون", icon: Users },
-  { to: "/admin/team", label: "فريق الإدارة", icon: ShieldCheck },
+  { to: "/admin/team", label: "فريق الإدارة", icon: ShieldCheck, superOnly: true },
   { to: "/admin/orders", label: "الطلبات", icon: ShoppingBag },
   { to: "/admin/wallets", label: "المحافظ", icon: Wallet },
   { to: "/admin/broadcast", label: "إشعارات", icon: Megaphone },
@@ -28,6 +31,27 @@ const tabs = [
 export function AdminShell({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
+  const [me, setMe] = useState<Me | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const { data, error } = await (supabase as any).rpc("my_permissions", {});
+      if (!mounted) return;
+      if (error) {
+        setMe({ super: false, is_staff: false, perms: [] });
+        return;
+      }
+      setMe(data as Me);
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  const tabs = useMemo(() => {
+    if (!me) return allTabs.filter((t) => !t.superOnly);
+    return allTabs.filter((t) => !t.superOnly || me.super);
+  }, [me]);
+
   const signOut = async () => {
     await supabase.auth.signOut();
     toast.success("تم تسجيل الخروج");
