@@ -28,6 +28,20 @@ type UserRow = {
 
 const PAGE_SIZE = 50;
 
+const STAFF_ERR: Record<string, string> = {
+  invalid_phone: "رقم الجوال غير صحيح (٩ إلى ١٥ رقمًا)",
+  weak_password: "كلمة المرور يجب ألا تقل عن ٦ أحرف",
+  name_required: "الاسم مطلوب",
+  phone_taken: "رقم مسجّل مسبقًا (عميل/تاجر/موظف) — الموظف يُنشأ برقم جديد فقط",
+  bundle_not_found: "مجموعة الصلاحيات غير موجودة",
+  forbidden: "هذه العملية للمدير الرئيسي فقط",
+  create_failed: "تعذّر إنشاء الحساب",
+  profile_failed: "تعذّر حفظ بيانات الحساب",
+  role_failed: "تعذّر تعيين الدور",
+  auth_failed: "انتهت الجلسة، أعد تسجيل الدخول",
+  server_error: "حدث خطأ في الخادم",
+};
+
 function Page() {
   const [role, setRole] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -157,63 +171,41 @@ function Page() {
       )}
 
       <RolesDialog user={editing} onClose={() => setEditing(null)} onChanged={load} />
-      <AddStaffDialog open={addOpen} onClose={() => setAddOpen(false)} onGranted={load} />
+      <AddStaffDialog open={addOpen} onClose={() => setAddOpen(false)} onCreated={load} />
     </AdminShell>
   );
 }
 
-function AddStaffDialog({ open, onClose, onGranted }: { open: boolean; onClose: () => void; onGranted: () => void }) {
-  const [search, setSearch] = useState("");
-  const [debounced, setDebounced] = useState("");
-  const [results, setResults] = useState<UserRow[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selected, setSelected] = useState<UserRow | null>(null);
-  const [role, setRole] = useState<string>("support");
-  const [granting, setGranting] = useState(false);
+function AddStaffDialog({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [bundle, setBundle] = useState("");
+  const [bundles, setBundles] = useState<{ bundle: string; label: string }[]>([]);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!open) {
-      setSearch(""); setDebounced(""); setResults([]); setSelected(null); setRole("support");
-    }
+    if (!open) { setPhone(""); setPassword(""); setName(""); setBundle(""); return; }
+    (async () => {
+      const { data } = await (supabase as any).rpc("admin_get_permission_catalog", {});
+      setBundles((((data as any)?.bundles) || []).map((b: any) => ({ bundle: b.bundle, label: b.label })));
+    })();
   }, [open]);
 
-  useEffect(() => {
-    const t = setTimeout(() => setDebounced(search.trim()), 500);
-    return () => clearTimeout(t);
-  }, [search]);
-
-  useEffect(() => {
-    if (!open) return;
-    if (debounced.length < 2) { setResults([]); return; }
-    (async () => {
-      setLoading(true);
-      const { data, error } = await (supabase as any).rpc("admin_list_users", {
-        p_kind: "non_staff",
-        p_category_slug: null,
-        p_role: null,
-        p_search: debounced,
-        p_limit: 20,
-        p_offset: 0,
-      });
-      setLoading(false);
-      if (error) { toast.error(error.message); setResults([]); return; }
-      setResults((data as UserRow[]) || []);
-    })();
-  }, [debounced, open]);
-
-  const grant = async () => {
-    if (!selected) return;
-    setGranting(true);
-    const { error } = await (supabase as any).rpc("admin_set_user_role", { _uid: selected.user_id, _role: role, _grant: true });
-    setGranting(false);
-    if (error) {
-      const msg = error.message || "";
-      if (msg.includes("forbidden: super_admin only")) toast.error("هذه الصلاحية للمدير الرئيسي فقط");
-      else toast.error(msg);
-      return;
-    }
-    toast.success("تم منح الدور");
-    onGranted();
+  const create = async () => {
+    if (!name.trim()) { toast.error("الاسم مطلوب"); return; }
+    if (!/^\d{9,15}$/.test(phone.replace(/\D/g, ""))) { toast.error("رقم الجوال غير صحيح"); return; }
+    if (password.length < 6) { toast.error("كلمة المرور قصيرة"); return; }
+    setBusy(true);
+    const { data, error } = await supabase.functions.invoke("admin-create-staff", {
+      body: { phone, password, name: name.trim(), bundle: bundle || null },
+    });
+    setBusy(false);
+    if (error) { toast.error("تعذّر الاتصال بالخادم"); return; }
+    const res = data as { ok?: boolean; error?: string; warning?: string };
+    if (res?.error) { toast.error(STAFF_ERR[res.error] || "تعذّر إنشاء الموظف"); return; }
+    toast.success(res?.warning ? "تم إنشاء الموظف (راجع الصلاحيات)" : "تم إنشاء الموظف بنجاح");
+    onCreated();
     onClose();
   };
 
@@ -222,55 +214,36 @@ function AddStaffDialog({ open, onClose, onGranted }: { open: boolean; onClose: 
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>إضافة موظف</DialogTitle>
-          <DialogDescription>ابحث عن مستخدم بين العملاء والتجار ثم امنحه دوراً إدارياً.</DialogDescription>
+          <DialogDescription>أنشئ حساب موظف جديدًا من الصفر وعيّن له مجموعة صلاحيات. لا يمكن ترقية عميل أو تاجر موجود.</DialogDescription>
         </DialogHeader>
-        {!selected ? (
-          <div className="space-y-3">
-            <Input placeholder="ابحث بالاسم أو رقم الجوال" value={search} onChange={(e) => setSearch(e.target.value)} />
-            {loading ? (
-              <p className="text-center text-muted-foreground py-4 text-sm">جاري البحث...</p>
-            ) : debounced.length < 2 ? (
-              <p className="text-center text-muted-foreground py-4 text-xs">اكتب حرفين على الأقل</p>
-            ) : results.length === 0 ? (
-              <p className="text-center text-muted-foreground py-4 text-sm">لا نتائج</p>
-            ) : (
-              <div className="max-h-72 overflow-y-auto space-y-1">
-                {results.map((u) => (
-                  <button
-                    key={u.user_id}
-                    onClick={() => setSelected(u)}
-                    className="w-full text-right border rounded-lg p-2 hover:bg-accent"
-                  >
-                    <p className="text-sm font-medium">{u.name || "—"}</p>
-                    <p className="text-xs text-muted-foreground">{u.phone || "—"}</p>
-                  </button>
-                ))}
-              </div>
-            )}
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <label className="text-xs text-muted-foreground">الاسم</label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
           </div>
-        ) : (
-          <div className="space-y-3">
-            <div className="border rounded-lg p-3">
-              <p className="text-sm font-medium">{selected.name || "—"}</p>
-              <p className="text-xs text-muted-foreground">{selected.phone || "—"}</p>
-              <button className="text-xs text-primary mt-1" onClick={() => setSelected(null)}>تغيير</button>
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground">الدور</label>
-              <Select value={role} onValueChange={setRole}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {STAFF_ROLES.map((r) => (
-                    <SelectItem key={r.key} value={r.key}>{r.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-1">
+            <label className="text-xs text-muted-foreground">رقم الجوال</label>
+            <Input inputMode="numeric" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="7XXXXXXXX" />
           </div>
-        )}
+          <div className="space-y-1">
+            <label className="text-xs text-muted-foreground">كلمة المرور</label>
+            <Input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="٦ أحرف على الأقل" />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs text-muted-foreground">مجموعة الصلاحيات</label>
+            <Select value={bundle || "__none"} onValueChange={(v) => setBundle(v === "__none" ? "" : v)}>
+              <SelectTrigger><SelectValue placeholder="اختر مجموعة" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none">بدون (صفر صلاحيات)</SelectItem>
+                {bundles.map((b) => <SelectItem key={b.bundle} value={b.bundle}>{b.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <p className="text-[11px] text-muted-foreground">أنشئ المجموعات من شاشة «إدارة الصلاحيات».</p>
+          </div>
+        </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>إلغاء</Button>
-          <Button onClick={grant} disabled={!selected || granting}>منح الدور</Button>
+          <Button onClick={create} disabled={busy}>{busy ? "جارٍ الإنشاء…" : "إنشاء الموظف"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

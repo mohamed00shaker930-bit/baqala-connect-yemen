@@ -37,6 +37,7 @@ import { Route as AdminLibraryRouteImport } from './routes/admin.library'
 import { Route as AdminMerchantsRouteImport } from './routes/admin.merchants'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminPasswordResetsRouteImport } from './routes/admin.password-resets'
+import { Route as AdminPermissionsRouteImport } from './routes/admin.permissions'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminTeamRouteImport } from './routes/admin.team'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
@@ -196,6 +197,11 @@ const AdminPasswordResetsRoute = AdminPasswordResetsRouteImport.update({
   path: '/password-resets',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPermissionsRoute = AdminPermissionsRouteImport.update({
+  id: '/permissions',
+  path: '/permissions',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -315,6 +321,7 @@ export interface FileRoutesByFullPath {
   '/admin/merchants': typeof AdminMerchantsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/password-resets': typeof AdminPasswordResetsRoute
+  '/admin/permissions': typeof AdminPermissionsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/team': typeof AdminTeamRoute
   '/admin/users': typeof AdminUsersRoute
@@ -361,6 +368,7 @@ export interface FileRoutesByTo {
   '/admin/merchants': typeof AdminMerchantsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/password-resets': typeof AdminPasswordResetsRoute
+  '/admin/permissions': typeof AdminPermissionsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/team': typeof AdminTeamRoute
   '/admin/users': typeof AdminUsersRoute
@@ -410,6 +418,7 @@ export interface FileRoutesById {
   '/admin/merchants': typeof AdminMerchantsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/password-resets': typeof AdminPasswordResetsRoute
+  '/admin/permissions': typeof AdminPermissionsRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/team': typeof AdminTeamRoute
   '/admin/users': typeof AdminUsersRoute
@@ -460,6 +469,7 @@ export interface FileRouteTypes {
     | '/admin/merchants'
     | '/admin/orders'
     | '/admin/password-resets'
+    | '/admin/permissions'
     | '/admin/settings'
     | '/admin/team'
     | '/admin/users'
@@ -506,6 +516,7 @@ export interface FileRouteTypes {
     | '/admin/merchants'
     | '/admin/orders'
     | '/admin/password-resets'
+    | '/admin/permissions'
     | '/admin/settings'
     | '/admin/team'
     | '/admin/users'
@@ -554,6 +565,7 @@ export interface FileRouteTypes {
     | '/admin/merchants'
     | '/admin/orders'
     | '/admin/password-resets'
+    | '/admin/permissions'
     | '/admin/settings'
     | '/admin/team'
     | '/admin/users'
@@ -797,6 +809,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPasswordResetsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/permissions': {
+      id: '/admin/permissions'
+      path: '/permissions'
+      fullPath: '/admin/permissions'
+      preLoaderRoute: typeof AdminPermissionsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/settings': {
       id: '/admin/settings'
       path: '/settings'
@@ -938,6 +957,7 @@ interface AdminRouteChildren {
   AdminMerchantsRoute: typeof AdminMerchantsRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminPasswordResetsRoute: typeof AdminPasswordResetsRoute
+  AdminPermissionsRoute: typeof AdminPermissionsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminTeamRoute: typeof AdminTeamRoute
   AdminUsersRoute: typeof AdminUsersRoute
@@ -958,6 +978,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminMerchantsRoute: AdminMerchantsRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminPasswordResetsRoute: AdminPasswordResetsRoute,
+  AdminPermissionsRoute: AdminPermissionsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminTeamRoute: AdminTeamRoute,
   AdminUsersRoute: AdminUsersRoute,
@@ -1020,13 +1041,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
