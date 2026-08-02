@@ -44,6 +44,7 @@ export const FIELD_LABELS_AR: Record<string, string> = {
   qty: "الكمية",
   total: "الإجمالي",
   status: "الحالة",
+  account_status: "حالة الحساب",
   balance: "الرصيد",
   amount: "المبلغ",
   note: "ملاحظة",
