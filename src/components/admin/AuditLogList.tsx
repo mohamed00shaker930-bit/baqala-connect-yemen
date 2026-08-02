@@ -15,7 +15,7 @@ export type AuditLog = {
   user_name: string | null;
   user_phone?: string | null;
   user_role: string | null;
-  action: "INSERT" | "UPDATE" | "DELETE";
+  action: string;
   table_name: string;
   record_id: string | null;
   record_label: string | null;
@@ -41,6 +41,7 @@ const ACTION_META: Record<string, { label: string; cls: string }> = {
   INSERT: { label: "إضافة", cls: "bg-emerald-100 text-emerald-700 border-emerald-200" },
   UPDATE: { label: "تعديل", cls: "bg-amber-100 text-amber-800 border-amber-200" },
   DELETE: { label: "حذف", cls: "bg-red-100 text-red-700 border-red-200" },
+  self_delete_account: { label: "حذف حساب (ذاتي)", cls: "bg-red-100 text-red-700 border-red-200" },
 };
 
 const ROLE_CLS: Record<string, string> = {

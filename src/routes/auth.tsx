@@ -68,6 +68,11 @@ function AuthPage() {
         await supabase.auth.signOut();
         return;
       }
+      if (status === "deleted") {
+        toast.error("تم حذف هذا الحساب.");
+        await supabase.auth.signOut();
+        return;
+      }
 
       toast.success("تم تسجيل الدخول", { duration: 1500 });
       if (await isCurrentUserAdmin()) { navigate({ to: "/admin" }); return; }

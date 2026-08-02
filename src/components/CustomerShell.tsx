@@ -1,10 +1,8 @@
-import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Home, ShoppingCart, ClipboardList, Wallet, User, LogOut, ShoppingBasket } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Link, useRouterState } from "@tanstack/react-router";
+import { Home, ShoppingCart, ClipboardList, Wallet, User, ShoppingBasket } from "lucide-react";
 import { useCart } from "@/lib/cart";
-import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/NotificationBell";
-import { toast } from "sonner";
+import { CustomerScanButton } from "@/components/CustomerScanButton";
 import type { ReactNode } from "react";
 
 const tabs = [
@@ -18,13 +16,6 @@ const tabs = [
 export function CustomerShell({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const cart = useCart();
-  const navigate = useNavigate();
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    toast.success("تم تسجيل الخروج");
-    navigate({ to: "/auth" });
-  };
 
   return (
     <div className="min-h-screen pb-20 bg-gradient-to-b from-accent/20 to-background">
@@ -34,9 +25,7 @@ export function CustomerShell({ title, children, action }: { title: string; chil
           <h1 className="text-lg font-bold flex-1">{title}</h1>
           {action}
           <NotificationBell />
-          <Button size="sm" variant="ghost" onClick={signOut} className="text-primary-foreground hover:bg-primary-foreground/10">
-            <LogOut className="w-5 h-5" />
-          </Button>
+          <CustomerScanButton />
         </div>
       </header>
 
