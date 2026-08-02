@@ -1470,6 +1470,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_get_user_detail: { Args: { p_uid: string }; Returns: Json }
       admin_grant_admin: { Args: { _uid: string }; Returns: undefined }
       admin_grant_wallet_credit: {
         Args: { p_amount: number; p_note?: string; p_uid: string }
