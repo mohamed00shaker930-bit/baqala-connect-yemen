@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -67,12 +67,12 @@ function ChangePasswordPage() {
         </div>
         <div className="space-y-2">
           <Label>كلمة المرور الجديدة</Label>
-          <Input type="password" dir="ltr" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <PasswordInput dir="ltr" value={password} onChange={(e) => setPassword(e.target.value)} />
           {password && errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
         </div>
         <div className="space-y-2">
           <Label>تأكيد كلمة المرور</Label>
-          <Input type="password" dir="ltr" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+          <PasswordInput dir="ltr" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
           {confirm && errors.confirm && <p className="text-xs text-destructive">{errors.confirm}</p>}
         </div>
         <Button onClick={submit} disabled={!valid || loading} className="w-full h-12 text-base">

@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckCircle2 } from "lucide-react";
@@ -145,10 +146,10 @@ export function RegisterForm({ kind }: { kind: "customer" | "merchant" }) {
         {field("district", "المديرية", <Input value={district} onChange={(e) => setDistrict(e.target.value)} />)}
         {field("address", "العنوان", <Input value={address} onChange={(e) => setAddress(e.target.value)} />)}
         {field("password", "كلمة المرور",
-          <Input type="password" dir="ltr" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <PasswordInput dir="ltr" value={password} onChange={(e) => setPassword(e.target.value)} />
         )}
         {field("confirm", "تأكيد كلمة المرور",
-          <Input type="password" dir="ltr" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+          <PasswordInput dir="ltr" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
         )}
 
         <Button onClick={submit} disabled={!valid || loading} className="w-full h-12 text-base">
