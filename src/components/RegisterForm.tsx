@@ -48,7 +48,7 @@ export function RegisterForm({ kind }: { kind: "customer" | "merchant" }) {
     if (!city.trim()) e.city = "هذا الحقل مطلوب.";
     if (!district.trim()) e.district = "هذا الحقل مطلوب.";
     if (!address.trim()) e.address = "هذا الحقل مطلوب.";
-    if (password.length < 6 || password.length > 50) e.password = "كلمة المرور من 6 إلى 50 حرفاً.";
+    if (password.length < 6 || password.length > 10) e.password = "كلمة المرور من 6 إلى 10 (أرقام أو أحرف).";
     if (confirm !== password) e.confirm = "كلمتا المرور غير متطابقتين";
     if (isMerchant) {
       if (!categoryId) e.categoryId = "هذا الحقل مطلوب.";
@@ -146,10 +146,10 @@ export function RegisterForm({ kind }: { kind: "customer" | "merchant" }) {
         {field("district", "المديرية", <Input value={district} onChange={(e) => setDistrict(e.target.value)} />)}
         {field("address", "العنوان", <Input value={address} onChange={(e) => setAddress(e.target.value)} />)}
         {field("password", "كلمة المرور",
-          <PasswordInput dir="ltr" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <PasswordInput dir="ltr" maxLength={10} value={password} onChange={(e) => setPassword(e.target.value)} />
         )}
         {field("confirm", "تأكيد كلمة المرور",
-          <PasswordInput dir="ltr" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+          <PasswordInput dir="ltr" maxLength={10} value={confirm} onChange={(e) => setConfirm(e.target.value)} />
         )}
 
         <Button onClick={submit} disabled={!valid || loading} className="w-full h-12 text-base">

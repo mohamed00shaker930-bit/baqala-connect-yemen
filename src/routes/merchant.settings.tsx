@@ -1,5 +1,5 @@
 import { fetchMyStore } from "@/lib/my-store";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MerchantShell } from "@/components/MerchantShell";
@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { MapPicker } from "@/components/MapPicker";
-import { MapPin } from "lucide-react";
+import { MapPin, KeyRound } from "lucide-react";
 import type { LatLng } from "@/lib/geo";
 
 export const Route = createFileRoute("/merchant/settings")({
@@ -68,6 +68,14 @@ function MerchantSettings() {
         </div>
         <Button onClick={save} className="w-full h-12">حفظ</Button>
       </Card>
+
+      <Card className="p-4 mt-4">
+        <h3 className="font-bold flex items-center gap-2 mb-3"><KeyRound className="w-4 h-4 text-primary" /> الحساب</h3>
+        <Button asChild variant="outline" className="w-full">
+          <Link to="/change-password">تغيير كلمة المرور</Link>
+        </Button>
+      </Card>
+
       <MapPicker open={pickerOpen} onOpenChange={setPickerOpen} initial={coords} onPick={setCoords} title="موقع متجرك" />
     </MerchantShell>
   );
