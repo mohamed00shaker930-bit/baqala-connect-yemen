@@ -15,7 +15,7 @@ export type AuditLog = {
   user_name: string | null;
   user_phone?: string | null;
   user_role: string | null;
-  action: "INSERT" | "UPDATE" | "DELETE";
+  action: string;
   table_name: string;
   record_id: string | null;
   record_label: string | null;
