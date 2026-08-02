@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_permissions: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          permission: string
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          permission: string
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          permission?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_permissions_permission_fkey"
+            columns: ["permission"]
+            isOneToOne: false
+            referencedRelation: "permission_defs"
+            referencedColumns: ["perm"]
+          },
+          {
+            foreignKeyName: "admin_permissions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_admins: {
         Row: {
           created_at: string
@@ -881,6 +917,81 @@ export type Database = {
           },
         ]
       }
+      permission_bundle_items: {
+        Row: {
+          bundle: string
+          permission: string
+        }
+        Insert: {
+          bundle: string
+          permission: string
+        }
+        Update: {
+          bundle?: string
+          permission?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "permission_bundle_items_bundle_fkey"
+            columns: ["bundle"]
+            isOneToOne: false
+            referencedRelation: "permission_bundles"
+            referencedColumns: ["bundle"]
+          },
+          {
+            foreignKeyName: "permission_bundle_items_permission_fkey"
+            columns: ["permission"]
+            isOneToOne: false
+            referencedRelation: "permission_defs"
+            referencedColumns: ["perm"]
+          },
+        ]
+      }
+      permission_bundles: {
+        Row: {
+          bundle: string
+          label: string
+          sort: number
+        }
+        Insert: {
+          bundle: string
+          label: string
+          sort?: number
+        }
+        Update: {
+          bundle?: string
+          label?: string
+          sort?: number
+        }
+        Relationships: []
+      }
+      permission_defs: {
+        Row: {
+          grp: string
+          grp_label: string
+          label: string
+          perm: string
+          sort: number
+          super_only: boolean
+        }
+        Insert: {
+          grp: string
+          grp_label: string
+          label: string
+          perm: string
+          sort?: number
+          super_only?: boolean
+        }
+        Update: {
+          grp?: string
+          grp_label?: string
+          label?: string
+          perm?: string
+          sort?: number
+          super_only?: boolean
+        }
+        Relationships: []
+      }
       product_offers: {
         Row: {
           active: boolean
@@ -1450,6 +1561,10 @@ export type Database = {
       }
     }
     Functions: {
+      admin_apply_bundle: {
+        Args: { p_bundle: string; p_uid: string }
+        Returns: undefined
+      }
       admin_broadcast_notification: {
         Args: { _body: string; _link: string; _segment: string; _title: string }
         Returns: number
@@ -1457,6 +1572,10 @@ export type Database = {
       admin_bulk_update_catalog_items: {
         Args: { p_items: Json }
         Returns: Json
+      }
+      admin_create_bundle: {
+        Args: { p_bundle: string; p_label: string; p_perms?: string[] }
+        Returns: undefined
       }
       admin_decide_account_request: {
         Args: { p_approve: boolean; p_reason?: string; p_user_id: string }
@@ -1470,8 +1589,14 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_delete_bundle: { Args: { p_bundle: string }; Returns: undefined }
+      admin_get_permission_catalog: { Args: never; Returns: Json }
       admin_get_user_detail: { Args: { p_uid: string }; Returns: Json }
       admin_grant_admin: { Args: { _uid: string }; Returns: undefined }
+      admin_grant_permission: {
+        Args: { p_grant: boolean; p_perm: string; p_uid: string }
+        Returns: undefined
+      }
       admin_grant_wallet_credit: {
         Args: { p_amount: number; p_note?: string; p_uid: string }
         Returns: undefined
@@ -1479,6 +1604,10 @@ export type Database = {
       admin_kpis: {
         Args: { p_from: string; p_grain?: string; p_to: string }
         Returns: Json
+      }
+      admin_list_admin_permissions: {
+        Args: { p_uid: string }
+        Returns: string[]
       }
       admin_list_app_usage: {
         Args: {
@@ -1644,6 +1773,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_update_bundle: {
+        Args: { p_bundle: string; p_perms: string[] }
+        Returns: undefined
+      }
       admin_update_profile: {
         Args: {
           p_address?: string
@@ -1694,6 +1827,10 @@ export type Database = {
           phone: string
         }[]
       }
+      has_permission: {
+        Args: { _perm: string; _uid: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1708,6 +1845,7 @@ export type Database = {
         Args: { _tx_id: string }
         Returns: undefined
       }
+      my_permissions: { Args: never; Returns: Json }
       pay_order_with_wallet: { Args: { _order_id: string }; Returns: undefined }
       push_notification: {
         Args: {
