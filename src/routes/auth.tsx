@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { ShoppingBasket, Phone, Lock } from "lucide-react";
@@ -93,9 +94,9 @@ function AuthPage() {
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label className="flex items-center gap-2"><Phone className="w-4 h-4" /> اسم المستخدم (رقم الجوال)</Label>
+            <Label className="flex items-center gap-2"><Phone className="w-4 h-4" /> رقم الجوال</Label>
             <Input
-              inputMode="tel" dir="ltr" placeholder="7XXXXXXXX" maxLength={9}
+              inputMode="tel" dir="ltr" maxLength={9}
               value={phone}
               onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
               onKeyDown={(e) => e.key === "Enter" && submit()}
@@ -103,8 +104,8 @@ function AuthPage() {
           </div>
           <div className="space-y-2">
             <Label className="flex items-center gap-2"><Lock className="w-4 h-4" /> كلمة المرور</Label>
-            <Input
-              type="password" dir="ltr" value={password}
+            <PasswordInput
+              dir="ltr" value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && submit()}
             />
