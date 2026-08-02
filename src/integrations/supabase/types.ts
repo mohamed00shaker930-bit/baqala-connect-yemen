@@ -1678,6 +1678,7 @@ export type Database = {
         Args: { _approve: boolean; _tx_id: string }
         Returns: undefined
       }
+      delete_my_account: { Args: never; Returns: undefined }
       ensure_wallet: { Args: never; Returns: string }
       get_credit_customer: {
         Args: { _account_id: string }
