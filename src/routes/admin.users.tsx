@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { formatDateTimeFull } from "@/lib/dateFormat";
 import { Store as StoreIcon, User as UserIcon } from "lucide-react";
 import { RolesDialog, type RolesDialogUser } from "@/components/admin/RolesDialog";
+import { CreateUserDialog } from "@/components/admin/CreateUserDialog";
 
 export const Route = createFileRoute("/admin/users")({ component: Page });
 
@@ -111,7 +112,7 @@ function Page() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <AdminShell title="المستخدمون">
+    <AdminShell title="المستخدمون" action={<CreateUserDialog onCreated={load} />}>
       <div className="mb-3 -mx-4 px-4 overflow-x-auto no-scrollbar">
         <div className="flex gap-2 w-max">
           {chips.map((c) => (
