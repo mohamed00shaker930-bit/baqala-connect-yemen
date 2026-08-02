@@ -1,11 +1,15 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CustomerShell } from "@/components/CustomerShell";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Phone, MessageCircle, Lock, Clock, EyeOff, Timer, Languages, Wallet, MapPin, Heart, KeyRound } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Phone, MessageCircle, Lock, Clock, EyeOff, Timer, Languages, Wallet, MapPin, Heart, KeyRound, LogOut, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -30,6 +34,7 @@ export const Route = createFileRoute("/profile")({
 });
 
 function ProfilePage() {
+  const navigate = useNavigate();
   const { data: profile } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => (await supabase.from("profiles").select("*").maybeSingle()).data,
@@ -45,6 +50,8 @@ function ProfilePage() {
   const [duration, setDuration] = useState<number>(10);
   const [idleOn, setIdleOn] = useState(true);
   const [hideOn, setHideOn] = useState(true);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     setHasPin(isPinSet());
@@ -53,6 +60,28 @@ function ProfilePage() {
     setIdleOn(isIdleLockEnabled());
     setHideOn(isHideLockEnabled());
   }, []);
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("تم تسجيل الخروج");
+    navigate({ to: "/auth", replace: true });
+  };
+
+  const deleteAccount = async () => {
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      const { error } = await (supabase as any).rpc("delete_my_account");
+      if (error) { toast.error(error.message || "تعذّر حذف الحساب"); return; }
+      await supabase.auth.signOut();
+      toast.success("تم حذف حسابك");
+      navigate({ to: "/auth", replace: true });
+    } catch (e: any) {
+      toast.error(e?.message || "تعذّر حذف الحساب");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const toggleLock = (v: boolean) => {
     if (v && !isPinSet()) { setOpenSet(true); return; }
@@ -177,6 +206,15 @@ function ProfilePage() {
         </a>
       </Card>
 
+      <Card className="p-4 mt-4 space-y-2">
+        <Button variant="outline" className="w-full" onClick={signOut}>
+          <LogOut className="w-4 h-4 ml-2" /> تسجيل الخروج
+        </Button>
+        <Button variant="ghost" className="w-full text-destructive hover:text-destructive" onClick={() => setDeleteOpen(true)}>
+          <Trash2 className="w-4 h-4 ml-2" /> حذف الحساب
+        </Button>
+      </Card>
+
       <Dialog open={openSet} onOpenChange={(v) => { setOpenSet(v); if (!v) { setPin1(""); setPin2(""); } }}>
         <DialogContent>
           <DialogHeader><DialogTitle>إنشاء رمز القفل</DialogTitle></DialogHeader>
@@ -214,6 +252,23 @@ function ProfilePage() {
           <Button variant="destructive" onClick={removeLock}>حذف</Button>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>حذف الحساب؟</AlertDialogTitle>
+            <AlertDialogDescription>
+              لن تتمكن من الدخول بعد حذف حسابك، وتحتفظ الإدارة بسجلّ بذلك. هل أنت متأكد؟
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={deleteAccount}>
+              نعم، احذف حسابي
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </CustomerShell>
   );
 }
