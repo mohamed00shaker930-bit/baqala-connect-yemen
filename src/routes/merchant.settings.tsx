@@ -1,5 +1,5 @@
 import { fetchMyStore } from "@/lib/my-store";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MerchantShell } from "@/components/MerchantShell";
@@ -9,10 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { MapPicker } from "@/components/MapPicker";
-import { MapPin, KeyRound } from "lucide-react";
+import { MapPin, KeyRound, LogOut, Trash2 } from "lucide-react";
 import type { LatLng } from "@/lib/geo";
 
 export const Route = createFileRoute("/merchant/settings")({
@@ -22,10 +26,13 @@ export const Route = createFileRoute("/merchant/settings")({
 
 function MerchantSettings() {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const { data: store } = useQuery({ queryKey: ["my-store"], queryFn: fetchMyStore });
   const [form, setForm] = useState({ name: "", area: "", delivery_info: "", phone: "", is_open: true });
   const [coords, setCoords] = useState<LatLng | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (store) {
@@ -45,6 +52,28 @@ function MerchantSettings() {
     if (coords) { payload.lat = coords.lat; payload.lng = coords.lng; }
     const { error } = await supabase.from("stores").update(payload).eq("id", store.id);
     if (error) toast.error(error.message); else { toast.success("تم الحفظ"); qc.invalidateQueries(); }
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    toast.success("تم تسجيل الخروج");
+    navigate({ to: "/auth", replace: true });
+  };
+
+  const deleteAccount = async () => {
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      const { error } = await (supabase as any).rpc("delete_my_account");
+      if (error) { toast.error(error.message || "تعذّر حذف الحساب"); return; }
+      await supabase.auth.signOut();
+      toast.success("تم حذف حسابك");
+      navigate({ to: "/auth", replace: true });
+    } catch (e: any) {
+      toast.error(e?.message || "تعذّر حذف الحساب");
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -69,14 +98,37 @@ function MerchantSettings() {
         <Button onClick={save} className="w-full h-12">حفظ</Button>
       </Card>
 
-      <Card className="p-4 mt-4">
-        <h3 className="font-bold flex items-center gap-2 mb-3"><KeyRound className="w-4 h-4 text-primary" /> الحساب</h3>
+      <Card className="p-4 mt-4 space-y-2">
+        <h3 className="font-bold flex items-center gap-2 mb-1"><KeyRound className="w-4 h-4 text-primary" /> الحساب</h3>
         <Button asChild variant="outline" className="w-full">
           <Link to="/change-password">تغيير كلمة المرور</Link>
+        </Button>
+        <Button variant="outline" className="w-full" onClick={signOut}>
+          <LogOut className="w-4 h-4 ml-2" /> تسجيل الخروج
+        </Button>
+        <Button variant="ghost" className="w-full text-destructive hover:text-destructive" onClick={() => setDeleteOpen(true)}>
+          <Trash2 className="w-4 h-4 ml-2" /> حذف الحساب
         </Button>
       </Card>
 
       <MapPicker open={pickerOpen} onOpenChange={setPickerOpen} initial={coords} onPick={setCoords} title="موقع متجرك" />
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>حذف الحساب؟</AlertDialogTitle>
+            <AlertDialogDescription>
+              لن تتمكن من الدخول بعد حذف حسابك، وتحتفظ الإدارة بسجلّ بذلك. هل أنت متأكد؟
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={deleteAccount}>
+              نعم، احذف حسابي
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </MerchantShell>
   );
 }
