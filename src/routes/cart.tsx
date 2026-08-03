@@ -35,6 +35,15 @@ function CartPage() {
 
   const total = cartTotal(c.items);
 
+  // ملاحظة: يجب أن تُستدعى جميع الـ hooks قبل أي return مبكر (قاعدة React الأساسية)
+  const { data: wallet } = useQuery({
+    queryKey: ["wallet-cart"],
+    queryFn: async () => {
+      await supabase.rpc("ensure_wallet");
+      return (await supabase.from("wallets").select("*").maybeSingle()).data;
+    },
+  });
+
   if (c.items.length === 0) {
     return (
       <CustomerShell title="السلة">
@@ -45,14 +54,6 @@ function CartPage() {
       </CustomerShell>
     );
   }
-
-  const { data: wallet } = useQuery({
-    queryKey: ["wallet-cart"],
-    queryFn: async () => {
-      await supabase.rpc("ensure_wallet");
-      return (await supabase.from("wallets").select("*").maybeSingle()).data;
-    },
-  });
 
   const checkout = async () => {
     const v = validateCheckout({ storeId: c.storeId, items: c.items, landmark, payment, walletBalance: wallet?.balance ?? 0 });
@@ -204,4 +205,3 @@ function SavedLocationsPicker({ onPick }: { onPick: (l: { label: string; landmar
     </div>
   );
 }
-
