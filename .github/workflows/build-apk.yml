@@ -29,6 +29,19 @@ jobs:
         with:
           node-version: "20"
  
+      - name: Verify signing secrets (فحص الأسرار)
+        run: |
+          ok=1
+          [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ] || { echo "::error::السر ANDROID_KEYSTORE_BASE64 غير موجود أو فارغ — تحقق من اسمه وقيمته في Settings > Secrets"; ok=0; }
+          [ -n "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" ] || { echo "::error::السر ANDROID_KEYSTORE_PASSWORD غير موجود أو فارغ"; ok=0; }
+          [ -n "${{ secrets.ANDROID_KEY_PASSWORD }}" ] || { echo "::error::السر ANDROID_KEY_PASSWORD غير موجود أو فارغ"; ok=0; }
+          [ -n "${{ secrets.ANDROID_KEY_ALIAS }}" ] || { echo "::error::السر ANDROID_KEY_ALIAS غير موجود أو فارغ — قيمته يجب أن تكون: wasl"; ok=0; }
+          [ "$ok" = "1" ] || exit 1
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | tr -d ' \t\r\n' | base64 -d > ks.tmp 2>/dev/null || { echo "::error::قيمة ANDROID_KEYSTORE_BASE64 ليست base64 صالحاً — انسخ كامل محتوى keystore.base64.txt كسطر واحد دون نقص"; exit 1; }
+          keytool -list -keystore ks.tmp -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" >/dev/null 2>&1 || { echo "::error::تعذر فتح مفتاح التوقيع — تحقق من ANDROID_KEYSTORE_PASSWORD (القيمة بعد = فقط) ومن أن ANDROID_KEY_ALIAS يساوي wasl"; rm -f ks.tmp; exit 1; }
+          rm -f ks.tmp
+          echo "كل الأسرار الأربعة سليمة والمفتاح يُفتح بنجاح ✓"
+ 
       - name: Prepare Capacitor shell
         run: |
           mkdir -p apk-shell/www apk-shell/assets
@@ -53,12 +66,12 @@ jobs:
           }
           EOF
           printf '<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><title>وصل</title></html>' > www/index.html
-          npm install @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7 @capacitor/assets@3
-          npx cap add android
+          npm install @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7 @capacitor/assets@3 || { echo "::error::فشل تنزيل حزم Capacitor من npm"; exit 1; }
+          npx cap add android || { echo "::error::فشلت إضافة منصة أندرويد (cap add android)"; exit 1; }
  
       - name: Generate app icons and splash
         working-directory: apk-shell
-        run: npx capacitor-assets generate --android --iconBackgroundColor '#ffffff' --iconBackgroundColorDark '#111827' --splashBackgroundColor '#ffffff' --splashBackgroundColorDark '#111827' || echo "assets generation skipped"
+        run: npx capacitor-assets generate --android --iconBackgroundColor '#ffffff' --iconBackgroundColorDark '#111827' --splashBackgroundColor '#ffffff' --splashBackgroundColorDark '#111827' || echo "::warning::تخطي توليد الأيقونات — سيُستخدم الشكل الافتراضي"
  
       - name: Add camera permission and set version
         working-directory: apk-shell
@@ -74,24 +87,28 @@ jobs:
         working-directory: apk-shell/android
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleRelease --no-daemon --stacktrace || { echo "::error::فشل بناء Gradle — افتح هذه الخطوة وأرسل آخر 30 سطراً من السجل"; exit 1; }
+          ls -la app/build/outputs/apk/release/
  
       - name: Sign APK
         working-directory: apk-shell
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > wasl-release.keystore
-          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | tr -d ' \t\r\n' | base64 -d > wasl-release.keystore
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* 2>/dev/null | sort -V | tail -1)
+          [ -n "$BT" ] || { echo "::error::لم يُعثر على build-tools في بيئة البناء"; exit 1; }
           UNSIGNED=android/app/build/outputs/apk/release/app-release-unsigned.apk
-          "$BT/zipalign" -f -p 4 "$UNSIGNED" wasl-aligned.apk
+          [ -f "$UNSIGNED" ] || { echo "::error::لم يُعثر على ملف APK غير الموقّع الناتج من Gradle"; ls -la android/app/build/outputs/apk/release/ || true; exit 1; }
+          "$BT/zipalign" -f -p 4 "$UNSIGNED" wasl-aligned.apk || { echo "::error::فشلت خطوة zipalign"; exit 1; }
           "$BT/apksigner" sign \
             --ks wasl-release.keystore \
             --ks-key-alias "${{ secrets.ANDROID_KEY_ALIAS }}" \
             --ks-pass "pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" \
             --key-pass "pass:${{ secrets.ANDROID_KEY_PASSWORD }}" \
             --out "Wasl-v${{ github.event.inputs.version_name }}.apk" \
-            wasl-aligned.apk
+            wasl-aligned.apk || { echo "::error::فشل توقيع الـ APK — تحقق من الأسرار الأربعة"; exit 1; }
           "$BT/apksigner" verify --print-certs "Wasl-v${{ github.event.inputs.version_name }}.apk"
           rm -f wasl-release.keystore
+          echo "تم إنتاج وتوقيع: $(ls Wasl-v*.apk) ✓"
  
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
