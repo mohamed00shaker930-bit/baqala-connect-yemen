@@ -5,7 +5,6 @@
 //     error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
-import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
   tanstackStart: {
@@ -13,45 +12,7 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
-  vite: {
-    plugins: [
-      VitePWA({
-        strategies: "generateSW",
-        filename: "sw.js",
-        injectRegister: null,
-        registerType: "autoUpdate",
-        devOptions: { enabled: false },
-        workbox: {
-          cleanupOutdatedCaches: true,
-          // ملاحظة: لا نستخدم navigateFallback هنا لأن التطبيق SSR — الصفحة "/" ليست ملفاً
-          // ثابتاً ضمن precache، وتوجيه الاحتياط إليها كان يُسقط الـ Service Worker بالكامل.
-          // بدلاً من ذلك: NetworkFirst للتنقل ← آخر نسخة مخزّنة ← صفحة offline.html الثابتة.
-          runtimeCaching: [
-            {
-              urlPattern: ({ request, url }) =>
-                request.mode === "navigate" && !url.pathname.startsWith("/~oauth"),
-              handler: "NetworkFirst",
-              options: {
-                cacheName: "baqalati-pages",
-                networkTimeoutSeconds: 5,
-                expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 },
-                precacheFallback: { fallbackURL: "/offline.html" },
-              },
-            },
-            {
-              urlPattern: ({ request, url }) =>
-                url.origin === self.location.origin &&
-                ["script", "style", "worker", "font", "image"].includes(request.destination) &&
-                url.pathname.startsWith("/assets/"),
-              handler: "CacheFirst",
-              options: {
-                cacheName: "baqalati-assets",
-                expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 * 30 },
-              },
-            },
-          ],
-        },
-      }),
-    ],
-  },
+  // ملاحظة: الـ Service Worker الآن ملف يدوي ثابت في public/sw.js يُنشر كما هو —
+  // أزلنا vite-plugin-pwa لأن توليد sw.js عبره في بنية SSR هذه لم يكن يُخدم بشكل موثوق،
+  // وحتى لا يتصادم التوليد الآلي مع الملف اليدوي.
 });
