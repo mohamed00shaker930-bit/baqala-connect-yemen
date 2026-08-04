@@ -23,8 +23,9 @@ export default defineConfig({
         devOptions: { enabled: false },
         workbox: {
           cleanupOutdatedCaches: true,
-          navigateFallback: "/",
-          navigateFallbackDenylist: [/^\/api\//, /^\/~oauth(?:\/|$)/],
+          // ملاحظة: لا نستخدم navigateFallback هنا لأن التطبيق SSR — الصفحة "/" ليست ملفاً
+          // ثابتاً ضمن precache، وتوجيه الاحتياط إليها كان يُسقط الـ Service Worker بالكامل.
+          // بدلاً من ذلك: NetworkFirst للتنقل ← آخر نسخة مخزّنة ← صفحة offline.html الثابتة.
           runtimeCaching: [
             {
               urlPattern: ({ request, url }) =>
@@ -34,6 +35,7 @@ export default defineConfig({
                 cacheName: "baqalati-pages",
                 networkTimeoutSeconds: 5,
                 expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 },
+                precacheFallback: { fallbackURL: "/offline.html" },
               },
             },
             {
