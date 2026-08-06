@@ -15,6 +15,12 @@ export async function signIn(phone: string, password: string) {
 }
 
 export async function getUserRole(userId: string): Promise<"customer" | "merchant" | null> {
-  const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId).maybeSingle();
-  return (data?.role as "customer" | "merchant" | null) ?? null;
+  // Users can hold multiple roles (e.g. admin + merchant). Fetch all rows and
+  // resolve with merchant-first priority so multi-role users are never
+  // misclassified as customers.
+  const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+  const roles = (data ?? []).map((r: any) => String(r.role));
+  if (roles.includes("merchant")) return "merchant";
+  if (roles.includes("customer")) return "customer";
+  return null;
 }

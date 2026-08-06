@@ -1,13 +1,25 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { CustomerShell } from "@/components/CustomerShell";
+import { MerchantShell } from "@/components/MerchantShell";
+import { AdminShell } from "@/components/AdminShell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNotifications, markAllRead, markRead, type AppNotification } from "@/lib/notifications";
-import { useQueryClient } from "@tanstack/react-query";
-import { CheckCheck, ShoppingBag, Undo2, Wallet, Bell } from "lucide-react";
+import { getUserRole } from "@/lib/auth";
+import { isCurrentUserAdmin } from "@/lib/admin";
+import { CheckCheck, ShoppingBag, Undo2, Wallet, Bell, UserRound } from "lucide-react";
 import { formatTimeAgo } from "@/lib/dateFormat";
 
-export const Route = createFileRoute("/notifications")({ ssr: false, component: NotificationsPage });
+export const Route = createFileRoute("/notifications")({
+  ssr: false,
+  beforeLoad: async () => {
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) throw redirect({ to: "/auth" });
+  },
+  component: NotificationsPage,
+});
 
 const ICONS: Record<string, any> = { order: ShoppingBag, return: Undo2, wallet: Wallet, info: Bell };
 
@@ -20,13 +32,47 @@ function NotificationsPage() {
   const list = data ?? [];
   const unread = list.filter((n) => !n.read_at).length;
 
+  const { data: ctx } = useQuery({
+    queryKey: ["notifications-ctx"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+      const [role, admin, profileRes] = await Promise.all([
+        getUserRole(user.id),
+        isCurrentUserAdmin(),
+        supabase.from("profiles").select("name, phone").eq("id", user.id).maybeSingle(),
+      ]);
+      return {
+        role,
+        admin,
+        name: profileRes.data?.name ?? null,
+        phone: profileRes.data?.phone ?? null,
+      };
+    },
+  });
+
   const open = async (n: AppNotification) => {
     if (!n.read_at) { await markRead(n.id); qc.invalidateQueries({ queryKey: ["notifications"] }); }
     if (n.link) nav({ to: n.link as any });
   };
 
+  if (!ctx) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="inline-block w-10 h-10 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  const Shell = ctx.role === "merchant" ? MerchantShell : ctx.admin ? AdminShell : CustomerShell;
+
   return (
-    <CustomerShell title="الإشعارات">
+    <Shell title="الإشعارات">
+      <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
+        <UserRound className="w-3.5 h-3.5" />
+        <span>الحساب: {ctx.name?.trim() || "بدون اسم"}</span>
+        {ctx.phone && <span dir="ltr">({ctx.phone})</span>}
+      </div>
       <div className="flex items-center justify-between mb-3">
         <p className="text-sm text-muted-foreground">{unread > 0 ? `${unread} غير مقروء` : "لا جديد"}</p>
         {unread > 0 && (
@@ -55,6 +101,6 @@ function NotificationsPage() {
           );
         })}
       </div>
-    </CustomerShell>
+    </Shell>
   );
 }
