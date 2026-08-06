@@ -24,8 +24,11 @@ function CreditPage() {
   const { data: accounts } = useQuery({
     queryKey: ["my-credit"],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
       const { data } = await supabase.from("credit_accounts")
         .select("*, stores(name), credit_transactions(*)")
+        .eq("customer_id", user.id)
         .order("created_at", { ascending: false });
       return data ?? [];
     },

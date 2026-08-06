@@ -54,8 +54,11 @@ function HomePage() {
   const { data: recentOrders } = useQuery({
     queryKey: ["recent-orders-home"],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
       const { data } = await supabase.from("orders")
         .select("id, store_id, total, created_at, stores(name), order_items(product_id, name, qty, price, image_url)")
+        .eq("customer_id", user.id)
         .order("created_at", { ascending: false })
         .limit(5);
       return data ?? [];
