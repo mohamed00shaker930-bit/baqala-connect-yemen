@@ -26,7 +26,9 @@ function OrdersPage() {
   const { data: orders } = useQuery({
     queryKey: ["my-orders"],
     queryFn: async () => {
-      const { data } = await supabase.from("orders").select("*, stores(name), order_items(*)").order("created_at", { ascending: false });
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      const { data } = await supabase.from("orders").select("*, stores(name), order_items(*)").eq("customer_id", user.id).order("created_at", { ascending: false });
       return data ?? [];
     },
     refetchInterval: 15000,
