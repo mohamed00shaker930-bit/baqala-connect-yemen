@@ -35,13 +35,19 @@ function WalletPage() {
     queryKey: ["wallet"],
     queryFn: async () => {
       await supabase.rpc("ensure_wallet");
-      const { data } = await supabase.from("wallets").select("*").maybeSingle();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+      const { data } = await supabase.from("wallets").select("*").eq("user_id", user.id).maybeSingle();
       return data;
     },
   });
   const { data: txs } = useQuery({
     queryKey: ["wallet-tx"],
-    queryFn: async () => (await supabase.from("wallet_transactions").select("*").order("created_at", { ascending: false }).limit(50)).data ?? [],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      return (await supabase.from("wallet_transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50)).data ?? [];
+    },
   });
 
   const submitTopup = async () => {

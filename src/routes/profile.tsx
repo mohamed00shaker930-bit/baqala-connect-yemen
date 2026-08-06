@@ -37,7 +37,11 @@ function ProfilePage() {
   const navigate = useNavigate();
   const { data: profile } = useQuery({
     queryKey: ["profile"],
-    queryFn: async () => (await supabase.from("profiles").select("*").maybeSingle()).data,
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+      return (await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle()).data;
+    },
   });
 
   const [enabled, setEnabled] = useState(false);

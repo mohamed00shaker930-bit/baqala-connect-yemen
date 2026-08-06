@@ -17,9 +17,12 @@ export function useNotifications() {
   const query = useQuery({
     queryKey: ["notifications"],
     queryFn: async (): Promise<AppNotification[]> => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
       const { data } = await supabase
         .from("notifications")
         .select("*")
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(50);
       return (data as any) ?? [];
@@ -47,9 +50,12 @@ export function useNotifications() {
 }
 
 export async function markAllRead() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
   await supabase
     .from("notifications")
     .update({ read_at: new Date().toISOString() })
+    .eq("user_id", user.id)
     .is("read_at", null);
 }
 
