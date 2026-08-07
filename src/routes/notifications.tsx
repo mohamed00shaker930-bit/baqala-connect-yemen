@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CustomerShell } from "@/components/CustomerShell";
 import { MerchantShell } from "@/components/MerchantShell";
-import { AdminShell } from "@/components/AdminShell";
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNotifications, markAllRead, markRead, type AppNotification } from "@/lib/notifications";
@@ -17,6 +17,8 @@ export const Route = createFileRoute("/notifications")({
   beforeLoad: async () => {
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/auth" });
+    // Admin users get the dedicated admin notifications center.
+    if (await isCurrentUserAdmin()) throw redirect({ to: "/admin/notifications" });
   },
   component: NotificationsPage,
 });
@@ -37,14 +39,12 @@ function NotificationsPage() {
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
-      const [role, admin, profileRes] = await Promise.all([
+      const [role, profileRes] = await Promise.all([
         getUserRole(user.id),
-        isCurrentUserAdmin(),
         supabase.from("profiles").select("name, phone").eq("id", user.id).maybeSingle(),
       ]);
       return {
         role,
-        admin,
         name: profileRes.data?.name ?? null,
         phone: profileRes.data?.phone ?? null,
       };
@@ -64,7 +64,7 @@ function NotificationsPage() {
     );
   }
 
-  const Shell = ctx.role === "merchant" ? MerchantShell : ctx.admin ? AdminShell : CustomerShell;
+  const Shell = ctx.role === "merchant" ? MerchantShell : CustomerShell;
 
   return (
     <Shell title="الإشعارات">
