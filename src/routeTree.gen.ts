@@ -35,6 +35,7 @@ import { Route as AdminBusinessTypesRouteImport } from './routes/admin.business-
 import { Route as AdminKpisRouteImport } from './routes/admin.kpis'
 import { Route as AdminLibraryRouteImport } from './routes/admin.library'
 import { Route as AdminMerchantsRouteImport } from './routes/admin.merchants'
+import { Route as AdminNotificationsRouteImport } from './routes/admin.notifications'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminPasswordResetsRouteImport } from './routes/admin.password-resets'
 import { Route as AdminPermissionsRouteImport } from './routes/admin.permissions'
@@ -187,6 +188,11 @@ const AdminMerchantsRoute = AdminMerchantsRouteImport.update({
   path: '/merchants',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminOrdersRoute = AdminOrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
@@ -319,6 +325,7 @@ export interface FileRoutesByFullPath {
   '/admin/kpis': typeof AdminKpisRoute
   '/admin/library': typeof AdminLibraryRoute
   '/admin/merchants': typeof AdminMerchantsRoute
+  '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/password-resets': typeof AdminPasswordResetsRoute
   '/admin/permissions': typeof AdminPermissionsRoute
@@ -366,6 +373,7 @@ export interface FileRoutesByTo {
   '/admin/kpis': typeof AdminKpisRoute
   '/admin/library': typeof AdminLibraryRoute
   '/admin/merchants': typeof AdminMerchantsRoute
+  '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/password-resets': typeof AdminPasswordResetsRoute
   '/admin/permissions': typeof AdminPermissionsRoute
@@ -416,6 +424,7 @@ export interface FileRoutesById {
   '/admin/kpis': typeof AdminKpisRoute
   '/admin/library': typeof AdminLibraryRoute
   '/admin/merchants': typeof AdminMerchantsRoute
+  '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/password-resets': typeof AdminPasswordResetsRoute
   '/admin/permissions': typeof AdminPermissionsRoute
@@ -467,6 +476,7 @@ export interface FileRouteTypes {
     | '/admin/kpis'
     | '/admin/library'
     | '/admin/merchants'
+    | '/admin/notifications'
     | '/admin/orders'
     | '/admin/password-resets'
     | '/admin/permissions'
@@ -514,6 +524,7 @@ export interface FileRouteTypes {
     | '/admin/kpis'
     | '/admin/library'
     | '/admin/merchants'
+    | '/admin/notifications'
     | '/admin/orders'
     | '/admin/password-resets'
     | '/admin/permissions'
@@ -563,6 +574,7 @@ export interface FileRouteTypes {
     | '/admin/kpis'
     | '/admin/library'
     | '/admin/merchants'
+    | '/admin/notifications'
     | '/admin/orders'
     | '/admin/password-resets'
     | '/admin/permissions'
@@ -795,6 +807,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMerchantsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/notifications': {
+      id: '/admin/notifications'
+      path: '/notifications'
+      fullPath: '/admin/notifications'
+      preLoaderRoute: typeof AdminNotificationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/orders': {
       id: '/admin/orders'
       path: '/orders'
@@ -955,6 +974,7 @@ interface AdminRouteChildren {
   AdminKpisRoute: typeof AdminKpisRoute
   AdminLibraryRoute: typeof AdminLibraryRoute
   AdminMerchantsRoute: typeof AdminMerchantsRoute
+  AdminNotificationsRoute: typeof AdminNotificationsRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminPasswordResetsRoute: typeof AdminPasswordResetsRoute
   AdminPermissionsRoute: typeof AdminPermissionsRoute
@@ -976,6 +996,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminKpisRoute: AdminKpisRoute,
   AdminLibraryRoute: AdminLibraryRoute,
   AdminMerchantsRoute: AdminMerchantsRoute,
+  AdminNotificationsRoute: AdminNotificationsRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminPasswordResetsRoute: AdminPasswordResetsRoute,
   AdminPermissionsRoute: AdminPermissionsRoute,
@@ -1041,13 +1062,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
